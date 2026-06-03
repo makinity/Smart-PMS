@@ -49,10 +49,10 @@ export default function Dashboard({ totalUsers, totalOffices, activePeriod, acti
     ];
 
     const quickLinks = [
-        { title: 'User Directory',      desc: 'Manage accounts and roles',         href: '/administrator/users' },
-        { title: 'Offices',             desc: 'View and edit organizational units', href: '/administrator/offices' },
-        { title: 'Performance Periods', desc: 'Configure evaluation timelines',     href: '/administrator/performance-periods' },
-        { title: 'Audit Logs',          desc: 'Track system activity and changes',  href: '/administrator/audit-logs' },
+        { title: 'User Directory',      desc: 'Manage accounts and roles',         href: '/administrator/users',               icon: 'bi-people-fill' },
+        { title: 'Offices',             desc: 'View and edit organizational units', href: '/administrator/offices',             icon: 'bi-building-fill' },
+        { title: 'Performance Periods', desc: 'Configure evaluation timelines',     href: '/administrator/performance-periods', icon: 'bi-calendar3' },
+        { title: 'Audit Logs',          desc: 'Track system activity and changes',  href: '/administrator/audit-logs',          icon: 'bi-journal-text' },
     ];
 
     return (
@@ -89,6 +89,7 @@ export default function Dashboard({ totalUsers, totalOffices, activePeriod, acti
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                     {quickLinks.map(l => (
                         <a key={l.href} href={l.href} style={linkCard}>
+                            <i className={`bi ${l.icon}`} style={{ fontSize: '1.4rem', color: 'var(--admin-accent)', marginBottom: '0.5rem', display: 'block' }} />
                             <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '0.3rem' }}>{l.title}</p>
                             <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>{l.desc}</p>
                         </a>

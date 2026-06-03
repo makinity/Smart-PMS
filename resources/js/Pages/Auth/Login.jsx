@@ -139,21 +139,76 @@ export default function Login() {
 
                     {/* Headline */}
                     <div style={{ position: 'relative', zIndex: 2 }}>
-                        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
-                            Welcome back
-                        </p>
+                        {/* Badged label */}
+                        <span style={{
+                            display: 'inline-block',
+                            fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+                            color: '#93c5fd', border: '1px solid rgba(147,197,253,0.5)',
+                            borderRadius: '4px', padding: '0.2rem 0.55rem', marginBottom: '0.85rem',
+                        }}>
+                            Welcome Back!
+                        </span>
                         <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '2.2rem', lineHeight: 1.2, marginBottom: '0.85rem', textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}>
                             Performance,<br />made smarter.
                         </h2>
-                        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.92rem', maxWidth: 320, lineHeight: 1.6, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.92rem', maxWidth: 320, lineHeight: 1.6, marginBottom: '2rem', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
                             Manage employee performance with clarity, efficiency, and real-time insights.
                         </p>
+
+                        {/* Feature rows */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                            {[
+                                {
+                                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-4"/></svg>,
+                                    title: 'Real-Time Insights',
+                                    desc: 'Track performance metrics and KPIs as they happen.',
+                                },
+                                {
+                                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                                    title: 'Team Collaboration',
+                                    desc: 'Coordinate goals and reviews across departments.',
+                                },
+                                {
+                                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+                                    title: 'Secure & Reliable',
+                                    desc: 'Your data is protected with role-based access control.',
+                                },
+                            ].map(({ icon, title, desc }) => (
+                                <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
+                                    <div style={{
+                                        flexShrink: 0, width: 38, height: 38,
+                                        background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.35)',
+                                        borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: '#93c5fd',
+                                    }}>
+                                        {icon}
+                                    </div>
+                                    <div>
+                                        <p style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{title}</p>
+                                        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.8rem', lineHeight: 1.5 }}>{desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Footer */}
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', position: 'relative', zIndex: 2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-                        © {new Date().getFullYear()} Smart PMS. All rights reserved.
-                    </p>
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                        <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.4rem' }}>
+                            © {new Date().getFullYear()} Smart PMS. All rights reserved.
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.72rem' }}>
+                            {['Privacy Policy', 'Terms of Service', 'Help Center'].map((link, i, arr) => (
+                                <span key={link} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <a href="#" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }}
+                                        onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.9)'}
+                                        onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.55)'}
+                                    >{link}</a>
+                                    {i < arr.length - 1 && <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 {/* ── Form panel ── */}

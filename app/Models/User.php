@@ -67,7 +67,7 @@ class User extends Authenticatable
     {
         return $this->profile_photo_path
             ? asset('storage/' . $this->profile_photo_path)
-            : null;
+            : asset('storage/profiles/default.jpeg');
     }
 
     public function getInitialsAttribute()
