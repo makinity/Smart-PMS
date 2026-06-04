@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>Objective Rating Sheet — track performance ratings per output.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>ORS</span>
                         <span style={{badgeStyle}}>Stage 2</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

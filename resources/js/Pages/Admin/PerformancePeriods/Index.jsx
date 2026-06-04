@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>Define and manage performance rating cycles and evaluation timelines.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>Periods</span>
                         <span style={{badgeStyle}}>Scheduling</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

@@ -15,12 +15,15 @@ class UwpSuccessIndicator extends Model
         'indicator_text',
         'target_quantity',
         'target_timeline',
+        'allotted_budget',
+        'baseline',         // e.g. "85% in FY 2023" — shown in Indicator Context sidebar
+        'reference_code',   // e.g. "RSP-2025-01"
         'sort_order',
     ];
 
     protected $casts = [
-        'target_quantity' => 'integer',
-        'sort_order' => 'integer',
+        'allotted_budget' => 'decimal:2',
+        'sort_order'      => 'integer',
     ];
 
     public function uwpMfo(): BelongsTo

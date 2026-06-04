@@ -28,6 +28,12 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                 </div>
             </div>
 
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {/* Notification bell — placeholder, wired up later */}
+                <button className="tb-notif-btn" title="Notifications">
+                    <i className="bi bi-bell-fill" />
+                </button>
+
             <div className="tb-user" ref={ref}>
                 <button className="tb-pill" onClick={() => setOpen(v => !v)}>
                     <div className="tb-avatar">
@@ -64,7 +70,8 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                         </Link>
                     </div>
                 )}
-            </div>
+            </div>{/* tb-user */}
+            </div>{/* right-side flex */}
 
             <style>{`
                 .tb-root {
@@ -95,6 +102,26 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                     font-size: 0.88rem;
                     color: var(--admin-text-muted);
                     margin-top: 0.15rem;
+                }
+
+                .tb-notif-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 50%;
+                    background: var(--admin-card);
+                    border: 1px solid var(--admin-border);
+                    cursor: pointer;
+                    color: var(--admin-text-secondary);
+                    font-size: 1rem;
+                    transition: background 0.15s, color 0.15s;
+                    flex-shrink: 0;
+                }
+                .tb-notif-btn:hover {
+                    background: rgba(59,130,246,0.08);
+                    color: var(--admin-accent);
                 }
 
                 .tb-user { position: relative; }

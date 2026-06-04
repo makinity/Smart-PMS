@@ -15,8 +15,9 @@ export default function Index() {
                 <div style={iconBox}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
                 <h4 style={h}>Office Calibration Details</h4>
                 <p style={p}>Review and finalize calibration for a specific office.</p>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

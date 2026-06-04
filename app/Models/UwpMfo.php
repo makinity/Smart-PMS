@@ -13,8 +13,6 @@ class UwpMfo extends Model
     protected $fillable = [
         'uwp_function_id',
         'title',
-        'target_quantity',
-        'target_timeline',
         'weight_percent',
         'sort_order',
     ];

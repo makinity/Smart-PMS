@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>View and manage your Individual Performance Commitment and Review targets.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>IPCR</span>
                         <span style={{badgeStyle}}>Stage 1</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

@@ -84,8 +84,34 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
 Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supervisor.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Supervisor\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/uwp', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'index'])->name('uwp.index');
-    Route::get('/uwp/editor', fn () => \Inertia\Inertia::render('Supervisor/UnitWorkPlan/Editor'))->name('uwp.editor');
-    Route::get('/uwp/{id}', fn () => \Inertia\Inertia::render('Supervisor/UnitWorkPlan/Show'))->name('uwp.show');
+    Route::post('/uwp', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'store'])->name('uwp.store');
+    Route::get('/uwp/{id}/editor', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'editor'])->name('uwp.editor');
+    Route::get('/uwp/{id}', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'show'])->name('uwp.show');
+
+    // UWP Editor API
+    Route::patch('/uwp/{uwp}/draft',  [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'saveDraft'])->name('uwp.draft');
+    Route::patch('/uwp/{uwp}/submit', [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'submit'])->name('uwp.submit');
+
+    // Functions
+    Route::post  ('/uwp/{uwp}/functions',       [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'storeFunction'])->name('uwp.functions.store');
+    Route::patch ('/uwp/{uwp}/functions/{fn}',  [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'updateFunction'])->name('uwp.functions.update');
+    Route::delete('/uwp/{uwp}/functions/{fn}',  [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'destroyFunction'])->name('uwp.functions.destroy');
+
+    // MFOs
+    Route::post  ('/uwp/{uwp}/mfos',            [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'storeMfo'])->name('uwp.mfos.store');
+    Route::patch ('/uwp/{uwp}/mfos/{mfo}',      [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'updateMfo'])->name('uwp.mfos.update');
+    Route::delete('/uwp/{uwp}/mfos/{mfo}',      [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'destroyMfo'])->name('uwp.mfos.destroy');
+
+    // Success Indicators
+    Route::post  ('/uwp/{uwp}/indicators',          [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'storeIndicator'])->name('uwp.indicators.store');
+    Route::patch ('/uwp/{uwp}/indicators/{si}',     [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'updateIndicator'])->name('uwp.indicators.update');
+    Route::delete('/uwp/{uwp}/indicators/{si}',     [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'destroyIndicator'])->name('uwp.indicators.destroy');
+
+    // QET Standards
+    Route::put('/uwp/{uwp}/indicators/{si}/qet',    [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'saveQet'])->name('uwp.indicators.qet');
+
+    // Assignments
+    Route::put('/uwp/{uwp}/indicators/{si}/assign', [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'saveAssign'])->name('uwp.indicators.assign');
     Route::get('/mpor', [\App\Http\Controllers\Supervisor\MporController::class, 'index'])->name('mpor.index');
     Route::get('/mpor/{id}', fn () => \Inertia\Inertia::render('Supervisor/Mpor/Show'))->name('mpor.show');
     Route::get('/accomplishment', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'index'])->name('accomplishment.index');

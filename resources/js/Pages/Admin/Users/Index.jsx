@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>Manage system users — create accounts, assign roles, activate or deactivate access.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>Admin</span>
                         <span style={{badgeStyle}}>Role Management</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

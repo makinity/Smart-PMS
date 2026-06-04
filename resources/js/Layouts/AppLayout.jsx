@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '@/Components/Sidebar';
 import Topbar from '@/Components/Topbar';
-import Snackbar from '@/Components/Snackbar';
+import { ToastProvider } from '@/Components/Snackbar';
+import { ConfirmProvider } from '@/Components/ConfirmDialog';
 
 export default function AppLayout({ children, title, description }) {
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'dark') === 'dark');
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sb-collapsed') === '1');
     const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
@@ -40,7 +41,7 @@ export default function AppLayout({ children, title, description }) {
 
             <Sidebar
                 collapsed={collapsed}
-                onToggle={() => setCollapsed(v => !v)}
+                onToggle={() => setCollapsed(v => { const next = !v; localStorage.setItem('sb-collapsed', next ? '1' : '0'); return next; })}
                 mobileOpen={mobileOpen}
                 onMobileClose={() => setMobileOpen(false)}
             />
@@ -55,7 +56,6 @@ export default function AppLayout({ children, title, description }) {
                     onMobileMenuToggle={() => setMobileOpen(v => !v)}
                 />
                 <main className="admin-content">
-                    <Snackbar />
                     {children}
                 </main>
             </div>

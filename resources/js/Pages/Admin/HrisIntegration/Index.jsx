@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>Sync employee data from the HMS/HRIS system into the PMS.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>Sync</span>
                         <span style={{badgeStyle}}>Integration</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

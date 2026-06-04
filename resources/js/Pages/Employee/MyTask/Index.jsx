@@ -17,8 +17,9 @@ export default function Index() {
                 <p style={p}>Track your assigned tasks synced from the unit work plan and performance targets.</p>
                         <div style={{badgesStyle}}><span style={{badgeStyle}}>Tasks</span>
                         <span style={{badgeStyle}}>Planning</span></div>
-                <div style={notice}>🚧 This section is under construction. Full functionality will be available soon.</div>
+                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
             </div>
         </AppLayout>
     );
 }
+

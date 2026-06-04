@@ -23,6 +23,9 @@ class UnitWorkPlan extends Model
         'office_id',
         'performance_period_id',
         'created_by',
+        'ratee_name',       // name of the employee being rated
+        'period_covered',   // e.g. "January – June 2026"
+        'pgdh_name',        // approving PGDH name
         'status',
         'submitted_at',
         'endorsed_at',
