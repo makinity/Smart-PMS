@@ -88,7 +88,8 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                 }
 
                 :root[data-theme="light"] .tb-root {
-                    background: rgba(240,244,255,0.88);
+                    background: var(--admin-sidebar);
+                    border-bottom-color: rgba(59,130,246,0.14);
                 }
 
                 .tb-title {
