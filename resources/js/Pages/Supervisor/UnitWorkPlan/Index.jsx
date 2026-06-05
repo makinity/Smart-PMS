@@ -1,6 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { usePage, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 const statusStyle = s => ({
     padding: '0.2rem 0.65rem', borderRadius: 999, fontSize: '0.7rem', fontWeight: 600, border: '1px solid',
@@ -29,6 +29,8 @@ const EyeIcon = () => (
 export default function Index() {
     const { uwps = [], activePeriod } = usePage().props;
     const [isMobile, setIsMobile] = useState(false);
+    const [search,       setSearch]       = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 640);
@@ -36,6 +38,14 @@ export default function Index() {
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
+
+    const filtered = useMemo(() => {
+        const q = search.toLowerCase();
+        return uwps.filter(u =>
+            (statusFilter === 'all' || u.status === statusFilter) &&
+            (!q || u.period?.toLowerCase().includes(q) || u.office?.toLowerCase().includes(q))
+        );
+    }, [uwps, search, statusFilter]);
 
     return (
         <AppLayout title="Unit Work Plans">
@@ -49,11 +59,29 @@ export default function Index() {
                     <button style={btnPrimary} onClick={() => router.post('/supervisor/uwp')}>+ New UWP</button>
                 </div>
 
-                {uwps.length > 0 ? (
+                {/* Search + filter toolbar */}
+                <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                    <input
+                        type="text"
+                        placeholder="Search by period or office…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={searchInput}
+                    />
+                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectInput}>
+                        <option value="all">All statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="returned">Returned</option>
+                        <option value="approved">Approved</option>
+                    </select>
+                </div>
+
+                {filtered.length > 0 ? (
                     isMobile ? (
                         /* Card list for small screens */
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {uwps.map(uwp => (
+                            {filtered.map(uwp => (
                                 <div key={uwp.id} style={listCard}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                                         <span style={{ fontWeight: 600, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>{uwp.period}</span>
@@ -86,7 +114,7 @@ export default function Index() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {uwps.map(uwp => (
+                                    {filtered.map(uwp => (
                                         <tr key={uwp.id} style={{ borderBottom: '1px solid var(--admin-border)' }}>
                                             <td style={td}>{uwp.period}</td>
                                             <td style={td}>{uwp.office}</td>
@@ -111,8 +139,12 @@ export default function Index() {
                 ) : (
                     <div style={empty}>
                         <div style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'var(--admin-accent)' }}><i className="bi bi-file-earmark-text" /></div>
-                        <p style={{ fontWeight: 600, color: 'var(--admin-text-primary)', marginBottom: '0.25rem' }}>No Unit Work Plans yet</p>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>Create one for the current performance period.</p>
+                        <p style={{ fontWeight: 600, color: 'var(--admin-text-primary)', marginBottom: '0.25rem' }}>
+                            {search || statusFilter !== 'all' ? 'No results found' : 'No Unit Work Plans yet'}
+                        </p>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>
+                            {search || statusFilter !== 'all' ? 'Try adjusting your search or filter.' : 'Create one for the current performance period.'}
+                        </p>
                     </div>
                 )}
             </div>
@@ -129,3 +161,5 @@ const btnPrimary = { padding: '0.5rem 1.1rem', borderRadius: 8, background: 'var
 const iconBtn    = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '2rem', height: '2rem', borderRadius: 6, border: '1px solid var(--admin-border-strong)', color: 'var(--admin-accent)', textDecoration: 'none', transition: 'background 0.15s' };
 const listCard   = { background: 'var(--admin-bg)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, padding: '1rem' };
 const empty      = { padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' };
+const searchInput = { flex: 1, minWidth: 220, padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)' };
+const selectInput = { padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)', cursor: 'pointer' };

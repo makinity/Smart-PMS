@@ -47,10 +47,11 @@ class UnitWorkPlanController extends Controller
 
         return \Inertia\Inertia::render('Supervisor/UnitWorkPlan/Show', [
             'uwp' => [
-                'id'     => $uwp->id,
-                'period' => $uwp->performancePeriod?->name ?? '—',
-                'office' => $uwp->office?->name ?? '—',
-                'status' => $uwp->status,
+                'id'             => $uwp->id,
+                'period'         => $uwp->performancePeriod?->name ?? '—',
+                'office'         => $uwp->office?->name ?? '—',
+                'status'         => $uwp->status,
+                'return_remarks' => $uwp->return_remarks,
             ],
             'functions' => $uwp->uwpFunctions->map(fn($fn) => [
                 'id'            => $fn->id,

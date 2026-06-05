@@ -31,6 +31,8 @@ class UnitWorkPlan extends Model
         'endorsed_at',
         'approved_at',
         'locked_at',
+        'return_remarks',
+        'returned_by',
     ];
 
     protected $casts = [

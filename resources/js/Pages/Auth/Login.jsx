@@ -5,6 +5,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 export default function Login() {
     const [mode, setMode] = useState('login');
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'light') === 'dark');
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const theme = darkMode ? 'dark' : 'light';
@@ -258,8 +259,15 @@ export default function Login() {
                                         autoFocus autoComplete="username" placeholder="Your name" style={inputStyle(!!errors.name)} />
                                 </Field>
                                 <Field label="Password" icon={icons.lock} error={errors.password}>
-                                    <input type="password" value={data.password} onChange={e => setData('password', e.target.value)}
-                                        autoComplete="current-password" placeholder="••••••••" style={inputStyle(!!errors.password)} />
+                                    <div style={{ position: 'relative' }}>
+                                        <input type={showPassword ? 'text' : 'password'} value={data.password} onChange={e => setData('password', e.target.value)}
+                                            autoComplete="current-password" placeholder="••••••••" style={{ ...inputStyle(!!errors.password), paddingRight: '2.5rem' }} />
+                                        <button type="button" onClick={() => setShowPassword(v => !v)}
+                                            title={showPassword ? 'Hide password' : 'Show password'}
+                                            style={{ position: 'absolute', right: '0.65rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', padding: 0, display: 'flex' }}>
+                                            {showPassword ? icons.eyeOff : icons.eye}
+                                        </button>
+                                    </div>
                                 </Field>
                             </>}
 
@@ -404,6 +412,8 @@ const icons = {
     email:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
     token:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
     photo:   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+    eye:     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    eyeOff:  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
 };
 
 const inputStyle = (hasError) => ({

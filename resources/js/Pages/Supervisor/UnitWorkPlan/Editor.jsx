@@ -833,7 +833,7 @@ const s = {
     layout:         { display: 'flex', gap: 0, borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', minHeight: 600 },
 
     // Left panel
-    leftPanel:      { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-bg-secondary)', flexShrink: 0, padding: '1.25rem 0' },
+    leftPanel:      { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0' },
     panelLabel:     { padding: '0 1rem 0.65rem', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.09em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' },
     fnItem:         { width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', textAlign: 'left', borderLeft: '2px solid transparent', fontSize: '0.82rem' },
     fnItemActive:   { color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.07)', borderLeftColor: 'var(--admin-accent)', fontWeight: 600 },

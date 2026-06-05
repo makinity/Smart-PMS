@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
-import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
+import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 
 const STATUS = {
     draft:     { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: 'rgba(100,116,139,0.3)',  icon: '●', label: 'Draft' },
     submitted: { bg: 'rgba(37,99,235,0.12)',   color: '#60a5fa', border: 'rgba(37,99,235,0.3)',    icon: '↑', label: 'Submitted' },
     approved:  { bg: 'rgba(5,150,105,0.12)',   color: '#34d399', border: 'rgba(5,150,105,0.3)',    icon: '✓', label: 'Approved' },
+    returned:  { bg: 'rgba(239,68,68,0.12)',   color: '#f87171', border: 'rgba(239,68,68,0.3)',    icon: '↩', label: 'Returned' },
     rejected:  { bg: 'rgba(239,68,68,0.12)',   color: '#f87171', border: 'rgba(239,68,68,0.3)',    icon: '✕', label: 'Rejected' },
 };
 
@@ -24,20 +25,18 @@ export default function Show() {
 
     const activeFn = fns?.find(f => f.id === activeFnId);
     const sc       = STATUS[status] ?? STATUS.draft;
-    const canSubmit = status === 'draft';
+    const canSubmit = status === 'draft' || status === 'returned';
 
-    async function handleSubmit() {
-        if (!await confirm('Submit this UWP for review? You will not be able to edit it after submission.')) return;
-        setSubmitting(true);
-        try {
-            await axios.patch(`/supervisor/uwp/${uwp.id}/submit`);
-            setStatus('submitted');
-            toast('UWP submitted for review.', 'submitted');
-        } catch {
-            toast('Failed to submit UWP.', 'error');
-        } finally {
-            setSubmitting(false);
-        }
+    function handleSubmit() {
+        confirm('Submit this UWP for review? You will not be able to edit it after submission.').then(ok => {
+            if (!ok) return;
+            setSubmitting(true);
+            router.patch(`/supervisor/uwp/${uwp.id}/submit`, {}, {
+                onSuccess: () => { setStatus('submitted'); toast('UWP submitted for review.', 'submitted'); },
+                onError:   () => toast('Failed to submit UWP.', 'error'),
+                onFinish:  () => setSubmitting(false),
+            });
+        });
     }
 
     return (
@@ -73,6 +72,9 @@ export default function Show() {
                     </a>
                 </div>
             </div>
+
+            {/* ── Return Remarks Banner ── */}
+            {status === 'returned' && <ReturnRemarksBanner remarks={uwp?.return_remarks} />}
 
             {/* ── Layout ── */}
             <div style={s.layout} className="uwp-layout">
@@ -291,7 +293,7 @@ const s = {
 
     // Layout
     layout:     { display: 'flex', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', minHeight: 600 },
-    leftPanel:  { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-bg-secondary)', flexShrink: 0, padding: '1.25rem 0', overflowY: 'auto' },
+    leftPanel:  { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0', overflowY: 'auto' },
     panelLabel: { padding: '0 1rem 0.65rem', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.09em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' },
     fnItem:     { width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', textAlign: 'left', borderLeft: '2px solid transparent', fontSize: '0.82rem' },
     fnItemActive:{ color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.07)', borderLeftColor: 'var(--admin-accent)', fontWeight: 600 },
