@@ -75,6 +75,7 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::patch('/uwp/{id}/approve', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'approve'])->name('uwp.approve');
     Route::patch('/uwp/{id}/return', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'returnUwp'])->name('uwp.return');
     Route::get('/opcr', [\App\Http\Controllers\DeptHead\OpcrController::class, 'index'])->name('opcr.index');
+    Route::get('/opcr/{id}', [\App\Http\Controllers\DeptHead\OpcrController::class, 'show'])->name('opcr.show');
     Route::get('/qar', [\App\Http\Controllers\DeptHead\QarController::class, 'index'])->name('qar.index');
     Route::get('/qar/{id}', fn () => \Inertia\Inertia::render('DeptHead/Qar/MporShow'))->name('qar.show');
     Route::get('/accomplishment-review', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');

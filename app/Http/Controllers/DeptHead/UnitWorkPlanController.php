@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DeptHead;
 
 use App\Http\Controllers\Controller;
+use App\Models\Opcr;
 use App\Models\UnitWorkPlan;
 use App\Models\PerformancePeriod;
 use Illuminate\Http\Request;
@@ -91,6 +92,15 @@ class UnitWorkPlanController extends Controller
             ->findOrFail($id);
 
         $uwp->update(['status' => 'approved']);
+
+        // Get or create a draft OPCR for this office + period
+        $opcr = Opcr::firstOrCreate(
+            ['office_id' => $uwp->office_id, 'performance_period_id' => $uwp->performance_period_id],
+            ['status' => 'draft']
+        );
+
+        // Attach this UWP to the OPCR if not already attached
+        $opcr->uwps()->syncWithoutDetaching([$uwp->id]);
 
         return back()->with('success', 'UWP approved.');
     }
