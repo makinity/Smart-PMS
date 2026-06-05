@@ -131,6 +131,7 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
 Route::prefix('employee')->middleware(['auth', 'role:employee'])->name('employee.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/ipcr-target', [\App\Http\Controllers\Employee\IpcrTargetController::class, 'index'])->name('ipcr-target.index');
+    Route::patch('/ipcr-target/{id}/commit', [\App\Http\Controllers\Employee\IpcrTargetController::class, 'commit'])->name('ipcr-target.commit');
     Route::get('/mpor', fn () => \Inertia\Inertia::render('Employee/Mpor/Index'))->name('mpor.index');
     Route::get('/ors', fn () => \Inertia\Inertia::render('Employee/Ors/Index'))->name('ors.index');
     Route::get('/my-tasks', fn () => \Inertia\Inertia::render('Employee/MyTask/Index'))->name('my-tasks.index');

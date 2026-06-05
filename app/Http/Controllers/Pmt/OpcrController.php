@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pmt;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ipcr;
 use App\Models\Opcr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -92,9 +93,39 @@ class OpcrController extends Controller
 
     public function approve(int $id)
     {
-        $opcr = Opcr::where('status', 'submitted')->findOrFail($id);
+        $opcr = Opcr::with([
+            'uwps.uwpFunctions.mfos.successIndicators.assignments',
+        ])->where('status', 'submitted')->findOrFail($id);
+
         $opcr->update(['status' => 'approved']);
-        return back()->with('success', 'OPCR approved.');
+
+        // Auto-generate one IPCR per assigned employee
+        $periodId = $opcr->performance_period_id;
+
+        // Collect all indicator assignments: employee_id → [indicator_ids]
+        $employeeIndicators = [];
+        foreach ($opcr->uwps as $uwp) {
+            foreach ($uwp->uwpFunctions as $fn) {
+                foreach ($fn->mfos as $mfo) {
+                    foreach ($mfo->successIndicators as $si) {
+                        foreach ($si->assignments as $assignment) {
+                            $employeeIndicators[$assignment->employee_id][] = $si->id;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($employeeIndicators as $employeeId => $indicatorIds) {
+            $ipcr = Ipcr::firstOrCreate(
+                ['employee_id' => $employeeId, 'performance_period_id' => $periodId],
+                ['opcr_id' => $opcr->id, 'status' => 'draft']
+            );
+            // Sync indicators (add new ones without removing existing)
+            $ipcr->indicators()->syncWithoutDetaching($indicatorIds);
+        }
+
+        return back()->with('success', 'OPCR approved. IPCRs generated for assigned employees.');
     }
 
     public function returnOpcr(Request $request, int $id)

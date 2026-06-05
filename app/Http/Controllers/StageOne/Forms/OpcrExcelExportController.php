@@ -44,7 +44,7 @@ class OpcrExcelExportController extends Controller
         ])->findOrFail($opcrId);
 
         $user = auth()->user();
-        abort_unless(in_array($user->role ?? $user->getRoleNames()->first(), ['dept-head', 'admin'], true), 403);
+        abort_unless(in_array($user->role ?? $user->getRoleNames()->first(), ['dept-head', 'admin', 'pmt'], true), 403);
 
         $spreadsheet = new Spreadsheet();
         $ws = $spreadsheet->getActiveSheet()->setTitle('OPCR');
