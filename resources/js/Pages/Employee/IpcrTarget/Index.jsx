@@ -18,7 +18,7 @@ const FN_COLORS = {
 const fnColor = type => FN_COLORS[type] ?? FN_COLORS.support;
 
 const RATING_LABELS = { 5: 'Outstanding', 4: 'Very Satisfactory', 3: 'Satisfactory', 2: 'Unsatisfactory', 1: 'Poor' };
-const DIM_LABELS    = { quality: 'Q — Quality', efficiency: 'E — Efficiency', timeliness: 'T — Timeliness' };
+const DIM_LABELS = { q: 'Quality', e: 'Efficiency', t: 'Timeliness', quality: 'Quality', efficiency: 'Efficiency', timeliness: 'Timeliness' };
 
 // ── QET Toggle ────────────────────────────────────────────────────────────────
 function QetPanel({ qet }) {
@@ -35,31 +35,24 @@ function QetPanel({ qet }) {
                 QET Standards
             </button>
             {open && (
-                <div style={{ marginTop: '0.5rem', borderRadius: 8, border: '1px solid var(--admin-border)', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.73rem' }}>
-                        <thead>
-                            <tr style={{ background: 'var(--admin-bg-alt)' }}>
-                                <th style={th}>Dimension</th>
-                                {[5, 4, 3, 2, 1].map(r => (
-                                    <th key={r} style={{ ...th, minWidth: 90 }}>{r} — {RATING_LABELS[r]}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.entries(qet).map(([dim, ratings]) => (
-                                <tr key={dim} style={{ borderTop: '1px solid var(--admin-border)' }}>
-                                    <td style={{ ...td, fontWeight: 600, color: 'var(--admin-text-primary)', whiteSpace: 'nowrap' }}>
-                                        {DIM_LABELS[dim] ?? dim}
-                                    </td>
-                                    {[5, 4, 3, 2, 1].map(r => (
-                                        <td key={r} style={{ ...td, color: 'var(--admin-text-muted)' }}>
-                                            {ratings[r] ?? '—'}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div style={{ marginTop: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {Object.entries(qet).map(([dim, ratings]) => (
+                        <div key={dim} style={{ borderRadius: 8, border: '1px solid var(--admin-border)', overflow: 'hidden' }}>
+                            {/* Dimension header */}
+                            <div style={{ padding: '0.35rem 0.7rem', background: 'var(--admin-bg-alt)', fontWeight: 700, fontSize: '0.72rem', color: 'var(--admin-text-primary)', borderBottom: '1px solid var(--admin-border)' }}>
+                                {DIM_LABELS[dim] ?? dim}
+                            </div>
+                            {/* Ratings stacked */}
+                            {[5, 4, 3, 2, 1].map(r => ratings[r] ? (
+                                <div key={r} style={{ display: 'flex', gap: '0.5rem', padding: '0.4rem 0.7rem', borderTop: r !== 5 ? '1px solid var(--admin-border)' : undefined, alignItems: 'flex-start' }}>
+                                    <span style={{ flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: 4, padding: '0.1rem 0.4rem', marginTop: 1 }}>
+                                        {r} — {RATING_LABELS[r]}
+                                    </span>
+                                    <span style={{ fontSize: '0.73rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>{ratings[r]}</span>
+                                </div>
+                            ) : null)}
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
@@ -172,15 +165,17 @@ export default function Index() {
             <style>{css}</style>
 
             {/* ── Top bar ── */}
-            <div style={s.topbar} className="ipcr-topbar">
+            <div style={{ ...s.topbar, position: 'relative' }} className="ipcr-topbar">
+                {/* Status pill */}
+                <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }} className="ipcr-status-pill">
+                    <span>{sc.icon}</span><span>{sc.label}</span>
+                </div>
+
                 {/* Row 1: meta info */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div>
                         <div style={s.period}>{period?.name ?? 'Performance Period'}</div>
                         <div style={s.office}>{employee?.office ?? '—'}</div>
-                    </div>
-                    <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                        <span>{sc.icon}</span><span>{sc.label}</span>
                     </div>
                     <div style={s.countPill}>{totalItems} indicator{totalItems !== 1 ? 's' : ''}</div>
                 </div>
@@ -196,24 +191,21 @@ export default function Index() {
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             {committing ? 'Committing…' : 'Commit IPCR'}
                         </button>
-                    )}
-                    {localStatus === 'committed' && (
-                        <div style={s.committedBadge}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            Committed
-                        </div>
-                    )}
-                </div>
+                    )}                </div>
             </div>
 
-            {/* ── IPCR header block (matches official form layout) ── */}
-            <div style={s.ipcrHeader} className="ipcr-header-block">
-                <div style={s.ipcrHeaderTitle}>INDIVIDUAL PERFORMANCE COMMITMENT AND REVIEW (IPCR)</div>
-                <div style={s.ipcrHeaderMeta}>
-                    <span><strong>{employee?.name ?? '—'}</strong></span>
-                    <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>{employee?.office ?? '—'}</span>
-                    <span style={{ color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>{period?.name ?? '—'}</span>
-                </div>
+            {/* ── Three info cards ── */}
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }} className="ipcr-info-cards">
+                {[
+                    { label: 'Employee', value: employee?.name ?? '—' },
+                    { label: 'Office',   value: employee?.office ?? '—' },
+                    { label: 'Period',   value: period?.name ?? '—' },
+                ].map(item => (
+                    <div key={item.label} style={{ flex: 1, minWidth: 140, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '0.75rem 1rem', boxShadow: 'var(--admin-shadow)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.25rem' }}>{item.label}</div>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>{item.value}</div>
+                    </div>
+                ))}
             </div>
 
             {/* ── Functions ── */}
@@ -376,5 +368,8 @@ const css = `
         .ipcr-topbar { flex-direction: column; align-items: stretch !important; }
         .ipcr-topbar > div { width: 100%; }
         .ipcr-col-headers { display: none !important; }
+        .ipcr-info-cards { flex-direction: column; }
+        .ipcr-status-pill { position: absolute; top: 0.75rem; right: 1rem; width: auto !important; }
+        .ipcr-topbar { padding-right: 7rem; }
     }
 `;
