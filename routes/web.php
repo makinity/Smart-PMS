@@ -51,7 +51,9 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
 Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Pmt\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/opcr-review', [\App\Http\Controllers\Pmt\OpcrController::class, 'index'])->name('opcr-review.index');
-    Route::get('/opcr-review/{id}', fn () => \Inertia\Inertia::render('Pmt/OpcrReview/Show'))->name('opcr-review.show');
+    Route::get('/opcr-review/{id}', [\App\Http\Controllers\Pmt\OpcrController::class, 'show'])->name('opcr-review.show');
+    Route::patch('/opcr-review/{id}/approve', [\App\Http\Controllers\Pmt\OpcrController::class, 'approve'])->name('opcr-review.approve');
+    Route::patch('/opcr-review/{id}/return', [\App\Http\Controllers\Pmt\OpcrController::class, 'returnOpcr'])->name('opcr-review.return');
     Route::get('/qar', [\App\Http\Controllers\Pmt\QarController::class, 'index'])->name('qar.index');
     Route::get('/qar/{id}', fn () => \Inertia\Inertia::render('Pmt/Qar/Show'))->name('qar.show');
     Route::get('/uwp', fn () => \Inertia\Inertia::render('Pmt/UnitWorkPlan/Index'))->name('uwp.index');
@@ -76,6 +78,7 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::patch('/uwp/{id}/return', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'returnUwp'])->name('uwp.return');
     Route::get('/opcr', [\App\Http\Controllers\DeptHead\OpcrController::class, 'index'])->name('opcr.index');
     Route::get('/opcr/{id}', [\App\Http\Controllers\DeptHead\OpcrController::class, 'show'])->name('opcr.show');
+    Route::patch('/opcr/{id}/submit', [\App\Http\Controllers\DeptHead\OpcrController::class, 'submit'])->name('opcr.submit');
     Route::get('/qar', [\App\Http\Controllers\DeptHead\QarController::class, 'index'])->name('qar.index');
     Route::get('/qar/{id}', fn () => \Inertia\Inertia::render('DeptHead/Qar/MporShow'))->name('qar.show');
     Route::get('/accomplishment-review', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');

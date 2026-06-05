@@ -108,10 +108,11 @@ class OpcrController extends Controller
 
         return \Inertia\Inertia::render('DeptHead/Opcr/Show', [
             'opcr' => [
-                'id'     => $opcr->id,
-                'period' => $opcr->period?->name ?? '—',
-                'office' => $user->office?->name ?? '—',
-                'status' => $opcr->status,
+                'id'             => $opcr->id,
+                'period'         => $opcr->period?->name ?? '—',
+                'office'         => $user->office?->name ?? '—',
+                'status'         => $opcr->status,
+                'return_remarks' => $opcr->return_remarks,
             ],
             'uwps' => $opcr->uwps->map(fn($u) => [
                 'id'         => $u->id,
@@ -121,5 +122,14 @@ class OpcrController extends Controller
             ]),
             'functions' => $fnList,
         ]);
+    }
+
+    public function submit(int $id)
+    {
+        $opcr = Opcr::where('office_id', Auth::user()->office_id)
+            ->where('status', 'draft')
+            ->findOrFail($id);
+        $opcr->update(['status' => 'submitted']);
+        return back()->with('success', 'OPCR submitted to PMT.');
     }
 }

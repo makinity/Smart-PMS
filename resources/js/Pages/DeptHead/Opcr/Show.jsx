@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
+import { useToast } from '@/Components/Snackbar';
 
 const STATUS = {
     draft:     { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: 'rgba(100,116,139,0.3)', icon: '●', label: 'Draft' },
@@ -15,16 +17,28 @@ const initials = name => name ? name.split(' ').map(w => w[0]).slice(0, 2).join(
 export default function Show() {
     const { opcr, uwps = [], functions: fns = [] } = usePage().props;
     const sc = STATUS[opcr?.status] ?? STATUS.draft;
+    const toast = useToast();
+    const [status, setStatus] = useState(opcr?.status ?? 'draft');
 
     const [activeFnId,  setActiveFnId]  = useState(fns?.[0]?.id ?? null);
     const [activeMfoId, setActiveMfoId] = useState(fns?.[0]?.mfos?.[0]?.id ?? null);
     const [activeUwpId, setActiveUwpId] = useState(null); // null = show all
+    const [submitting,  setSubmitting]  = useState(false);
 
     const activeFn = fns?.find(f => f.id === activeFnId);
 
     const allApproved   = uwps.length > 0 && uwps.every(u => u.status === 'approved');
     const approvedCount = uwps.filter(u => u.status === 'approved').length;
     const canSubmit     = opcr?.status === 'draft' && allApproved;
+
+    function handleSubmit() {
+        setSubmitting(true);
+        router.patch(`/dept-head/opcr/${opcr.id}/submit`, {}, {
+            onSuccess: () => { setStatus('submitted'); toast('OPCR submitted to PMT.', 'success'); },
+            onError:   () => toast('Failed to submit OPCR.', 'error'),
+            onFinish:  () => setSubmitting(false),
+        });
+    }
 
     // Filter SIs by selected UWP if any
     const visibleFns = activeFn ? [{
@@ -53,7 +67,7 @@ export default function Show() {
                         <span style={s.period}>{opcr?.period}</span>
                         <span style={s.office}>{opcr?.office}</span>
                     </div>
-                    <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                    <div style={{ ...s.statusPill, background: STATUS[status]?.bg ?? sc.bg, color: STATUS[status]?.color ?? sc.color, border: `1px solid ${STATUS[status]?.border ?? sc.border}` }}>
                         <span>{sc.icon}</span><span>{sc.label}</span>
                     </div>
                 </div>
@@ -63,9 +77,9 @@ export default function Show() {
                         Export Excel
                     </a>
                     {canSubmit && (
-                        <button style={s.submitBtn}>
+                        <button style={s.submitBtn} onClick={handleSubmit} disabled={submitting}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                            Submit to PMT
+                            {submitting ? 'Submitting…' : 'Submit to PMT'}
                         </button>
                     )}
                     {!allApproved && opcr?.status === 'draft' && (
@@ -76,6 +90,9 @@ export default function Show() {
                     )}
                 </div>
             </div>
+
+            {/* ── Return remarks banner ── */}
+            {status === 'returned' && <ReturnRemarksBanner remarks={opcr?.return_remarks} label="Returned by PMT" />}
 
             {/* ── Layout ── */}
             <div style={s.layout} className="opcr-layout">

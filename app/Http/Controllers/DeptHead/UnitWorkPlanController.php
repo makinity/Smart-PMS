@@ -99,6 +99,11 @@ class UnitWorkPlanController extends Controller
             ['status' => 'draft']
         );
 
+        // If OPCR was returned by PMT, reset it to draft so it can be resubmitted
+        if ($opcr->status === 'returned') {
+            $opcr->update(['status' => 'draft', 'return_remarks' => null, 'returned_by' => null]);
+        }
+
         // Attach this UWP to the OPCR if not already attached
         $opcr->uwps()->syncWithoutDetaching([$uwp->id]);
 
