@@ -399,15 +399,6 @@ export default function Editor() {
                             </button>
                         ))}
                     </div>
-                    {/* Always-visible + button */}
-                    {uwp?.editable && (
-                        <MobileAddMenu
-                            activeFn={activeFn ?? activeFnForMfo}
-                            functions={functions}
-                            onAddMfo={fn => setAddMfoCtx({ fn })}
-                            onAddFn={() => setFnModal({})}
-                        />
-                    )}
                 </div>
             )}
 
@@ -464,6 +455,19 @@ export default function Editor() {
 
             </div>
             </div>{/* ── end unified card wrapper ── */}
+
+            {/* FAB: mobile add button */}
+            {bp === 'mobile' && uwp?.editable && (
+                <div style={{ position: 'fixed', bottom: uwp?.editable ? '5.5rem' : '1.5rem', right: '1.25rem', zIndex: 98 }}>
+                    <MobileAddMenu
+                        activeFn={activeFn ?? activeFnForMfo}
+                        functions={functions}
+                        onAddMfo={fn => setAddMfoCtx({ fn })}
+                        onAddFn={() => setFnModal({})}
+                        fab
+                    />
+                </div>
+            )}
 
             {/* Sticky bottom bar on mobile */}
             {bp === 'mobile' && uwp?.editable && (
@@ -1122,23 +1126,26 @@ function initials(name) {
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
-function MobileAddMenu({ activeFn, functions, onAddMfo, onAddFn }) {
+function MobileAddMenu({ activeFn, functions, onAddMfo, onAddFn, fab }) {
     const [open, setOpen] = useState(false);
     const btnRef = useRef(null);
 
     const rect = open ? btnRef.current?.getBoundingClientRect() : null;
 
+    const btnStyle = fab
+        ? { width: 52, height: 52, borderRadius: 999, border: 'none', background: 'var(--admin-accent)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.45)' }
+        : { width: 34, height: 34, borderRadius: 999, border: '1px solid var(--admin-border-strong)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' };
+
     return (
-        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', borderLeft: '1px solid var(--admin-border)', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
-            <button ref={btnRef} type="button"
-                style={{ width: 34, height: 34, borderRadius: 999, border: '1px solid var(--admin-border-strong)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        <div style={fab ? {} : { position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', borderLeft: '1px solid var(--admin-border)', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
+            <button ref={btnRef} type="button" style={btnStyle}
                 onClick={() => setOpen(v => !v)}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
             </button>
             {open && rect && (
                 <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 400 }} onClick={() => setOpen(false)} />
-                    <div style={{ position: 'fixed', top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right), zIndex: 401, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 12, padding: '0.35rem', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ position: 'fixed', ...(fab ? { bottom: window.innerHeight - rect.top + 8 } : { top: rect.bottom + 8 }), right: Math.max(8, window.innerWidth - rect.right), zIndex: 401, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 12, padding: '0.35rem', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <div style={{ padding: '0.4rem 0.75rem', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' }}>Add to UWP</div>
                         {activeFn && (
                             <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', fontSize: '0.85rem', borderRadius: 8, textAlign: 'left', width: '100%' }}
