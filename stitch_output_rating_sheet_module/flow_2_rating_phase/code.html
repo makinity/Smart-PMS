@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ORS Monitor - Supervisor Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#213145",
+                        "outline-variant": "#c5c6cd",
+                        "primary-container": "#1e293b",
+                        "on-surface": "#0b1c30",
+                        "tertiary": "#0b1426",
+                        "tertiary-fixed": "#dae2fd",
+                        "on-tertiary-container": "#888fa7",
+                        "surface-container": "#e5eeff",
+                        "on-primary-container": "#8590a6",
+                        "outline": "#75777d",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-fixed": "#07006c",
+                        "on-primary-fixed": "#111c2d",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed": "#d8e3fb",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "primary": "#091426",
+                        "surface-container-high": "#dce9ff",
+                        "on-tertiary-fixed": "#131b2e",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "secondary-container": "#6063ee",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#20283c",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "on-background": "#0b1c30",
+                        "on-secondary-container": "#fffbff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "surface-tint": "#545f73",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#e1e0ff",
+                        "background": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "inverse-primary": "#bcc7de",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "tertiary-fixed-dim": "#bec6e0",
+                        "secondary": "#4648d4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#45474c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "1rem",
+                        "stack-gap": "0.75rem",
+                        "list-panel-width": "360px",
+                        "sidebar-width": "280px",
+                        "container-padding": "1.5rem",
+                        "section-gap": "2rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .star-rating .star:hover, .star-rating .star.active {
+            font-variation-settings: 'FILL' 1;
+            color: #4648d4;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background overflow-hidden h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-tertiary flex flex-col p-4 border-r border-outline-variant dark:border-outline z-50">
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-primary">ORS Monitor</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container">Regional Oversight</p>
+</div>
+</div>
+<button class="mb-6 w-full py-3 px-4 bg-secondary-container text-on-secondary-container rounded-lg font-bold flex items-center justify-center gap-2 transition-transform scale-95 active:scale-90">
+<span class="material-symbols-outlined">add</span>
+            New Report
+        </button>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 font-body-md hover:bg-primary-container/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary bg-primary-container dark:bg-tertiary-container rounded-lg font-bold" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+                Submission Queue
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 font-body-md hover:bg-primary-container/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Performance Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 font-body-md hover:bg-primary-container/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Reporting
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 font-body-md hover:bg-primary-container/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto border-t border-on-primary-container/20 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 font-body-md hover:bg-primary-container/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Help Center
+            </a>
+<div class="mt-4 flex items-center gap-3 px-4 py-2 bg-primary-container/30 rounded-xl">
+<img alt="Supervisor Profile" class="w-10 h-10 rounded-full border border-on-primary-container/30" data-alt="A professional headshot of a senior corporate supervisor in a dark navy suit. The background is a blurred office environment with soft morning light. The composition is clean, centered, and reflects an authoritative yet approachable executive presence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVdnil4O0CEU9PPzx9K5rDXz9P1gSaEYYjupSXuKAHiJ0QLBqN1YeDqJtgw8jMC8YRvttx8BjOPy4Csf049pWqMGiIETFQaFlZbEbNDXFeIv7j7YnpVtb-ApynCJp3olIOWqZARsl1uuIA-EHnAqnufAYNb7fwuLpuXVmeL7T5N3oORcpCtkzYMpcixGHX_N_3KTVgL3SZAzLnnllucQyAwtnQdPOgxBWKl4cUZBsPWbcpJnjGelWtRDm8TljQw6NPZ9CNVXFJN5h8"/>
+<div class="overflow-hidden">
+<p class="font-label-md text-on-primary truncate">Admin Supervisor</p>
+<p class="font-label-sm text-on-primary-container truncate">HQ Oversight Unit</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flex items-center justify-between px- gutter z-40">
+<div class="flex items-center gap-8 pl-6">
+<span class="font-headline-md text-headline-md font-extrabold text-on-surface dark:text-inverse-on-surface">Oversight Review System</span>
+<div class="hidden lg:flex items-center gap-6">
+<a class="font-label-md text-label-md text-secondary dark:text-secondary-fixed border-b-2 border-secondary h-16 flex items-center" href="#">Queue</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed transition-all h-16 flex items-center" href="#">Analytics</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-on-tertiary-container hover:text-primary dark:hover:text-primary-fixed transition-all h-16 flex items-center" href="#">Archive</a>
+</div>
+</div>
+<div class="flex items-center gap-4 pr-6">
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+</button>
+<div class="relative">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 transition-opacity">
+                Review Entry
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 ml-[280px] h-full flex overflow-hidden">
+<!-- Left Panel: Submission Queue -->
+<section class="w-[360px] bg-surface-dim border-r border-outline-variant flex flex-col">
+<div class="p-4 border-b border-outline-variant bg-white/50 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary">Submission Queue</h2>
+<span class="bg-primary-container text-white text-[10px] px-2 py-0.5 rounded-full font-bold">12 NEW</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
+<!-- Card 1: Active -->
+<div class="bg-white p-4 rounded-xl shadow-sm border-l-[3px] border-secondary cursor-pointer ring-2 ring-secondary/20">
+<div class="flex justify-between items-start mb-2">
+<div class="bg-secondary text-on-secondary text-[10px] px-2 py-0.5 rounded font-bold tracking-wider">URGENT</div>
+<span class="text-[11px] text-on-surface-variant font-mono-sm">2h ago</span>
+</div>
+<p class="font-label-md text-primary mb-1">Maria Dela Cruz</p>
+<h3 class="font-body-md text-on-surface-variant mb-3 leading-tight">Develop API for User Authentication</h3>
+<div class="flex items-center gap-2">
+<span class="bg-[#FEF3C7] text-[#92400E] text-[10px] px-2 py-1 rounded-full font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">pending_actions</span>
+                            Requires Rating
+                        </span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white/80 p-4 rounded-xl border border-transparent hover:border-outline-variant transition-all cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<div class="bg-secondary text-on-secondary text-[10px] px-2 py-0.5 rounded font-bold tracking-wider opacity-60 group-hover:opacity-100">URGENT</div>
+<span class="text-[11px] text-on-surface-variant font-mono-sm">5h ago</span>
+</div>
+<p class="font-label-md text-primary mb-1">John Doe</p>
+<h3 class="font-body-md text-on-surface-variant mb-3 leading-tight">Conduct Database Migration</h3>
+<div class="flex items-center gap-2">
+<span class="bg-[#FEF3C7] text-[#92400E] text-[10px] px-2 py-1 rounded-full font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">pending_actions</span>
+                            Requires Rating
+                        </span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white/80 p-4 rounded-xl border border-transparent hover:border-outline-variant transition-all cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start mb-2">
+<div class="bg-outline-variant text-on-surface-variant text-[10px] px-2 py-0.5 rounded font-bold tracking-wider">STANDARD</div>
+<span class="text-[11px] text-on-surface-variant font-mono-sm">1d ago</span>
+</div>
+<p class="font-label-md text-primary mb-1">Sarah Jenkins</p>
+<h3 class="font-body-md text-on-surface-variant mb-3 leading-tight">UI Polish for Dashboard</h3>
+<div class="flex items-center gap-2">
+<span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            Rated
+                        </span>
+</div>
+</div>
+<!-- Extra padding at bottom -->
+<div class="h-4"></div>
+</div>
+</section>
+<!-- Right Panel: Rating Workspace -->
+<section class="flex-1 bg-white overflow-y-auto custom-scrollbar">
+<div class="max-w-4xl mx-auto p-container-padding space-y-section-gap">
+<!-- Header -->
+<div class="border-b border-outline-variant pb-6">
+<div class="flex items-center gap-2 text-secondary mb-2">
+<span class="material-symbols-outlined text-sm">assignment_turned_in</span>
+<span class="font-label-md">TASK REVIEW IN PROGRESS</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Reviewing: Maria Dela Cruz</h2>
+<p class="font-body-lg text-on-surface-variant">Develop API for User Authentication <span class="text-secondary font-semibold font-label-md ml-2 px-2 py-0.5 bg-secondary/10 rounded">(MFO 1: Digital Transformation)</span></p>
+</div>
+<!-- Evidence Section -->
+<div class="space-y-stack-gap">
+<div class="flex items-center justify-between">
+<h3 class="font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">attachment</span>
+                            VIEW EVIDENCE
+                        </h3>
+<span class="text-[11px] text-on-surface-variant font-mono-sm uppercase">2 attachments found</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Evidence Card 1 -->
+<div class="flex items-center p-4 border border-slate-200 rounded-xl hover:bg-surface-container-lowest transition-all group">
+<div class="w-12 h-12 rounded bg-red-50 flex items-center justify-center text-red-600 mr-4">
+<span class="material-symbols-outlined text-3xl">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md font-semibold text-on-surface truncate">Auth_Spec.pdf</p>
+<p class="font-body-sm text-on-surface-variant">2.4MB • Added 2h ago</p>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-2 text-secondary hover:bg-secondary/10 rounded transition-opacity">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<!-- Evidence Card 2 -->
+<div class="flex items-center p-4 border border-slate-200 rounded-xl hover:bg-surface-container-lowest transition-all group">
+<div class="w-12 h-12 rounded bg-indigo-50 flex items-center justify-center text-indigo-600 mr-4">
+<span class="material-symbols-outlined text-3xl">link</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md font-semibold text-on-surface truncate">GitHub_Repo_Link</p>
+<p class="font-body-sm text-on-surface-variant">External Source • PR #422</p>
+</div>
+<button class="opacity-0 group-hover:opacity-100 p-2 text-secondary hover:bg-secondary/10 rounded transition-opacity">
+<span class="material-symbols-outlined">open_in_new</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Rating Form -->
+<div class="space-y-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+<!-- Quality Rating -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block font-label-md text-on-surface-variant mb-2">QUALITY RATING</label>
+<p class="font-body-sm text-on-surface-variant leading-relaxed">Degree to which expectations were met, including accuracy, completeness, and adherence to standards.</p>
+</div>
+<div class="flex flex-col justify-center items-center md:items-end">
+<div class="star-rating flex gap-2" data-category="quality">
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('quality', 1)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('quality', 2)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('quality', 3)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('quality', 4)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300" onclick="setRating('quality', 5)" type="button">star</button>
+</div>
+<span class="mt-2 text-[11px] font-bold text-secondary tracking-widest uppercase rating-text" id="quality-text">4 / 5 - Very Satisfactory</span>
+</div>
+</div>
+<!-- Timeliness Rating -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-200">
+<div>
+<label class="block font-label-md text-on-surface-variant mb-2">TIMELINESS RATING</label>
+<p class="font-body-sm text-on-surface-variant leading-relaxed">Adherence to the scheduled deadline or turnaround time as prescribed by the project timeline.</p>
+</div>
+<div class="flex flex-col justify-center items-center md:items-end">
+<div class="star-rating flex gap-2" data-category="timeliness">
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('timeliness', 1)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('timeliness', 2)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('timeliness', 3)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('timeliness', 4)" type="button">star</button>
+<button class="star material-symbols-outlined text-3xl cursor-pointer transition-transform hover:scale-110 text-slate-300 active" onclick="setRating('timeliness', 5)" type="button">star</button>
+</div>
+<span class="mt-2 text-[11px] font-bold text-secondary tracking-widest uppercase rating-text" id="timeliness-text">5 / 5 - Outstanding</span>
+</div>
+</div>
+<!-- Remarks -->
+<div class="pt-6 border-t border-slate-200">
+<label class="block font-label-md text-on-surface-variant mb-2">REMARKS &amp; FEEDBACK</label>
+<textarea class="w-full h-32 p-4 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-all font-body-md text-on-surface resize-none" placeholder="Provide constructive feedback for Maria Dela Cruz regarding this task submission...">Excellent work on the authentication logic. The security considerations are well-documented.</textarea>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-end gap-4 py-8">
+<button class="px-6 py-3 border border-slate-300 text-on-surface-variant font-label-md rounded-lg hover:bg-slate-100 transition-colors">
+                        Discard Changes
+                    </button>
+<button class="px-8 py-3 bg-secondary text-on-secondary font-label-md rounded-lg shadow-lg hover:bg-opacity-90 active:scale-95 transition-all ring-2">
+                        Save Rating
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<script>
+        function setRating(category, value) {
+            const container = document.querySelector(`[data-category="${category}"]`);
+            const stars = container.querySelectorAll('.star');
+            const textEl = document.getElementById(`${category}-text`);
+            const labels = ['Unsatisfactory', 'Needs Improvement', 'Satisfactory', 'Very Satisfactory', 'Outstanding'];
+            
+            stars.forEach((star, index) => {
+                if (index < value) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            
+            textEl.innerText = `${value} / 5 - ${labels[value-1]}`;
+            
+            // Interaction effect
+            container.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                container.style.transform = 'scale(1)';
+            }, 100);
+        }
+    </script>
+</body></html>

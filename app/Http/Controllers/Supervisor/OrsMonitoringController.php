@@ -18,7 +18,8 @@ class OrsMonitoringController extends Controller
 
         $entries = OrsEntry::where('supervisor_id', $supervisor->id)
             ->whereIn('status', ['submitted', 'rated'])
-            ->with(['employee', 'ipcrItem.indicator.uwpMfo', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
+            ->with(['employee.office', 'ipcrItem.indicator.uwpMfo', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
+            ->orderByRaw("FIELD(status, 'submitted', 'rated')")
             ->orderByDesc('submitted_at')
             ->get()
             ->map(fn($e) => $this->formatEntry($e));
@@ -41,7 +42,7 @@ class OrsMonitoringController extends Controller
             'remarks'           => ['nullable', 'string', 'max:2000'],
         ]);
 
-        OrsEntryMonitoring::updateOrCreate(
+        $monitoring = OrsEntryMonitoring::updateOrCreate(
             ['ors_entry_id' => $orsEntry->id, 'supervisor_id' => $supervisor->id],
             [...$data, 'rated_at' => now()]
         );
@@ -52,8 +53,8 @@ class OrsMonitoringController extends Controller
         $orsEntry->employee->notify(new WorkflowEventNotification(
             type:    'success',
             event:   'ors.rated_by_supervisor',
-            message: "Your task has been rated by {$supervisor->name}: {$orsEntry->ipcrItem?->indicator?->indicator_text}",
-            url:     route('employee.ors.index') . "?ors_entry_id={$orsEntry->id}",
+            message: "{$supervisor->name} rated your task: {$orsEntry->ipcrItem?->indicator?->indicator_text}",
+            url:     '/employee/ors?ors_entry_id=' . $orsEntry->id,
         ));
 
         return back()->with('success', 'Rating saved.');
@@ -73,6 +74,8 @@ class OrsMonitoringController extends Controller
             'indicator_text'   => $e->ipcrItem?->indicator?->indicator_text ?? '—',
             'output_title'     => $e->ipcrItem?->indicator?->uwpMfo?->title ?? '—',
             'employee_name'    => $e->employee?->name ?? '—',
+            'employee_office'  => $e->employee?->office?->name ?? null,
+            'employee_avatar'  => $e->employee?->profile_photo_url ?? null,
             'evidence_count'   => $e->evidences->count(),
             'evidences'        => $e->evidences->map(fn($ev) => [
                 'id'        => $ev->id,
