@@ -1,25 +1,213 @@
-﻿import AppLayout from '@/Layouts/AppLayout';
+import { useState, useEffect, useMemo } from 'react';
+import { router } from '@inertiajs/react';
+import AppLayout from '@/Layouts/AppLayout';
 
-const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '2rem', boxShadow: 'var(--admin-shadow)' };
-const iconBox = { width: 48, height: 48, borderRadius: 12, background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' };
-const h = { fontWeight: 700, fontSize: '1.15rem', color: 'var(--admin-text-primary)', marginBottom: '0.4rem' };
-const p = { fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: 1.6, marginBottom: '1rem' };
-const badgesStyle = { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' };
-const badgeStyle = { padding: '0.25rem 0.75rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.22)' };
-const notice = { marginTop: '1.5rem', padding: '0.85rem 1rem', borderRadius: 'var(--admin-radius)', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', fontSize: '0.83rem', color: 'var(--admin-text-muted)' };
+function useBreakpoint() {
+    const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    return w >= 1024 ? 'desktop' : w >= 640 ? 'tablet' : 'mobile';
+}
 
-export default function Index() {
+function StatusBadge({ status }) {
+    const map = {
+        submitted: { label: 'Submitted', bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)',  border: 'rgba(59,130,246,0.3)' },
+        approved:  { label: 'Approved',  bg: 'rgba(74,222,128,0.15)', color: '#22c55e',              border: 'rgba(74,222,128,0.3)' },
+        endorsed:  { label: 'Endorsed',  bg: 'rgba(139,92,246,0.15)', color: '#a78bfa',              border: 'rgba(139,92,246,0.3)' },
+        returned:  { label: 'Returned',  bg: 'rgba(239,68,68,0.15)',  color: '#f87171',              border: 'rgba(239,68,68,0.3)' },
+    };
+    const c = map[status] ?? { label: status, bg: 'rgba(100,100,100,0.12)', color: 'var(--admin-text-muted)', border: 'rgba(100,100,100,0.2)' };
     return (
-        <AppLayout title="MPOR">
-            <div style={card}>
-                <div style={iconBox}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                <h4 style={h}>MPOR</h4>
-                <p style={p}>View and manage Monthly Performance Output Reports for your team.</p>
-                        <div style={{badgesStyle}}><span style={{badgeStyle}}>MPOR</span>
-                        <span style={{badgeStyle}}>Stage 2</span></div>
-                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
+        <span style={{ padding: '0.2rem 0.65rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: c.bg, color: c.color, border: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>
+            {c.label}
+        </span>
+    );
+}
+
+function Avatar({ name, src, size = 40 }) {
+    const initials = (name ?? '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+    if (src) return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border)' }} />;
+    return (
+        <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: 'var(--admin-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: size * 0.34, flexShrink: 0, border: '2px solid rgba(59,130,246,0.2)' }}>
+            {initials}
+        </div>
+    );
+}
+
+const STATUSES = ['', 'submitted', 'approved', 'endorsed', 'returned'];
+const STATUS_LABELS = { '': 'All', submitted: 'Submitted', approved: 'Approved', endorsed: 'Endorsed', returned: 'Returned' };
+
+export default function Index({ mpors, search: initSearch, month: initMonth, status: initStatus }) {
+    const bp = useBreakpoint();
+    const [search, setSearch] = useState(initSearch ?? '');
+    const [month, setMonth]   = useState(initMonth ?? '');
+    const [status, setStatus] = useState(initStatus ?? '');
+
+    // Debounced reload
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/supervisor/mpor', { search, month, status }, { preserveState: true, replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search, month, status]);
+
+    const isMobile = bp === 'mobile';
+
+    return (
+        <AppLayout title="MPOR Review">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                {/* Header */}
+                <div style={card}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+                        <div style={iconBox}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <p style={statLabel}>Monthly Performance Output Report</p>
+                            <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>MPOR Review</h1>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Filters */}
+                <div style={{ ...card, padding: '1rem 1.25rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto auto', gap: '0.65rem', alignItems: 'center' }}>
+                        {/* Search */}
+                        <div style={{ position: 'relative' }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search employee name…"
+                                style={{ ...inputStyle, paddingLeft: '2.1rem', width: '100%' }}
+                            />
+                        </div>
+                        {/* Month */}
+                        <input
+                            type="month"
+                            value={month}
+                            onChange={e => setMonth(e.target.value)}
+                            style={inputStyle}
+                        />
+                        {/* Status filter */}
+                        <select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}>
+                            {STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+                        </select>
+                    </div>
+                </div>
+
+                {/* Count */}
+                {mpors.length === 0 ? (
+                    <div style={{ ...card, padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.25, margin: '0 auto 0.75rem', display: 'block' }}>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <p style={{ fontSize: '0.9rem' }}>No MPOR submissions found.</p>
+                        <p style={{ fontSize: '0.78rem', opacity: 0.65, marginTop: '0.25rem' }}>Employees must submit their MPOR before it appears here.</p>
+                    </div>
+                ) : isMobile ? (
+                    <MobileList mpors={mpors} />
+                ) : (
+                    <DesktopTable mpors={mpors} />
+                )}
             </div>
         </AppLayout>
     );
 }
 
+function DesktopTable({ mpors }) {
+    const th = { padding: '0.6rem 1rem', fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--admin-text-muted)', textAlign: 'left', borderBottom: '1px solid var(--admin-border)', whiteSpace: 'nowrap' };
+    const td = { padding: '0.85rem 1rem', borderBottom: '1px solid var(--admin-border)', verticalAlign: 'middle' };
+
+    return (
+        <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr style={{ background: 'var(--admin-bg-secondary)' }}>
+                        <th style={th}>Employee</th>
+                        <th style={th}>Month</th>
+                        <th style={th}>Submitted</th>
+                        <th style={th}>Status</th>
+                        <th style={{ ...th, textAlign: 'right' }}>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {mpors.map(m => (
+                        <tr key={m.id} style={{ transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                            <td style={td}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <Avatar name={m.employee.name} src={m.employee.avatar} />
+                                    <div>
+                                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>{m.employee.name}</div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{m.employee.position}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style={td}>
+                                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>
+                                    {formatMonth(m.month)}
+                                </span>
+                            </td>
+                            <td style={td}>
+                                <span style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>{m.submitted_at ?? '—'}</span>
+                            </td>
+                            <td style={td}><StatusBadge status={m.status} /></td>
+                            <td style={{ ...td, textAlign: 'right' }}>
+                                <a href={`/supervisor/mpor/${m.id}`} style={btnView}>
+                                    Review
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                                </a>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function MobileList({ mpors }) {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {mpors.map(m => (
+                <div key={m.id} style={card}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                        <Avatar name={m.employee.name} src={m.employee.avatar} size={44} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.employee.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.employee.position}</div>
+                        </div>
+                        <StatusBadge status={m.status} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{formatMonth(m.month)}</span>
+                            {m.submitted_at && <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginLeft: '0.5rem' }}>{m.submitted_at}</span>}
+                        </div>
+                        <a href={`/supervisor/mpor/${m.id}`} style={btnView}>
+                            Review
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function formatMonth(m) {
+    try { return new Date(m + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+    catch { return m; }
+}
+
+const card      = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
+const iconBox   = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', flexShrink: 0 };
+const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.15rem' };
+const inputStyle = { padding: '0.55rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' };
+const btnView   = { display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.45rem 0.9rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };
