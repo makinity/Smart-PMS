@@ -385,16 +385,22 @@ export default function Editor() {
 
             {/* ── Mobile: MFO tab strip ── */}
             {bp === 'mobile' && (
-                <div style={{ display: 'flex', alignItems: 'stretch', position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
-                    {/* Scrollable tabs */}
-                    <div style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
-                        {allMfos.map(mfo => (
+                <div style={{ position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
+                    {/* Function selector row */}
+                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', padding: '0.4rem 0.75rem', gap: '0.4rem', borderBottom: '1px solid var(--admin-border)' }}>
+                        {functions.map(fn => (
+                            <button key={fn.id}
+                                style={{ flexShrink: 0, padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', border: activeFnId === fn.id ? 'none' : '1px solid var(--admin-border-strong)', background: activeFnId === fn.id ? 'var(--admin-accent)' : 'transparent', color: activeFnId === fn.id ? '#fff' : 'var(--admin-text-muted)' }}
+                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                                {fn.name}
+                            </button>
+                        ))}
+                    </div>
+                    {/* MFO tabs for active function */}
+                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
+                        {(activeFn?.mfos ?? []).map(mfo => (
                             <button key={mfo.id} style={{ ...s.tab, ...(activeMfoId === mfo.id ? s.tabActive : {}) }}
-                                onClick={() => {
-                                    setActiveMfoId(mfo.id);
-                                    const fn = functions.find(f => f.mfos?.some(m => m.id === mfo.id));
-                                    if (fn) setActiveFnId(fn.id);
-                                }}>
+                                onClick={() => setActiveMfoId(mfo.id)}>
                                 {mfo.title}
                             </button>
                         ))}

@@ -47,9 +47,69 @@ export default function QetModal({ indicator, onSave, onClose }) {
         onSave(indicator.id, standards);
     }
 
+    if (bp === 'mobile') {
+        return (
+            <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1099, background: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
+                <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1100, background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', height: '88vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease' }}>
+                    <div style={{ padding: '10px 1.25rem 0', flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                    </div>
+                    <div style={{ padding: '0.75rem 1.25rem 0.75rem', flexShrink: 0, borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ minWidth: 0, paddingRight: '1rem' }}>
+                            <div style={s.headerSub}>PERFORMANCE STANDARDS</div>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>QET Standards</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                "{indicator.indicator_text || 'Untitled indicator'}"
+                            </div>
+                        </div>
+                        <button style={s.closeBtn} onClick={onClose}>✕</button>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead style={{ position: 'sticky', top: 0, background: 'var(--admin-bg-secondary)', zIndex: 1 }}>
+                                <tr>
+                                    <th style={sMob.th}>DIM</th>
+                                    <th style={{ ...sMob.th, textAlign: 'center', width: 52 }}>RATING</th>
+                                    <th style={sMob.th}>STANDARD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {DIMS.flatMap(dim => RATINGS.map(r => (
+                                    <tr key={`${dim}-${r}`} style={{ borderBottom: '1px solid var(--admin-border)' }}>
+                                        <td style={{ padding: '0.6rem 0.75rem', verticalAlign: 'top', width: 40 }}>
+                                            <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--admin-accent)' }}>{dim.toUpperCase()}</span>
+                                        </td>
+                                        <td style={{ padding: '0.6rem 0.25rem', verticalAlign: 'top', textAlign: 'center' }}>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: '50%', background: ratingColor(r), fontSize: '0.75rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>{r}</span>
+                                        </td>
+                                        <td style={{ padding: '0.5rem 0.75rem 0.5rem 0.25rem', verticalAlign: 'top' }}>
+                                            <textarea
+                                                style={{ ...s.textarea, width: '100%', minHeight: 56 }}
+                                                value={grid[dim][r]}
+                                                placeholder={`${DIM_LABELS[dim]} — rating ${r}…`}
+                                                onChange={e => set(dim, r, e.target.value)}
+                                                rows={2}
+                                            />
+                                        </td>
+                                    </tr>
+                                )))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', flexShrink: 0 }}>
+                        <button style={{ ...s.btnCancel, flex: 1 }} onClick={onClose}>Cancel</button>
+                        <button style={{ ...s.btnSave, flex: 2 }} onClick={handleSave}><i className="bi bi-floppy" style={{ marginRight: '0.4rem' }} />Save Standards</button>
+                    </div>
+                </div>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            </>
+        );
+    }
+
     return (
-        <div style={{ ...s.overlay, ...(bp === 'mobile' ? s.overlayMobile : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
-            <div style={{ ...s.modal, ...(bp === 'mobile' ? s.modalFull : {}) }}>
+        <div style={{ ...s.overlay }} onClick={e => e.target === e.currentTarget && onClose()}>
+            <div style={s.modal}>
                 {/* Header */}
                 <div style={s.header}>
                     <div>
@@ -116,11 +176,13 @@ function ratingColor(r) {
     return { 5: 'rgba(74,222,128,0.25)', 4: 'rgba(59,130,246,0.25)', 3: 'rgba(234,179,8,0.25)', 2: 'rgba(249,115,22,0.25)', 1: 'rgba(239,68,68,0.25)' }[r];
 }
 
+const sMob = {
+    th: { padding: '0.5rem 0.75rem', fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'left' },
+};
+
 const s = {
     overlay:      { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' },
-    overlayMobile:{ padding: 0 },
     modal:        { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius-lg)', width: '100%', maxWidth: 860, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--admin-shadow)' },
-    modalFull:    { position: 'fixed', inset: 0, maxWidth: '100%', maxHeight: '100%', borderRadius: 0, boxShadow: 'none' },
     header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
     headerSub:    { fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)', letterSpacing: '0.1em', marginBottom: '0.25rem' },
     headerTitle:  { fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' },
