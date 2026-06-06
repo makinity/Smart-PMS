@@ -282,22 +282,40 @@ export default function Editor() {
         <AppLayout title="UWP Editor">
             <style>{css}</style>
 
+            {/* ── Unified card wrapper ── */}
+            <div style={{ borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'clip' }}>
+
             {/* ── Top bar ── */}
-            <div style={{ ...s.topbar, position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-bg-primary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <button onClick={() => router.visit('/supervisor/uwp')} style={s.backBtn}>&#8592;</button>
-                    <div style={s.divider} />
-                    <span style={s.draftBadge}>{uwp?.status === 'draft' ? 'Draft: ' : ''}{uwp?.period}</span>
-                </div>
-                {/* Actions: hidden on mobile (shown in sticky bottom bar) */}
-                {bp !== 'mobile' && uwp?.editable && (
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button style={s.btnSecondary} onClick={handleSaveDraft} disabled={saving}>
-                            {saving ? 'Saving…' : 'Save Draft'}
+            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)', padding: '0.6rem 1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                    {/* Left: back + title block */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                        <button onClick={() => router.visit('/supervisor/uwp')} style={s.backBtn} title="Back to UWP list">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                         </button>
-                        <button style={s.btnPrimary} onClick={handleSubmit}>Submit</button>
+                        <div style={{ width: 1, height: 28, background: 'var(--admin-border-strong)', flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)', whiteSpace: 'nowrap' }}>
+                                    UWP Editor
+                                </span>
+                                <StatusBadge status={uwp?.status} />
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {uwp?.office ?? ''}{uwp?.office && uwp?.period ? ' · ' : ''}{uwp?.period ?? ''}
+                            </div>
+                        </div>
                     </div>
-                )}
+                    {/* Right: actions (desktop/tablet only) */}
+                    {bp !== 'mobile' && uwp?.editable && (
+                        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                            <button style={s.btnSecondary} onClick={handleSaveDraft} disabled={saving}>
+                                {saving ? 'Saving…' : 'Save Draft'}
+                            </button>
+                            <button style={s.btnPrimary} onClick={handleSubmit}>Submit</button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {!uwp?.editable && (
@@ -308,7 +326,7 @@ export default function Editor() {
 
             {/* ── Tablet: Breadcrumb pills ── */}
             {bp === 'tablet' && (
-                <div style={{ ...s.breadcrumbRow, position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-bg-primary)' }}>
+                <div style={{ ...s.breadcrumbRow, position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)' }}>
                     {/* Function pill */}
                     <div ref={fnDropRef} style={{ position: 'relative' }}>
                         <button style={s.fnPill} onClick={() => { setFnDropOpen(v => !v); setMfoDropOpen(false); }}>
@@ -445,6 +463,7 @@ export default function Editor() {
                 </main>
 
             </div>
+            </div>{/* ── end unified card wrapper ── */}
 
             {/* Sticky bottom bar on mobile */}
             {bp === 'mobile' && uwp?.editable && (
@@ -507,6 +526,21 @@ export default function Editor() {
                 />
             )}
         </AppLayout>
+    );
+}
+
+function StatusBadge({ status }) {
+    const map = {
+        draft:     { label: 'Draft',     bg: 'rgba(234,179,8,0.12)',  color: '#ca8a04',  border: 'rgba(234,179,8,0.3)' },
+        submitted: { label: 'Submitted', bg: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
+        approved:  { label: 'Approved',  bg: 'rgba(74,222,128,0.12)', color: '#4ade80',  border: 'rgba(74,222,128,0.3)' },
+        returned:  { label: 'Returned',  bg: 'rgba(239,68,68,0.12)',  color: '#f87171',  border: 'rgba(239,68,68,0.3)' },
+    };
+    const c = map[status] ?? { label: status ?? '—', bg: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', border: 'var(--admin-border)' };
+    return (
+        <span style={{ padding: '0.15rem 0.6rem', borderRadius: 99, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: c.bg, color: c.color, border: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>
+            {c.label}
+        </span>
     );
 }
 
@@ -1130,14 +1164,14 @@ function MobileAddMenu({ activeFn, functions, onAddMfo, onAddFn }) {
 const s = {
     topbar:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' },
     topTitle:       { fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)' },
-    backBtn:        { background: 'none', border: 'none', color: 'var(--admin-text-primary)', fontSize: '1.4rem', cursor: 'pointer', padding: '0 0.25rem', lineHeight: 1 },
+    backBtn:        { background: 'none', border: 'none', color: 'var(--admin-text-primary)', cursor: 'pointer', padding: '0.25rem', display: 'flex', alignItems: 'center', flexShrink: 0 },
     divider:        { width: 1, height: 18, background: 'var(--admin-border-strong)' },
     draftBadge:     { fontSize: '0.8rem', color: 'var(--admin-text-muted)' },
     btnPrimary:     { padding: '0.45rem 1.1rem', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.82rem', fontWeight: 600 },
     btnSecondary:   { padding: '0.45rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', cursor: 'pointer', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600 },
     readonlyBanner: { marginBottom: '1rem', padding: '0.65rem 1rem', borderRadius: 8, background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', color: '#ca8a04', fontSize: '0.82rem' },
 
-    layout:         { display: 'flex', gap: 0, borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'visible', minHeight: 600 },
+    layout:         { display: 'flex', gap: 0, overflow: 'visible', minHeight: 600 },
 
     // Left panel
     leftPanel:      { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0' },
