@@ -20,6 +20,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        URL::forceScheme('https');
+        $host = request()->getHost();
+        $localHosts = ['smart-pms.test', '127.0.0.1', 'localhost'];
+
+        if ($host && ! in_array($host, $localHosts)) {
+            $scheme = request()->header('X-Forwarded-Proto', 'https');
+            URL::forceRootUrl("{$scheme}://{$host}");
+            URL::forceScheme($scheme);
+        }
     }
 }

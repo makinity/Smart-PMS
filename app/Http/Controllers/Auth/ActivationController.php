@@ -8,6 +8,8 @@ use App\Models\AccountActivationToken;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -60,7 +62,7 @@ class ActivationController extends Controller
         ]);
     }
 
-    public function complete(Request $request): JsonResponse
+    public function complete(Request $request): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
             'token'                  => ['required', 'string'],
@@ -80,23 +82,17 @@ class ActivationController extends Controller
             $activationToken->used_at ||
             $activationToken->expires_at->isPast()
         ) {
-            return response()->json([
-                'message' => 'The activation token is invalid, expired, or already used.',
-            ], 422);
+            throw ValidationException::withMessages([
+                'token' => 'The activation token is invalid, expired, or already used.',
+            ]);
         }
 
         $user = $activationToken->user;
 
-        if (! $user) {
-            return response()->json([
-                'message' => 'The activation token is invalid, expired, or already used.',
-            ], 422);
-        }
-
-        if ($user->is_active) {
-            return response()->json([
-                'message' => 'This account is already activated. Please log in instead.',
-            ], 409);
+        if (! $user || $user->is_active) {
+            throw ValidationException::withMessages([
+                'token' => 'This account is already activated. Please log in instead.',
+            ]);
         }
 
         if ($request->hasFile('profile_photo')) {
@@ -110,12 +106,19 @@ class ActivationController extends Controller
             'activated_at' => now(),
         ])->save();
 
-        $activationToken->forceFill([
-            'used_at' => now(),
-        ])->save();
+        $activationToken->forceFill(['used_at' => now()])->save();
 
-        return response()->json([
-            'message' => 'Account activated successfully.',
-        ]);
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        $dashboard = match($user->role) {
+            'admin'      => '/administrator',
+            'pmt'        => '/pmt',
+            'dept-head'  => '/dept-head',
+            'supervisor' => '/supervisor',
+            default      => '/employee',
+        };
+
+        return Inertia::location($dashboard);
     }
 }

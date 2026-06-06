@@ -66,8 +66,8 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         return $this->profile_photo_path
-            ? asset('storage/' . $this->profile_photo_path)
-            : asset('storage/profiles/default.jpeg');
+            ? \Illuminate\Support\Facades\Storage::url($this->profile_photo_path)
+            : \Illuminate\Support\Facades\Storage::url('profiles/default.jpeg');
     }
 
     public function getInitialsAttribute()

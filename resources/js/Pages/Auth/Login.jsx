@@ -283,21 +283,34 @@ export default function Login() {
                             </>}
 
                             {mode === 'activate-complete' && <>
-                                <Field label="Activation token" icon={icons.token} error={errors.token}>
-                                    <input type="text" value={data.token} onChange={e => setData('token', e.target.value)}
-                                        autoFocus placeholder="Enter your token" style={inputStyle(!!errors.token)} />
-                                </Field>
+                                {/* Hidden token */}
+                                <input type="hidden" value={data.token} />
+
+                                {/* Profile photo — top, enhanced */}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                    <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ width: 88, height: 88, borderRadius: '50%', border: '2px dashed var(--admin-accent)', background: 'rgba(59,130,246,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                                            {data.profile_photo
+                                                ? <img src={URL.createObjectURL(data.profile_photo)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.5"><path d="M20 21a8 8 0 10-16 0"/><circle cx="12" cy="8" r="4"/></svg>
+                                            }
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-accent)', fontWeight: 600 }}>
+                                            {data.profile_photo ? 'Change photo' : 'Upload profile photo (optional)'}
+                                        </span>
+                                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                                            onChange={e => setData('profile_photo', e.target.files?.[0] ?? null)} />
+                                    </label>
+                                    {errors.profile_photo && <span style={{ fontSize: '0.75rem', color: '#f87171' }}>{errors.profile_photo}</span>}
+                                </div>
+
                                 <Field label="Password" icon={icons.lock} error={errors.password}>
-                                    <input type="password" value={data.password} onChange={e => setData('password', e.target.value)}
-                                        autoComplete="new-password" placeholder="••••••••" style={inputStyle(!!errors.password)} />
+                                    <PasswordInput value={data.password} onChange={e => setData('password', e.target.value)}
+                                        autoComplete="new-password" placeholder="••••••••" hasError={!!errors.password} />
                                 </Field>
                                 <Field label="Confirm password" icon={icons.lock} error={errors.password_confirmation}>
-                                    <input type="password" value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)}
-                                        autoComplete="new-password" placeholder="••••••••" style={inputStyle(!!errors.password_confirmation)} />
-                                </Field>
-                                <Field label="Profile photo (optional)" icon={icons.photo} error={errors.profile_photo}>
-                                    <input type="file" accept="image/*" onChange={e => setData('profile_photo', e.target.files?.[0] ?? null)}
-                                        style={{ ...inputStyle(!!errors.profile_photo), padding: '0.45rem 0.75rem', cursor: 'pointer' }} />
+                                    <PasswordInput value={data.password_confirmation} onChange={e => setData('password_confirmation', e.target.value)}
+                                        autoComplete="new-password" placeholder="••••••••" hasError={!!errors.password_confirmation} />
                                 </Field>
                             </>}
 
@@ -388,6 +401,21 @@ export default function Login() {
                 button:disabled { opacity: 0.55; cursor: not-allowed; }
             `}</style>
         </GuestLayout>
+    );
+}
+
+function PasswordInput({ value, onChange, autoComplete, placeholder, hasError }) {
+    const [show, setShow] = useState(false);
+    return (
+        <div style={{ position: 'relative' }}>
+            <input type={show ? 'text' : 'password'} value={value} onChange={onChange}
+                autoComplete={autoComplete} placeholder={placeholder}
+                style={{ ...inputStyle(hasError), paddingRight: '2.5rem' }} />
+            <button type="button" onClick={() => setShow(v => !v)}
+                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', display: 'flex', padding: 0 }}>
+                {show ? icons.eyeOff : icons.eye}
+            </button>
+        </div>
     );
 }
 

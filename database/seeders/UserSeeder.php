@@ -38,16 +38,19 @@ class UserSeeder extends Seeder
             ['role' => 'dept-head', 'name' => 'Patricia Gomez',      'email' => 'depthead2@pms.test',  'office' => $cbo,  'position' => 'CBO Department Head'],
             ['role' => 'supervisor','name' => 'Eduardo Lim',         'email' => 'supervisor2@pms.test','office' => $cbo,  'position' => 'Budget Supervisor'],
             ['role' => 'employee',  'name' => 'Rowena Castro',       'email' => 'employee5@pms.test',  'office' => $cbo,  'position' => 'Budget Analyst'],
+            // Pending activation (test account)
+            ['role' => 'employee',  'name' => 'Mark Juntilla',        'email' => 'denjikun1004@gmail.com', 'office' => $hrmo, 'position' => 'HR Staff', 'inactive' => true],
         ];
 
         foreach ($users as $i => $data) {
+            $inactive = $data['inactive'] ?? false;
             $user = User::updateOrCreate(['email' => $data['email']], [
                 'name'        => $data['name'],
                 'role'        => $data['role'],
                 'employee_id' => 'EMP-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
                 'password'    => Hash::make('password'),
-                'is_active'   => true,
-                'activated_at'=> now(),
+                'is_active'   => !$inactive,
+                'activated_at'=> $inactive ? null : now(),
                 'office_id'   => $data['office']?->id,
                 'position'    => $data['position'],
             ]);
