@@ -1,9 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
+
+function useBreakpoint() {
+    const [w, setW] = useState(() => window.innerWidth);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    if (w >= 1024) return 'desktop';
+    if (w >= 768)  return 'tablet';
+    return 'mobile';
+}
 
 const STATUS = {
     draft:     { bg: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: 'rgba(100,116,139,0.3)',  icon: '●', label: 'Draft' },
@@ -22,8 +34,16 @@ export default function Show() {
     const [activeMfoId, setActiveMfoId] = useState(fns?.[0]?.mfos?.[0]?.id ?? null);
     const [status, setStatus]           = useState(uwp?.status ?? 'draft');
     const [submitting, setSubmitting]   = useState(false);
+    const [fnDropOpen,  setFnDropOpen]  = useState(false);
+    const [mfoDropOpen, setMfoDropOpen] = useState(false);
+    const fnDropRef  = useRef(null);
+    const mfoDropRef = useRef(null);
+    const bp = useBreakpoint();
 
+    const allMfos = fns?.flatMap(f => f.mfos ?? []) ?? [];
     const activeFn = fns?.find(f => f.id === activeFnId);
+    const activeMfo = allMfos.find(m => m.id === activeMfoId);
+    const activeFnForMfo = fns?.find(f => f.mfos?.some(m => m.id === activeMfoId));
     const sc       = STATUS[status] ?? STATUS.draft;
     const canSubmit = status === 'draft' || status === 'returned';
 
@@ -44,71 +64,123 @@ export default function Show() {
             <style>{css}</style>
 
             {/* ── Top bar ── */}
-            <div style={s.topbar}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ ...s.topbar, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
                     <button onClick={() => router.visit('/supervisor/uwp')} style={s.backBtn}>&#8592;</button>
                     <div style={s.divider} />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                         <span style={s.period}>{uwp?.period}</span>
-                        <span style={s.office}>{uwp?.office}</span>
+                        <span style={{ ...s.office, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: bp === 'mobile' ? 160 : 'none' }}>{uwp?.office}</span>
                     </div>
-                    {/* Status pill */}
                     <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
                         <span>{sc.icon}</span>
                         <span>{sc.label}</span>
                     </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    {canSubmit && (
-                        <button style={s.submitBtn} onClick={handleSubmit} disabled={submitting}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                            {submitting ? 'Submitting…' : 'Submit for Review'}
-                        </button>
-                    )}
-                    <a href={`/stage-one/forms/uwp-excel?uwp_id=${uwp?.id}`} style={s.exportBtn}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        Export Excel
-                    </a>
-                </div>
+                {/* Actions: in top bar on desktop+tablet; sticky bottom bar on mobile */}
+                {bp !== 'mobile' && (
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+                        {canSubmit && (
+                            <button style={s.submitBtn} onClick={handleSubmit} disabled={submitting}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                {submitting ? 'Submitting…' : 'Submit for Review'}
+                            </button>
+                        )}
+                        <a href={`/stage-one/forms/uwp-excel?uwp_id=${uwp?.id}`} style={s.exportBtn}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            Export Excel
+                        </a>
+                    </div>
+                )}
             </div>
 
             {/* ── Return Remarks Banner ── */}
             {status === 'returned' && <ReturnRemarksBanner remarks={uwp?.return_remarks} />}
 
-            {/* ── Layout ── */}
-            <div style={s.layout} className="uwp-layout">
+            {/* ── Tablet: Breadcrumb pills ── */}
+            {bp === 'tablet' && (
+                <div style={s.breadcrumbRow}>
+                    <div ref={fnDropRef} style={{ position: 'relative' }}>
+                        <button style={s.fnPill} onClick={() => { setFnDropOpen(v => !v); setMfoDropOpen(false); }}>
+                            {activeFnForMfo?.name ?? activeFn?.name ?? 'Select Function'}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        {fnDropOpen && (() => {
+                            const r = fnDropRef.current?.getBoundingClientRect();
+                            return (
+                                <>
+                                    <div style={s.dropBackdrop} onClick={() => setFnDropOpen(false)} />
+                                    <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
+                                        {fns?.map(fn => (
+                                            <button key={fn.id} style={{ ...s.dropItem, ...(activeFnId === fn.id ? s.dropItemActive : {}) }}
+                                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); setFnDropOpen(false); }}>
+                                                {activeFnId === fn.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                                                {fn.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                    <div ref={mfoDropRef} style={{ position: 'relative' }}>
+                        <button style={s.mfoPill} onClick={() => { setMfoDropOpen(v => !v); setFnDropOpen(false); }}>
+                            {activeMfo?.title ?? 'Select MFO'}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        {mfoDropOpen && (() => {
+                            const r = mfoDropRef.current?.getBoundingClientRect();
+                            return (
+                                <>
+                                    <div style={s.dropBackdrop} onClick={() => setMfoDropOpen(false)} />
+                                    <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
+                                        {(activeFnForMfo ?? activeFn)?.mfos?.map(mfo => (
+                                            <button key={mfo.id} style={{ ...s.dropItem, ...(activeMfoId === mfo.id ? s.dropItemActive : {}) }}
+                                                onClick={() => { setActiveMfoId(mfo.id); setMfoDropOpen(false); }}>
+                                                {activeMfoId === mfo.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                                                {mfo.title}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
 
-                {/* Left panel */}
-                <aside style={s.leftPanel} className="uwp-left">
-                    <div style={s.panelLabel}>MFOs / PPAs</div>
-                    {fns?.map(fn => (
-                        <div key={fn.id}>
-                            <button
-                                style={{ ...s.fnItem, ...(activeFnId === fn.id ? s.fnItemActive : {}) }}
-                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}
-                            >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
-                            </button>
-                            {activeFnId === fn.id && fn.mfos?.map(mfo => (
-                                <button
-                                    key={mfo.id}
-                                    style={{ ...s.mfoItem, ...(activeMfoId === mfo.id ? s.mfoItemActive : {}) }}
-                                    onClick={() => setActiveMfoId(mfo.id)}
-                                >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                    <span style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mfo.title}</span>
-                                </button>
-                            ))}
-                        </div>
+            {/* ── Mobile: MFO tab strip ── */}
+            {bp === 'mobile' && (
+                <div style={s.tabStrip}>
+                    {allMfos.map(mfo => (
+                        <button key={mfo.id} style={{ ...s.tab, ...(activeMfoId === mfo.id ? s.tabActive : {}) }}
+                            onClick={() => {
+                                setActiveMfoId(mfo.id);
+                                const fn = fns?.find(f => f.mfos?.some(m => m.id === mfo.id));
+                                if (fn) setActiveFnId(fn.id);
+                            }}>
+                            {mfo.title}
+                        </button>
                     ))}
-                </aside>
+                </div>
+            )}
+
+            {/* ── Layout ── */}
+            <div style={{ ...s.layout, flexDirection: bp !== 'desktop' ? 'column' : 'row' }} className="uwp-layout">
+
+                {/* Left panel: sidebar on desktop only */}
+                {bp === 'desktop' && (
+                    <aside style={s.leftPanel} className="uwp-left">
+                        <LeftNav fns={fns} activeFnId={activeFnId} activeMfoId={activeMfoId}
+                            setActiveFnId={setActiveFnId} setActiveMfoId={setActiveMfoId} />
+                    </aside>
+                )}
 
                 {/* Center panel */}
                 <main style={s.centerPanel} className="uwp-center">
                     {activeFn?.mfos
-                        ?.filter(mfo => !activeMfoId || mfo.id === activeMfoId)
+                        ?.filter(mfo => bp === 'desktop' ? (!activeMfoId || mfo.id === activeMfoId) : mfo.id === activeMfoId)
                         .map(mfo => (
                         <section key={mfo.id} style={s.mfoGroup}>
                             <div style={s.mfoHeader}>
@@ -129,7 +201,48 @@ export default function Show() {
                     {!activeFn && <p style={{ ...s.empty, padding: '4rem' }}>Select a function to view its indicators.</p>}
                 </main>
             </div>
+
+            {/* ── Sticky bottom bar on mobile ── */}
+            {bp === 'mobile' && (
+                <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99,
+                    background: 'var(--admin-card)', borderTop: '1px solid var(--admin-border)',
+                    padding: '0.75rem 1rem', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                    {canSubmit && (
+                        <button style={s.submitBtn} onClick={handleSubmit} disabled={submitting}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            {submitting ? 'Submitting…' : 'Submit for Review'}
+                        </button>
+                    )}
+                    <a href={`/stage-one/forms/uwp-excel?uwp_id=${uwp?.id}`} style={s.exportBtn}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Excel
+                    </a>
+                </div>
+            )}
         </AppLayout>
+    );
+}
+
+function LeftNav({ fns, activeFnId, activeMfoId, setActiveFnId, setActiveMfoId }) {
+    return (
+        <div style={{ padding: '0.5rem 0' }}>
+            {fns?.map(fn => (
+                <div key={fn.id}>
+                    <button style={{ ...s.fnItem, ...(activeFnId === fn.id ? s.fnItemActive : {}) }}
+                        onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
+                    </button>
+                    {activeFnId === fn.id && fn.mfos?.map(mfo => (
+                        <button key={mfo.id} style={{ ...s.mfoItem, ...(activeMfoId === mfo.id ? s.mfoItemActive : {}) }}
+                            onClick={() => setActiveMfoId(mfo.id)}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            <span style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mfo.title}</span>
+                        </button>
+                    ))}
+                </div>
+            ))}
+        </div>
     );
 }
 
@@ -292,15 +405,29 @@ const s = {
     exportBtn:  { display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.5rem 1.1rem', borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.28)', color: '#4ade80', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' },
 
     // Layout
-    layout:     { display: 'flex', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', minHeight: 600 },
-    leftPanel:  { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0', overflowY: 'auto' },
+    layout:     { display: 'flex', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'visible', minHeight: 600 },
+    leftPanel:  { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0', overflowY: 'auto', borderRadius: 'var(--admin-radius) 0 0 var(--admin-radius)' },
     panelLabel: { padding: '0 1rem 0.65rem', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.09em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' },
     fnItem:     { width: '100%', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', textAlign: 'left', borderLeft: '2px solid transparent', fontSize: '0.82rem' },
     fnItemActive:{ color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.07)', borderLeftColor: 'var(--admin-accent)', fontWeight: 600 },
     mfoItem:    { width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 1rem 0.45rem 2rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', textAlign: 'left', borderLeft: '2px solid transparent', fontSize: '0.76rem' },
     mfoItemActive:{ color: 'var(--admin-text-primary)', background: 'rgba(255,255,255,0.04)', borderLeftColor: 'var(--admin-border-strong)', fontWeight: 500 },
-    centerPanel:{ flex: 1, overflowY: 'auto', padding: '1.5rem', minWidth: 0 },
+    centerPanel:{ flex: 1, overflowY: 'auto', padding: '1.5rem', minWidth: 0, borderRadius: '0 var(--admin-radius) var(--admin-radius) 0' },
     empty:      { color: 'var(--admin-text-muted)', fontSize: '0.82rem', fontStyle: 'italic' },
+
+    // Tablet breadcrumb nav
+    breadcrumbRow:  { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0', marginBottom: '1rem' },
+    fnPill:         { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid var(--admin-accent)', background: 'transparent', color: 'var(--admin-accent)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' },
+    mfoPill:        { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.85rem', borderRadius: 99, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' },
+    dropdown:       { position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 300, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 10, padding: '0.35rem', minWidth: 220, maxWidth: 320, boxShadow: '0 8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: 2 },
+    dropBackdrop:   { position: 'fixed', inset: 0, zIndex: 299 },
+    dropItem:       { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-secondary)', fontSize: '0.82rem', borderRadius: 6, textAlign: 'left', width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    dropItemActive: { color: 'var(--admin-accent)', fontWeight: 600 },
+
+    // Mobile tab strip
+    tabStrip:       { display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 0, marginBottom: '1rem', borderBottom: '1px solid var(--admin-border)' },
+    tab:            { flexShrink: 0, padding: '0.6rem 1rem', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap' },
+    tabActive:      { color: 'var(--admin-accent)', borderBottomColor: 'var(--admin-accent)', fontWeight: 700 },
 
     // MFO group
     mfoGroup:   { marginBottom: '2.5rem' },
@@ -350,9 +477,4 @@ const sm = {
 
 const css = `
 .si-card:hover { border-color: rgba(59,130,246,0.3) !important; }
-.qet-row:last-child { border-bottom: none !important; }
-@media (max-width: 768px) {
-    .uwp-layout { flex-direction: column !important; }
-    .uwp-left { width: 100% !important; min-width: unset !important; border-right: none !important; border-bottom: 1px solid var(--admin-border) !important; }
-    .uwp-center { padding: 1rem !important; }
-}`;
+.qet-row:last-child { border-bottom: none !important; }`;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
@@ -6,6 +6,66 @@ import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import QetModal from './QetModal';
 import AssignModal from './AssignModal';
+
+function useBreakpoint() {
+    const [w, setW] = useState(() => window.innerWidth);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    if (w >= 1024) return 'desktop';
+    if (w >= 768)  return 'tablet';
+    return 'mobile';
+}
+
+function useSidebarLeft() {
+    const getLeft = () => {
+        if (window.innerWidth < 768) return 0;
+        const el = document.querySelector('.app-main');
+        return el ? parseInt(getComputedStyle(el).marginLeft) || 0 : 0;
+    };
+    const [left, setLeft] = useState(getLeft);
+    useEffect(() => {
+        const update = () => setLeft(getLeft());
+        window.addEventListener('resize', update);
+        const t = setTimeout(update, 250);
+        return () => { window.removeEventListener('resize', update); clearTimeout(t); };
+    }, []);
+    return left;
+}
+
+function useDelayedPresence(value, delay = 280) {
+    const [renderValue, setRenderValue] = useState(value);
+    const [closing, setClosing] = useState(false);
+
+    useEffect(() => {
+        if (value) {
+            setRenderValue(value);
+            setClosing(false);
+            return;
+        }
+
+        if (!renderValue) return;
+
+        setClosing(true);
+        const timer = setTimeout(() => {
+            setRenderValue(null);
+            setClosing(false);
+        }, delay);
+
+        return () => clearTimeout(timer);
+    }, [value, renderValue, delay]);
+
+    return { renderValue, closing };
+}
+
+function formatBudget(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const num = Number(value);
+    if (Number.isNaN(num)) return null;
+    return `P${num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 export default function Editor() {
     const { uwp, functions: initialFunctions, employees } = usePage().props;
@@ -20,6 +80,8 @@ export default function Editor() {
     const [addIndicatorCtx, setAddIndicatorCtx] = useState(null);
     const [addMfoCtx, setAddMfoCtx]             = useState(null);
     const [saving, setSaving]                   = useState(false);
+    const [navOpen, setNavOpen]                 = useState(false);
+    const bp = useBreakpoint();
 
     const toast    = useToast();
     const confirm  = useConfirm();
@@ -96,9 +158,9 @@ export default function Editor() {
         try {
             if (mfoData.id) {
                 await axios.patch(apiUrl(`mfos/${mfoData.id}`), mfoData);
-                setFunctions(fns => fns.map(f => ({
-                    ...f, mfos: f.mfos.map(m => m.id === mfoData.id ? { ...m, ...mfoData } : m),
-                })));
+                setFunctions(fns => fns.map(f => f.id === mfoData.fnId
+                    ? { ...f, mfos: f.mfos.map(m => m.id === mfoData.id ? { ...m, ...mfoData } : m) }
+                    : f));
                 toast('MFO updated.', 'success');
             } else {
                 const { data } = await axios.post(apiUrl('mfos'), { ...mfoData, uwp_function_id: mfoData.fnId });
@@ -195,27 +257,47 @@ export default function Editor() {
         }
     }
 
+    // All MFOs across all functions (for tab strip on mobile)
+    const allMfos = functions.flatMap(f => f.mfos ?? []);
+    const activeMfo = allMfos.find(m => m.id === activeMfoId);
+    const activeFnForMfo = functions.find(f => f.mfos?.some(m => m.id === activeMfoId));
+
+    // Breadcrumb dropdown state (tablet)
+    const [fnDropOpen,  setFnDropOpen]  = useState(false);
+    const [mfoDropOpen, setMfoDropOpen] = useState(false);
+    const fnDropRef = useRef(null);
+    const mfoDropRef = useRef(null);
+
+    useEffect(() => {
+        if (!fnDropOpen && !mfoDropOpen) return;
+        const onDown = e => {
+            if (fnDropOpen && fnDropRef.current && !fnDropRef.current.contains(e.target)) setFnDropOpen(false);
+            if (mfoDropOpen && mfoDropRef.current && !mfoDropRef.current.contains(e.target)) setMfoDropOpen(false);
+        };
+        document.addEventListener('mousedown', onDown);
+        return () => document.removeEventListener('mousedown', onDown);
+    }, [fnDropOpen, mfoDropOpen]);
+
     return (
         <AppLayout title="UWP Editor">
             <style>{css}</style>
 
             {/* ── Top bar ── */}
-            <div style={s.topbar}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button onClick={() => router.visit('/supervisor/uwp')} style={s.backBtn}>
-                        &#8592;
-                    </button>
+            <div style={{ ...s.topbar, position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-bg-primary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button onClick={() => router.visit('/supervisor/uwp')} style={s.backBtn}>&#8592;</button>
                     <div style={s.divider} />
                     <span style={s.draftBadge}>{uwp?.status === 'draft' ? 'Draft: ' : ''}{uwp?.period}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    {uwp?.editable && <>
+                {/* Actions: hidden on mobile (shown in sticky bottom bar) */}
+                {bp !== 'mobile' && uwp?.editable && (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button style={s.btnSecondary} onClick={handleSaveDraft} disabled={saving}>
                             {saving ? 'Saving…' : 'Save Draft'}
                         </button>
                         <button style={s.btnPrimary} onClick={handleSubmit}>Submit</button>
-                    </>}
-                </div>
+                    </div>
+                )}
             </div>
 
             {!uwp?.editable && (
@@ -224,84 +306,157 @@ export default function Editor() {
                 </div>
             )}
 
-            {/* ── Three-column layout ── */}
-            <div style={s.layout} className="uwp-layout">
-
-                {/* Col 1: Org Units tree — Functions > MFOs */}
-                <aside style={s.leftPanel} className="uwp-left">
-                    <div style={s.panelLabel}>MFOs / PPAs</div>
-                    {functions.map(fn => (
-                        <div key={fn.id}>
-                            <div className="fn-actions-row" style={{ display: 'flex', alignItems: 'center' }}>
-                                <button
-                                    style={{ ...s.fnItem, ...(activeFnId === fn.id ? s.fnItemActive : {}), flex: 1 }}
-                                    onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}
-                                >
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                    <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
-                                </button>
-                                {uwp?.editable && (
-                                    <div className="fn-actions">
-                                        <button style={s.fnActionBtn} onClick={() => setFnModal({ fn })} title="Edit function">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        </button>
-                                        <button style={{ ...s.fnActionBtn, color: '#ef4444' }} onClick={() => handleDeleteFunction(fn.id)} title="Delete function">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            {activeFnId === fn.id && fn.mfos?.map(mfo => (
-                                <button
-                                    key={mfo.id}
-                                    style={{ ...s.mfoItem, ...(activeMfoId === mfo.id ? s.mfoItemActive : {}) }}
-                                    onClick={() => setActiveMfoId(mfo.id)}
-                                >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                                    <span style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mfo.title}</span>
-                                </button>
-                            ))}
-                            {activeFnId === fn.id && uwp?.editable && (
-                                <button style={s.addMfoBtn} onClick={() => setAddMfoCtx({ fn })}>
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                                    Add MFO / PPA
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                    {uwp?.editable && (
-                        <button style={s.addFnBtn} onClick={() => setFnModal({})}>
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                            Add Function
+            {/* ── Tablet: Breadcrumb pills ── */}
+            {bp === 'tablet' && (
+                <div style={{ ...s.breadcrumbRow, position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-bg-primary)' }}>
+                    {/* Function pill */}
+                    <div ref={fnDropRef} style={{ position: 'relative' }}>
+                        <button style={s.fnPill} onClick={() => { setFnDropOpen(v => !v); setMfoDropOpen(false); }}>
+                            {activeFnForMfo?.name ?? activeFn?.name ?? 'Select Function'}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
+                        {fnDropOpen && (() => {
+                            const r = fnDropRef.current?.getBoundingClientRect();
+                            return (
+                                <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
+                                    {functions.map(fn => (
+                                        <button key={fn.id} style={{ ...s.dropItem, ...(activeFnId === fn.id ? s.dropItemActive : {}) }}
+                                            onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); setFnDropOpen(false); }}>
+                                            {activeFnId === fn.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                                            {fn.name}
+                                        </button>
+                                    ))}
+                                    {uwp?.editable && (
+                                        <button style={{ ...s.dropItem, color: 'var(--admin-accent)' }} onClick={() => { setFnModal({}); setFnDropOpen(false); }}>
+                                            + Add Function
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                    {/* MFO pill */}
+                    <div ref={mfoDropRef} style={{ position: 'relative' }}>
+                        <button style={s.mfoPill} onClick={() => { setMfoDropOpen(v => !v); setFnDropOpen(false); }}>
+                            {activeMfo?.title ?? 'Select MFO'}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        {mfoDropOpen && (() => {
+                            const r = mfoDropRef.current?.getBoundingClientRect();
+                            return (
+                                <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
+                                    {(activeFnForMfo ?? activeFn)?.mfos?.map(mfo => (
+                                        <button key={mfo.id} style={{ ...s.dropItem, ...(activeMfoId === mfo.id ? s.dropItemActive : {}) }}
+                                            onClick={() => { setActiveMfoId(mfo.id); setMfoDropOpen(false); }}>
+                                            {activeMfoId === mfo.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                                            {mfo.title}
+                                        </button>
+                                    ))}
+                                    {uwp?.editable && activeFn && (
+                                        <button style={{ ...s.dropItem, color: 'var(--admin-accent)' }} onClick={() => { setAddMfoCtx({ fn: activeFnForMfo ?? activeFn }); setMfoDropOpen(false); }}>
+                                            + Add MFO / PPA
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Mobile: MFO tab strip ── */}
+            {bp === 'mobile' && (
+                <div style={{ display: 'flex', alignItems: 'stretch', position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
+                    {/* Scrollable tabs */}
+                    <div style={{ flex: 1, display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
+                        {allMfos.map(mfo => (
+                            <button key={mfo.id} style={{ ...s.tab, ...(activeMfoId === mfo.id ? s.tabActive : {}) }}
+                                onClick={() => {
+                                    setActiveMfoId(mfo.id);
+                                    const fn = functions.find(f => f.mfos?.some(m => m.id === mfo.id));
+                                    if (fn) setActiveFnId(fn.id);
+                                }}>
+                                {mfo.title}
+                            </button>
+                        ))}
+                    </div>
+                    {/* Always-visible + button */}
+                    {uwp?.editable && (
+                        <MobileAddMenu
+                            activeFn={activeFn ?? activeFnForMfo}
+                            functions={functions}
+                            onAddMfo={fn => setAddMfoCtx({ fn })}
+                            onAddFn={() => setFnModal({})}
+                        />
                     )}
-                </aside>
+                </div>
+            )}
+
+            {/* ── Three-column layout ── */}
+            <div style={{ ...s.layout, flexDirection: bp !== 'desktop' ? 'column' : 'row' }} className="uwp-layout">
+
+                {/* ── Left panel: sidebar on desktop only ── */}
+                {bp === 'desktop' && (
+                    <aside style={s.leftPanel} className="uwp-left">
+                        <EditorLeftNav
+                            functions={functions} activeFnId={activeFnId} activeMfoId={activeMfoId}
+                            editable={uwp?.editable}
+                            setActiveFnId={setActiveFnId} setActiveMfoId={setActiveMfoId}
+                            setFnModal={setFnModal} setAddMfoCtx={setAddMfoCtx}
+                            handleDeleteFunction={handleDeleteFunction} activeFn={activeFn}
+                        />
+                    </aside>
+                )}
 
                 {/* Col 2: MFO groups */}
-                <main style={s.centerPanel} className="uwp-center">
-                    {activeFn?.mfos
-                        ?.filter(mfo => !activeMfoId || mfo.id === activeMfoId)
-                        .map(mfo => (
-                        <MfoGroup
-                            key={mfo.id}
-                            mfo={mfo}
-                            fnId={activeFnId}
-                            editable={uwp?.editable}
-                            onEditMfo={mfo => setAddMfoCtx({ fn: activeFn, mfo })}
-                            onDeleteMfo={mfoId => handleDeleteMfo(activeFnId, mfoId)}
-                            onEditQet={si => setQetModal({ indicator: si, fnId: activeFnId, mfoId: mfo.id })}
-                            onAssign={si => setAssignModal({ indicator: si, fnId: activeFnId, mfoId: mfo.id })}
-                            onOpenContext={si => setActiveIndicator({ si, fnId: activeFnId, mfoId: mfo.id })}
-                            onDeleteIndicator={siId => handleDeleteIndicator(activeFnId, mfo.id, siId)}
-                            onAddIndicator={() => setAddIndicatorCtx({ mfo })}
-                        />
-                    ))}
-                    {(!activeFn || activeFn.mfos?.length === 0) && (
-                        <div style={s.empty}>Select a function to view its MFOs and indicators.</div>
-                    )}
+                <main style={{ ...s.centerPanel, paddingBottom: bp === 'mobile' ? '7rem' : '1.5rem' }} className="uwp-center">
+                    {(() => {
+                        // Desktop: show ALL mfos of active function
+                        // Tablet/Mobile: show only the active MFO
+                        const displayFn = bp === 'desktop' ? activeFn : (activeFnForMfo ?? activeFn);
+                        const mfosToShow = displayFn?.mfos?.filter(mfo =>
+                            bp === 'desktop' ? true : mfo.id === activeMfoId
+                        ) ?? [];
+
+                        if (!displayFn) {
+                            return <div style={s.empty}>Select a function to view its MFOs and indicators.</div>;
+                        }
+                        if (mfosToShow.length === 0) {
+                            return <div style={s.empty}>No MFOs yet. Use "+ Add MFO / PPA" to get started.</div>;
+                        }
+                        return mfosToShow.map(mfo => (
+                            <MfoGroup
+                                key={mfo.id}
+                                mfo={mfo}
+                                fnId={displayFn.id}
+                                editable={uwp?.editable}
+                                bp={bp}
+                                onEditMfo={mfo => setAddMfoCtx({ fn: displayFn, mfo })}
+                                onDeleteMfo={mfoId => handleDeleteMfo(displayFn.id, mfoId)}
+                                onEditQet={si => setQetModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id })}
+                                onAssign={si => setAssignModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id })}
+                                onOpenContext={si => setActiveIndicator({ si, fnId: displayFn.id, mfoId: mfo.id })}
+                                onDeleteIndicator={siId => handleDeleteIndicator(displayFn.id, mfo.id, siId)}
+                                onAddIndicator={() => setAddIndicatorCtx({ mfo })}
+                            />
+                        ));
+                    })()}
                 </main>
 
             </div>
+
+            {/* Sticky bottom bar on mobile */}
+            {bp === 'mobile' && uwp?.editable && (
+                <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99,
+                    background: 'var(--admin-card)', borderTop: '1px solid var(--admin-border)',
+                    padding: '0.75rem 1rem', minHeight: 56, display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                    <button style={s.btnSecondary} onClick={handleSaveDraft} disabled={saving}>
+                        {saving ? 'Saving…' : 'Save Draft'}
+                    </button>
+                    <button style={s.btnPrimary} onClick={handleSubmit}>Submit</button>
+                </div>
+            )}
 
             {/* Modals */}
             {qetModal && (
@@ -325,6 +480,7 @@ export default function Editor() {
                 editable={uwp?.editable}
                 onChange={handleIndicatorChange}
                 onClose={() => setActiveIndicator(null)}
+                bp={bp}
             />
 
             <AddIndicatorSidebar
@@ -332,26 +488,77 @@ export default function Editor() {
                 activeFn={activeFn}
                 onSave={handleCreateIndicator}
                 onClose={() => setAddIndicatorCtx(null)}
+                bp={bp}
             />
 
             <AddMfoSidebar
                 ctx={addMfoCtx}
                 onSave={handleSaveMfo}
                 onClose={() => setAddMfoCtx(null)}
+                bp={bp}
             />
 
             {fnModal !== null && (
                 <FunctionModal
-                    fn={fnModal.fn ?? null}
+                    fn={fnModal.fn ?? {}}
                     onSave={handleSaveFunction}
                     onClose={() => setFnModal(null)}
+                    bp={bp}
                 />
             )}
         </AppLayout>
     );
 }
 
-function MfoGroup({ mfo, fnId, editable, onEditMfo, onDeleteMfo, onEditQet, onAssign, onOpenContext, onDeleteIndicator, onAddIndicator }) {
+function EditorLeftNav({ functions, activeFnId, activeMfoId, editable, setActiveFnId, setActiveMfoId, setFnModal, setAddMfoCtx, handleDeleteFunction, activeFn }) {
+    return (
+        <div style={{ padding: '0.5rem 0' }}>
+            <div style={s.panelLabel}>MFOs / PPAs</div>
+            {functions.map(fn => (
+                <div key={fn.id}>
+                    <div className="fn-actions-row" style={{ display: 'flex', alignItems: 'center' }}>
+                        <button style={{ ...s.fnItem, ...(activeFnId === fn.id ? s.fnItemActive : {}), flex: 1 }}
+                            onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
+                        </button>
+                        {editable && (
+                            <div className="fn-actions">
+                                <button style={s.fnActionBtn} onClick={() => setFnModal({ fn })} title="Edit">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                                <button style={{ ...s.fnActionBtn, color: '#ef4444' }} onClick={() => handleDeleteFunction(fn.id)} title="Delete">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    {activeFnId === fn.id && fn.mfos?.map(mfo => (
+                        <button key={mfo.id} style={{ ...s.mfoItem, ...(activeMfoId === mfo.id ? s.mfoItemActive : {}) }}
+                            onClick={() => setActiveMfoId(mfo.id)}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            <span style={{ flex: 1, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mfo.title}</span>
+                        </button>
+                    ))}
+                    {activeFnId === fn.id && editable && (
+                        <button style={s.addMfoBtn} onClick={() => setAddMfoCtx({ fn })}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                            Add MFO / PPA
+                        </button>
+                    )}
+                </div>
+            ))}
+            {editable && (
+                <button style={s.addFnBtn} onClick={() => setFnModal({})}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Function
+                </button>
+            )}
+        </div>
+    );
+}
+
+function MfoGroup({ mfo, fnId, editable, bp, onEditMfo, onDeleteMfo, onEditQet, onAssign, onOpenContext, onDeleteIndicator, onAddIndicator }) {
     const count = mfo.successIndicators?.length ?? 0;
     return (
         <section style={s.mfoGroup}>
@@ -364,7 +571,15 @@ function MfoGroup({ mfo, fnId, editable, onEditMfo, onDeleteMfo, onEditQet, onAs
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={s.indicatorBadge}>{count} {count === 1 ? 'Indicator' : 'Indicators'}</span>
-                    {editable && (
+                    {editable && bp === 'mobile' && (
+                        <button type="button" style={s.mfoInlineBtn} onClick={() => onEditMfo(mfo)} title="Edit MFO">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                        </button>
+                    )}
+                    {editable && bp !== 'mobile' && (
                         <div className="mfo-actions">
                             <button style={s.fnActionBtn} title="Edit MFO" onClick={() => onEditMfo(mfo)}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -402,9 +617,7 @@ function MfoGroup({ mfo, fnId, editable, onEditMfo, onDeleteMfo, onEditQet, onAs
 // ── Single indicator card ──
 function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDelete }) {
     const [menuOpen, setMenuOpen] = useState(false);
-    const budget = si.allotted_budget
-        ? `₱${parseFloat(si.allotted_budget).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
-        : null;
+    const budget = formatBudget(si.allotted_budget ?? 0);
     const assignees = si.assignments ?? [];
 
     return (
@@ -482,99 +695,109 @@ function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDel
 }
 
 // ── Indicator Context overlay sidebar ──
-function IndicatorContextSidebar({ indicator, editable, onChange, onClose }) {
-    const budget = indicator?.allotted_budget
-        ? `₱${parseFloat(indicator.allotted_budget).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
-        : '₱0.00';
+function IndicatorContextSidebar({ indicator, editable, onChange, onClose, bp }) {
+    const { renderValue: visibleIndicator, closing } = useDelayedPresence(indicator);
+    const left = useSidebarLeft();
+    const budget = formatBudget(visibleIndicator?.allotted_budget ?? 0) ?? 'P0.00';
+    const qty      = visibleIndicator?.target_quantity ?? '';
+    const timeline = visibleIndicator?.target_timeline ?? '';
 
-    const qty      = indicator?.target_quantity ?? '';
-    const timeline = indicator?.target_timeline ?? '';
-
-    const Field = ({ label, value, field, multiline }) => (
-        <div style={sCtx.infoRow}>
-            <span style={sCtx.infoLabel}>{label}</span>
-            {editable
-                ? multiline
-                    ? <textarea value={value ?? ''} onChange={e => onChange({ [field]: e.target.value })} style={{ ...sCtx.editInput, resize: 'vertical', minHeight: 60 }} />
-                    : <input value={value ?? ''} onChange={e => onChange({ [field]: e.target.value })} style={sCtx.editInput} />
-                : <span style={sCtx.infoVal}>{value || '—'}</span>
-            }
+    const body = (
+        <div style={sCtx.body}>
+            <div style={sCtx.infoBlock}>
+                {editable ? (
+                    <>
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>SUCCESS INDICATOR TEXT</span>
+                            <textarea placeholder="Describe the measurable outcome..." value={visibleIndicator?.indicator_text ?? ''} onChange={e => onChange({ indicator_text: e.target.value })} style={{ ...sCtx.editInput, resize: 'vertical', minHeight: 80 }} />
+                        </div>
+                        <div style={sCtx.hr} />
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>TARGET QTY</span>
+                            <input type="text" placeholder="e.g. 1, 100%" value={qty} onChange={e => onChange({ target_quantity: e.target.value })} style={sCtx.editInput} />
+                        </div>
+                        <div style={sCtx.hr} />
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>TARGET TIMELINE</span>
+                            <textarea placeholder="e.g. within 5 working days upon receipt" value={timeline} onChange={e => onChange({ target_timeline: e.target.value })} style={{ ...sCtx.editInput, resize: 'vertical', minHeight: 70 }} />
+                        </div>
+                        <div style={sCtx.hr} />
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>BUDGET ALLOTTED P</span>
+                            <input type="number" min="0" placeholder="0.00" value={visibleIndicator?.allotted_budget ?? ''} onChange={e => onChange({ allotted_budget: e.target.value })} style={sCtx.editInput} />
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>TARGET</span>
+                            <span style={{ ...sCtx.infoVal, color: 'var(--admin-accent)', fontWeight: 700 }}>
+                                {qty ? `${qty} ${timeline}` : (timeline || '—')}
+                            </span>
+                        </div>
+                        <div style={sCtx.hr} />
+                        <div style={sCtx.infoRow}>
+                            <span style={sCtx.infoLabel}>BUDGET</span>
+                            <span style={sCtx.infoVal}>{budget}</span>
+                        </div>
+                    </>
+                )}
+            </div>
+            <div style={{ ...sCtx.sectionLabel, marginTop: '1.25rem' }}>SUCCESS INDICATOR</div>
+            <p style={sCtx.indicatorText}>
+                {visibleIndicator?.indicator_text || (qty && timeline ? `${qty} ${timeline}` : (timeline || qty || '—'))}
+            </p>
         </div>
     );
 
+    if (bp === 'mobile') {
+        if (!visibleIndicator) return null;
+        return (
+            <>
+                <div onClick={onClose} style={{ position: 'fixed', top: 0, bottom: 0, left, right: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+                <div style={{ position: 'fixed', bottom: 0, left, right: 0, zIndex: 1101, background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', height: '82vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease' }}>
+                    <div style={{ padding: '10px 1.25rem 0', flexShrink: 0, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                        <button onClick={onClose} style={{ position: 'absolute', right: '1rem', top: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: 4 }}>✕</button>
+                    </div>
+                    <div style={{ padding: '0.5rem 1.25rem 0', flexShrink: 0 }}>
+                        <span style={sCtx.label}>INDICATOR CONTEXT</span>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto' }}>{body}</div>
+                </div>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            </>
+        );
+    }
+
     return (
         <>
-            {indicator && <div style={sCtx.backdrop} onClick={onClose} />}
-            <div style={{ ...sCtx.panel, ...(indicator ? sCtx.open : {}) }}>
+            {visibleIndicator && <div style={sCtx.backdrop} onClick={onClose} />}
+            <div style={{ ...sCtx.panel, ...(visibleIndicator && !closing ? sCtx.open : {}) }}>
                 <div style={sCtx.header}>
                     <span style={sCtx.label}>INDICATOR CONTEXT</span>
                     <button style={sCtx.closeBtn} onClick={onClose}>✕</button>
                 </div>
-                <div style={sCtx.body}>
-                    <div style={sCtx.infoBlock}>
-                        {editable ? (
-                            <>
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Success Indicator Text</span>
-                                    <textarea placeholder="Describe the measurable outcome..." value={indicator?.indicator_text ?? ''} onChange={e => onChange({ indicator_text: e.target.value })} style={{ ...sCtx.editInput, resize: 'vertical', minHeight: 80 }} />
-                                </div>
-                                <div style={sCtx.hr} />
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Target Qty</span>
-                                    <input type="text" placeholder="e.g. 1, 100%" value={qty} onChange={e => onChange({ target_quantity: e.target.value })} style={sCtx.editInput} />
-                                </div>
-                                <div style={sCtx.hr} />
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Target Timeline</span>
-                                    <textarea placeholder="e.g. within 5 working days upon receipt" value={timeline} onChange={e => onChange({ target_timeline: e.target.value })} style={{ ...sCtx.editInput, resize: 'vertical', minHeight: 70 }} />
-                                </div>
-                                <div style={sCtx.hr} />
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Budget Allotted (₱)</span>
-                                    <input type="number" min="0" placeholder="0.00" value={indicator?.allotted_budget ?? ''} onChange={e => onChange({ allotted_budget: e.target.value })} style={sCtx.editInput} />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Target</span>
-                                    <span style={{ ...sCtx.infoVal, color: 'var(--admin-accent)', fontWeight: 700 }}>
-                                        {qty ? `${qty} ${timeline}` : (timeline || '—')}
-                                    </span>
-                                </div>
-                                <div style={sCtx.hr} />
-                                <div style={sCtx.infoRow}>
-                                    <span style={sCtx.infoLabel}>Budget</span>
-                                    <span style={sCtx.infoVal}>{budget}</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    <div style={{ ...sCtx.sectionLabel, marginTop: '1.25rem' }}>SUCCESS INDICATOR</div>
-                    <p style={sCtx.indicatorText}>
-                        {indicator?.indicator_text || (qty && timeline ? `${qty} ${timeline}` : (timeline || qty || '—'))}
-                    </p>
-                </div>
+                {body}
             </div>
         </>
     );
 }
 
-function AddIndicatorSidebar({ ctx, activeFn, onSave, onClose }) {
+function AddIndicatorSidebar({ ctx, activeFn, onSave, onClose, bp }) {
+    const { renderValue: visibleCtx, closing } = useDelayedPresence(ctx);
     const [text, setText]         = useState('');
     const [budget, setBudget]     = useState('');
     const [qty, setQty]           = useState('');
     const [timeline, setTimeline] = useState('');
 
-    const mfoTitle = ctx?.mfo?.title ?? '';
+    const mfoTitle = visibleCtx?.mfo?.title ?? '';
 
     async function handleCreate() {
         if (!text.trim()) return;
-        const indicatorText = qty && timeline ? `${qty} ${timeline}` : text;
         await onSave({
-            uwp_mfo_id:      ctx.mfo.id,
-            indicator_text:  indicatorText,
+            uwp_mfo_id:      visibleCtx.mfo.id,
+            indicator_text:  text.trim(),
             target_quantity: qty || null,
             target_timeline: timeline || null,
             allotted_budget: budget || null,
@@ -582,10 +805,77 @@ function AddIndicatorSidebar({ ctx, activeFn, onSave, onClose }) {
         setText(''); setBudget(''); setQty(''); setTimeline('');
     }
 
+    const left = useSidebarLeft();
+
+    const panelBody = (
+        <>
+            <div style={sAdd.body}>
+                <div style={sAdd.fieldGroup}>
+                    <label style={sAdd.label}>SUCCESS INDICATOR NAME</label>
+                    <textarea style={sAdd.textarea} placeholder="Describe the measurable outcome for this unit..." value={text} onChange={e => setText(e.target.value)} rows={4} />
+                </div>
+                <div style={sAdd.row}>
+                    <div style={{ flex: 1 }}>
+                        <label style={sAdd.label}>BUDGET ALLOTTED</label>
+                        <div style={sAdd.inputWrap}>
+                            <span style={sAdd.inputPrefix}>P</span>
+                            <input style={sAdd.input} placeholder="0.00" value={budget} onChange={e => setBudget(e.target.value)} />
+                        </div>
+                    </div>
+                </div>
+                <div style={sAdd.row}>
+                    <div style={{ flex: 1 }}>
+                        <label style={sAdd.label}>TARGET QUANTITY</label>
+                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. 1, 95%, 100%" value={qty} onChange={e => setQty(e.target.value)} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={sAdd.label}>TARGET TIMELINE</label>
+                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. Q4 2026, Day 26" value={timeline} onChange={e => setTimeline(e.target.value)} />
+                    </div>
+                </div>
+                <div style={sAdd.aiBanner}>
+                    <div style={sAdd.aiHeader}>
+                        <span style={sAdd.aiIcon}>✦</span>
+                        <span style={sAdd.aiLabel}>AI BENCHMARK ANALYSIS</span>
+                        <span style={{ ...sAdd.aiIcon, marginLeft: 'auto', opacity: 0.5 }}>✦</span>
+                    </div>
+                    <p style={sAdd.aiText}>Based on 2025 performance, similar indicators target{' '}<strong style={{ color: 'var(--admin-accent)' }}>100% completion</strong> within{' '}<strong style={{ color: 'var(--admin-accent)' }}>5 working days</strong>.</p>
+                    <button style={sAdd.aiLink}>Apply Suggestion →</button>
+                </div>
+                <p style={sAdd.note}>ⓘ Indicators added here will be pending review by the Planning Office before final UWP approval.</p>
+            </div>
+            <div style={sAdd.footer}>
+                <button style={sCtx.closeBtn} onClick={onClose}>Cancel</button>
+                <button style={{ ...s.btnPrimary, padding: '0.6rem 1.5rem', fontSize: '0.85rem' }} onClick={handleCreate}>Create Indicator</button>
+            </div>
+        </>
+    );
+
+    if (bp === 'mobile') {
+        if (!visibleCtx) return null;
+        return (
+            <>
+                <div onClick={onClose} style={{ position: 'fixed', top: 0, bottom: 0, left, right: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+                <div style={{ position: 'fixed', bottom: 0, left, right: 0, zIndex: 1101, background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', height: '82vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease' }}>
+                    <div style={{ padding: '10px 1.25rem 0', flexShrink: 0, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                        <button onClick={onClose} style={{ position: 'absolute', right: '1rem', top: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: 4 }}>✕</button>
+                    </div>
+                    <div style={{ padding: '0.75rem 1.25rem 0.25rem', flexShrink: 0, borderBottom: '1px solid var(--admin-border)' }}>
+                        <div style={sAdd.title}>New Success Indicator</div>
+                        <div style={sAdd.sub}>{activeFn?.name ?? ''}</div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>{panelBody}</div>
+                </div>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            </>
+        );
+    }
+
     return (
         <>
-            {ctx && <div style={sCtx.backdrop} onClick={onClose} />}
-            <div style={{ ...sAdd.panel, ...(ctx ? sAdd.open : {}) }}>
+            {visibleCtx && <div style={sCtx.backdrop} onClick={onClose} />}
+            <div style={{ ...sAdd.panel, ...(visibleCtx && !closing ? sAdd.open : {}) }}>
                 <div style={sAdd.header}>
                     <div>
                         <div style={sAdd.title}>New Success Indicator</div>
@@ -593,70 +883,7 @@ function AddIndicatorSidebar({ ctx, activeFn, onSave, onClose }) {
                     </div>
                     <button style={sCtx.closeBtn} onClick={onClose}>✕</button>
                 </div>
-
-                <div style={sAdd.body}>
-                    {/* Indicator name */}
-                    <div style={sAdd.fieldGroup}>
-                        <label style={sAdd.label}>SUCCESS INDICATOR NAME</label>
-                        <textarea
-                            style={sAdd.textarea}
-                            placeholder="Describe the measurable outcome for this unit..."
-                            value={text}
-                            onChange={e => setText(e.target.value)}
-                            rows={4}
-                        />
-                    </div>
-
-                    {/* Budget */}
-                    <div style={sAdd.row}>
-                        <div style={{ flex: 1 }}>
-                            <label style={sAdd.label}>BUDGET ALLOTTED</label>
-                            <div style={sAdd.inputWrap}>
-                                <span style={sAdd.inputPrefix}>₱</span>
-                                <input style={sAdd.input} placeholder="0.00" value={budget} onChange={e => setBudget(e.target.value)} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Target Quantity + Timeline */}
-                    <div style={sAdd.row}>
-                        <div style={{ flex: 1 }}>
-                            <label style={sAdd.label}>TARGET QUANTITY</label>
-                            <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. 1, 95%, 100%" value={qty} onChange={e => setQty(e.target.value)} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={sAdd.label}>TARGET TIMELINE</label>
-                            <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. Q4 2026, Day 26" value={timeline} onChange={e => setTimeline(e.target.value)} />
-                        </div>
-                    </div>
-
-                    {/* AI Benchmark */}
-                    <div style={sAdd.aiBanner}>
-                        <div style={sAdd.aiHeader}>
-                            <span style={sAdd.aiIcon}>✦</span>
-                            <span style={sAdd.aiLabel}>AI BENCHMARK ANALYSIS</span>
-                            <span style={{ ...sAdd.aiIcon, marginLeft: 'auto', opacity: 0.5 }}>✦</span>
-                        </div>
-                        <p style={sAdd.aiText}>
-                            Based on 2025 performance, similar indicators target{' '}
-                            <strong style={{ color: 'var(--admin-accent)' }}>100% completion</strong> within{' '}
-                            <strong style={{ color: 'var(--admin-accent)' }}>5 working days</strong>.
-                        </p>
-                        <button style={sAdd.aiLink}>Apply Suggestion →</button>
-                    </div>
-
-                    {/* Note */}
-                    <p style={sAdd.note}>
-                        ⓘ Indicators added here will be pending review by the Planning Office before final UWP approval.
-                    </p>
-                </div>
-
-                <div style={sAdd.footer}>
-                    <button style={sCtx.closeBtn} onClick={onClose}>Cancel</button>
-                    <button style={{ ...s.btnPrimary, padding: '0.6rem 1.5rem', fontSize: '0.85rem' }} onClick={handleCreate}>
-                        Create Indicator
-                    </button>
-                </div>
+                {panelBody}
             </div>
         </>
     );
@@ -665,6 +892,9 @@ function AddIndicatorSidebar({ ctx, activeFn, onSave, onClose }) {
 const sAdd = {
     panel:      { position: 'fixed', top: 0, right: 0, height: '100vh', width: 420, zIndex: 1101, background: 'var(--admin-card)', borderLeft: '1px solid var(--admin-border-strong)', display: 'flex', flexDirection: 'column', transform: 'translateX(100%)', transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)', boxShadow: '-8px 0 32px rgba(0,0,0,0.35)' },
     open:       { transform: 'translateX(0)' },
+    mobileSheet: { position: 'fixed', left: 0, right: 0, bottom: 0, top: 'auto', width: '100%', maxWidth: '100%', height: '82vh', background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', transform: 'translateY(100%)', transition: 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)', willChange: 'transform', boxShadow: '0 -8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    mobileSheetOpen: { transform: 'translateY(0)', animation: 'slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1)' },
+    dragHandle: { position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)', width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' },
     header:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
     title:      { fontSize: '1.1rem', fontWeight: 700, color: 'var(--admin-text-primary)', marginBottom: '0.2rem' },
     sub:        { fontSize: '0.78rem', color: 'var(--admin-text-muted)' },
@@ -686,120 +916,155 @@ const sAdd = {
     note:       { fontSize: '0.78rem', color: 'var(--admin-text-muted)', fontStyle: 'italic', margin: 0 },
 };
 
-function AddMfoSidebar({ ctx, onSave, onClose }) {
+function AddMfoSidebar({ ctx, onSave, onClose, bp }) {
+    const { renderValue: visibleCtx, closing } = useDelayedPresence(ctx);
     const [title, setTitle] = useState(ctx?.mfo?.title ?? '');
     const charCount = title.length;
 
-    const isEdit = !!ctx?.mfo;
+    const isEdit = !!visibleCtx?.mfo;
 
     // Pre-fill when ctx changes (opening edit vs new)
     useEffect(() => {
-        setTitle(ctx?.mfo?.title ?? '');
-    }, [ctx]);
+        setTitle(visibleCtx?.mfo?.title ?? '');
+    }, [visibleCtx]);
 
     async function handleSave() {
         if (!title.trim()) return;
-        await onSave({ id: ctx?.mfo?.id, fnId: ctx?.fn?.id, title, weight_percent: null });
+        await onSave({ id: visibleCtx?.mfo?.id, fnId: visibleCtx?.fn?.id, title, weight_percent: null });
         setTitle('');
+    }
+
+    const left = useSidebarLeft();
+
+    const panelBody = (
+        <>
+            <div style={sAdd.body}>
+                <div style={sAdd.fieldGroup}>
+                    <label style={sAdd.label}>MFO TITLE</label>
+                    <div style={{ position: 'relative' }}>
+                        <textarea style={sAdd.textarea} placeholder="Enter the Major Final Output title..." value={title} maxLength={255} onChange={e => setTitle(e.target.value)} rows={5} />
+                        <span style={{ position: 'absolute', bottom: 8, right: 10, fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{charCount}/255</span>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '2rem 0', color: 'var(--admin-text-muted)' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".4"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    <p style={{ fontSize: '0.8rem', textAlign: 'center', fontStyle: 'italic', opacity: 0.6, margin: 0 }}>Define strategic objectives and performance indicators within this MFO cluster.</p>
+                </div>
+            </div>
+            <div style={sAdd.footer}>
+                <button style={{ background: 'none', border: '1px solid var(--admin-border-strong)', cursor: 'pointer', color: 'var(--admin-text-muted)', borderRadius: 8, padding: '0.6rem 1.25rem', fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.04em' }} onClick={onClose}>CANCEL</button>
+                <button style={{ ...s.btnPrimary, padding: '0.6rem 1.5rem', fontSize: '0.85rem', letterSpacing: '0.04em' }} onClick={handleSave}>{isEdit ? 'SAVE MFO' : 'ADD MFO'}</button>
+            </div>
+        </>
+    );
+
+    if (bp === 'mobile') {
+        if (!visibleCtx) return null;
+        return (
+            <>
+                <div onClick={onClose} style={{ position: 'fixed', top: 0, bottom: 0, left, right: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+                <div style={{ position: 'fixed', bottom: 0, left, right: 0, zIndex: 1101, background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', height: '82vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.25s ease' }}>
+                    <div style={{ padding: '10px 1.25rem 0', flexShrink: 0, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                        <button onClick={onClose} style={{ position: 'absolute', right: '1rem', top: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: 4 }}>✕</button>
+                    </div>
+                    <div style={{ padding: '0.75rem 1.25rem 0.25rem', flexShrink: 0, borderBottom: '1px solid var(--admin-border)' }}>
+                        <div style={sAdd.title}>{isEdit ? 'Edit MFO' : 'New MFO / PPA'}</div>
+                        <div style={sAdd.sub}>{ctx?.fn?.name ?? ''}</div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>{panelBody}</div>
+                </div>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            </>
+        );
     }
 
     return (
         <>
-            {ctx && <div style={sCtx.backdrop} onClick={onClose} />}
-            <div style={{ ...sAdd.panel, ...(ctx ? sAdd.open : {}) }}>
+            {visibleCtx && <div style={sCtx.backdrop} onClick={onClose} />}
+            <div style={{ ...sAdd.panel, ...(visibleCtx && !closing ? sAdd.open : {}) }}>
                 <div style={sAdd.header}>
                     <div>
-                        <div style={sAdd.title}>New MFO / PPA</div>
+                        <div style={sAdd.title}>{isEdit ? 'Edit MFO' : 'New MFO / PPA'}</div>
                         <div style={sAdd.sub}>{ctx?.fn?.name ?? ''}</div>
                     </div>
                     <button style={sCtx.closeBtn} onClick={onClose}>✕</button>
                 </div>
-
-                <div style={sAdd.body}>
-                    <div style={sAdd.fieldGroup}>
-                        <label style={sAdd.label}>MFO TITLE</label>
-                        <div style={{ position: 'relative' }}>
-                            <textarea
-                                style={sAdd.textarea}
-                                placeholder="Enter the Major Final Output title..."
-                                value={title}
-                                maxLength={255}
-                                onChange={e => setTitle(e.target.value)}
-                                rows={5}
-                            />
-                            <span style={{ position: 'absolute', bottom: 8, right: 10, fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>
-                                {charCount}/255
-                            </span>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '2rem 0', color: 'var(--admin-text-muted)' }}>
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity=".4"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                        <p style={{ fontSize: '0.8rem', textAlign: 'center', fontStyle: 'italic', opacity: 0.6, margin: 0 }}>
-                            Define strategic objectives and performance indicators within this MFO cluster.
-                        </p>
-                    </div>
-                </div>
-
-                <div style={sAdd.footer}>
-                    <button style={{ background: 'none', border: '1px solid var(--admin-border-strong)', cursor: 'pointer', color: 'var(--admin-text-muted)', borderRadius: 8, padding: '0.6rem 1.25rem', fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.04em' }} onClick={onClose}>
-                        CANCEL
-                    </button>
-                    <button style={{ ...s.btnPrimary, padding: '0.6rem 1.5rem', fontSize: '0.85rem', letterSpacing: '0.04em' }} onClick={handleSave}>
-                        {isEdit ? 'SAVE MFO' : 'ADD MFO'}
-                    </button>
-                </div>
+                {panelBody}
             </div>
         </>
     );
 }
 
 // ── Function create/edit modal ──
-function FunctionModal({ fn, onSave, onClose }) {
-    const isEdit = !!fn;
-    const [name, setName]       = useState(fn?.name ?? '');
-    const [type, setType]       = useState(fn?.function_type ?? 'core');
-    const [weight, setWeight]   = useState(fn?.weight_percent ?? '');
+function FunctionModal({ fn, onSave, onClose, bp }) {
+    const { renderValue: visibleFn, closing } = useDelayedPresence(fn);
+    const left = useSidebarLeft();
+    const isEdit = !!visibleFn?.id;
+    const [name, setName]     = useState(fn?.name ?? '');
+    const [type, setType]     = useState(fn?.function_type ?? 'core');
+    const [weight, setWeight] = useState(fn?.weight_percent ?? '');
 
     async function handleSave() {
         if (!name.trim()) return;
-        await onSave({ id: fn?.id, name, function_type: type, weight_percent: weight || null });
+        await onSave({ id: visibleFn?.id, name, function_type: type, weight_percent: weight || null });
     }
 
-    return (
-        <div style={sFn.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-            <div style={sFn.modal}>
-                <div style={sFn.header}>
-                    <div>
-                        <div style={sFn.title}>{isEdit ? 'Edit Function' : 'New Function'}</div>
-                        <div style={sFn.sub}>{isEdit ? fn.name : 'Add a new function group'}</div>
-                    </div>
-                    <button style={sCtx.closeBtn} onClick={onClose}>✕</button>
+    const modalContent = (
+        <>
+            <div style={sFn.header}>
+                <div>
+                    <div style={sFn.title}>{isEdit ? 'Edit Function' : 'New Function'}</div>
+                    <div style={sFn.sub}>{isEdit ? visibleFn.name : 'Add a new function group'}</div>
                 </div>
-                <div style={sFn.body}>
-                    <div style={sAdd.fieldGroup}>
-                        <label style={sAdd.label}>FUNCTION NAME</label>
-                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. A. CORE FUNCTIONS" value={name} onChange={e => setName(e.target.value)} />
-                    </div>
-                    <div style={sAdd.row}>
-                        <div style={{ flex: 1 }}>
-                            <label style={sAdd.label}>TYPE</label>
-                            <select style={{ ...sAdd.input, paddingLeft: '0.75rem' }} value={type} onChange={e => setType(e.target.value)}>
-                                <option value="core">Core</option>
-                                <option value="support">Support</option>
-                            </select>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={sAdd.label}>WEIGHT %</label>
-                            <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} type="number" min="0" max="100" placeholder="e.g. 80" value={weight} onChange={e => setWeight(e.target.value)} />
-                        </div>
-                    </div>
+                <button style={sCtx.closeBtn} onClick={onClose}>✕</button>
+            </div>
+            <div style={sFn.body}>
+                <div style={sAdd.fieldGroup}>
+                    <label style={sAdd.label}>FUNCTION NAME</label>
+                    <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. A. CORE FUNCTIONS" value={name} onChange={e => setName(e.target.value)} />
                 </div>
-                <div style={sFn.footer}>
-                    <button style={{ background: 'none', border: '1px solid var(--admin-border-strong)', cursor: 'pointer', color: 'var(--admin-text-muted)', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 600, fontSize: '0.85rem' }} onClick={onClose}>Cancel</button>
-                    <button style={{ ...s.btnPrimary, padding: '0.5rem 1.25rem' }} onClick={handleSave}>{isEdit ? 'Save Changes' : 'Add Function'}</button>
+                <div style={sAdd.row}>
+                    <div style={{ flex: 1 }}>
+                        <label style={sAdd.label}>TYPE</label>
+                        <select style={{ ...sAdd.input, paddingLeft: '0.75rem' }} value={type} onChange={e => setType(e.target.value)}>
+                            <option value="core">Core</option>
+                            <option value="support">Support</option>
+                        </select>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={sAdd.label}>WEIGHT %</label>
+                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} type="number" min="0" max="100" placeholder="e.g. 80" value={weight} onChange={e => setWeight(e.target.value)} />
+                    </div>
                 </div>
             </div>
+            <div style={sFn.footer}>
+                <button style={{ background: 'none', border: '1px solid var(--admin-border-strong)', cursor: 'pointer', color: 'var(--admin-text-muted)', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 600, fontSize: '0.85rem' }} onClick={onClose}>Cancel</button>
+                <button style={{ ...s.btnPrimary, padding: '0.5rem 1.25rem' }} onClick={handleSave}>{isEdit ? 'Save Changes' : 'Add Function'}</button>
+            </div>
+        </>
+    );
+
+    if (bp === 'mobile') {
+        if (!visibleFn) return null;
+        return (
+            <>
+                <div onClick={onClose} style={{ position: 'fixed', top: 0, bottom: 0, left, right: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+                <div style={{ position: 'fixed', bottom: 0, left, right: 0, zIndex: 1101, background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', animation: 'slideUp 0.25s ease' }}>
+                    <div style={{ padding: '10px 1.25rem 0', display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                    </div>
+                    {modalContent}
+                </div>
+                <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            </>
+        );
+    }
+
+    if (!visibleFn) return null;
+    return (
+        <div style={sFn.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+            <div style={sFn.modal}>{modalContent}</div>
         </div>
     );
 }
@@ -807,16 +1072,58 @@ function FunctionModal({ fn, onSave, onClose }) {
 const sFn = {
     overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' },
     modal:   { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius-lg)', width: '100%', maxWidth: 420, boxShadow: 'var(--admin-shadow)' },
+    fullscreen: { position: 'fixed', inset: 0, maxWidth: '100%', maxHeight: '100%', borderRadius: 0, display: 'flex', flexDirection: 'column', boxShadow: 'none', overflow: 'hidden' },
+    mobileSheet: { position: 'fixed', left: 0, right: 0, bottom: 0, top: 'auto', width: '100%', maxWidth: '100%', height: '82vh', background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', transform: 'translateY(100%)', transition: 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)', willChange: 'transform', boxShadow: '0 -8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    mobileSheetOpen: { transform: 'translateY(0)', animation: 'slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1)' },
+    dragHandle: { position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)', width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' },
     header:  { padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
     title:   { fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: '0.15rem' },
     sub:     { fontSize: '0.78rem', color: 'var(--admin-text-muted)' },
-    body:    { padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
+    body:    { padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, overflowY: 'auto' },
     footer:  { padding: '1rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' },
 };
 
 function initials(name) {
     if (!name) return '?';
     return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
+
+function MobileAddMenu({ activeFn, functions, onAddMfo, onAddFn }) {
+    const [open, setOpen] = useState(false);
+    const btnRef = useRef(null);
+
+    const rect = open ? btnRef.current?.getBoundingClientRect() : null;
+
+    return (
+        <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', borderLeft: '1px solid var(--admin-border)', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
+            <button ref={btnRef} type="button"
+                style={{ width: 34, height: 34, borderRadius: 999, border: '1px solid var(--admin-border-strong)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                onClick={() => setOpen(v => !v)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            {open && rect && (
+                <>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 400 }} onClick={() => setOpen(false)} />
+                    <div style={{ position: 'fixed', top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right), zIndex: 401, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 12, padding: '0.35rem', minWidth: 200, boxShadow: '0 8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div style={{ padding: '0.4rem 0.75rem', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' }}>Add to UWP</div>
+                        {activeFn && (
+                            <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', fontSize: '0.85rem', borderRadius: 8, textAlign: 'left', width: '100%' }}
+                                onClick={() => { onAddMfo(activeFn); setOpen(false); }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                                Add MFO / PPA
+                                <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{activeFn.name}</span>
+                            </button>
+                        )}
+                        <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', fontSize: '0.85rem', borderRadius: 8, textAlign: 'left', width: '100%' }}
+                            onClick={() => { onAddFn(); setOpen(false); }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Add Function
+                        </button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
 }
 
 // ── Styles ──
@@ -830,7 +1137,7 @@ const s = {
     btnSecondary:   { padding: '0.45rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', cursor: 'pointer', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600 },
     readonlyBanner: { marginBottom: '1rem', padding: '0.65rem 1rem', borderRadius: 8, background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', color: '#ca8a04', fontSize: '0.82rem' },
 
-    layout:         { display: 'flex', gap: 0, borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', minHeight: 600 },
+    layout:         { display: 'flex', gap: 0, borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'visible', minHeight: 600 },
 
     // Left panel
     leftPanel:      { width: 270, minWidth: 270, borderRight: '1px solid var(--admin-border)', background: 'var(--admin-sidebar)', flexShrink: 0, padding: '1.25rem 0' },
@@ -839,7 +1146,7 @@ const s = {
     fnItemActive:   { color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.07)', borderLeftColor: 'var(--admin-accent)', fontWeight: 600 },
     fnIcon:         { flexShrink: 0, display: 'flex', alignItems: 'center' },
     mfoItem:        { width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 1rem 0.45rem 2rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', textAlign: 'left', borderLeft: '2px solid transparent', fontSize: '0.76rem' },
-    mfoItemActive:  { color: 'var(--admin-text-primary)', background: 'rgba(255,255,255,0.04)', borderLeftColor: 'var(--admin-border-strong)', fontWeight: 500 },
+    mfoItemActive:  { color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.08)', borderLeftColor: 'var(--admin-accent)', fontWeight: 600 },
     addMfoBtn:      { width: '100%', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 1rem 0.4rem 2rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-accent)', fontSize: '0.72rem', fontWeight: 600, opacity: 0.7 },
     fnActionBtn:    { flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', padding: '0.35rem 0.4rem', display: 'flex', alignItems: 'center' },
     addFnBtn:       { width: '100%', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 1rem', background: 'none', border: 'none', borderTop: '1px solid var(--admin-border)', cursor: 'pointer', color: 'var(--admin-accent)', fontSize: '0.78rem', fontWeight: 600, marginTop: '0.5rem' },
@@ -874,12 +1181,31 @@ const s = {
     menuDivider:    { height: 1, background: 'var(--admin-border)', margin: '0.25rem 0' },
 
     addBtn:         { width: '100%', padding: '0.85rem', borderRadius: 10, border: '2px dashed var(--admin-border)', background: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.82rem', fontWeight: 600, marginTop: '0.25rem' },
+
+    // Tablet breadcrumb nav
+    breadcrumbRow:  { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0', marginBottom: '1rem', flexWrap: 'nowrap', overflow: 'hidden' },
+    fnPill:         { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid var(--admin-accent)', background: 'transparent', color: 'var(--admin-accent)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' },
+    mfoPill:        { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.85rem', borderRadius: 99, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' },
+    dropdown:       { position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 300, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 10, padding: '0.35rem', minWidth: 220, maxWidth: 320, maxHeight: 320, overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', gap: 2 },
+    dropBackdrop:   { position: 'fixed', inset: 0, zIndex: 299 },
+    dropItem:       { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-secondary)', fontSize: '0.82rem', borderRadius: 6, textAlign: 'left', width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    dropItemActive: { color: 'var(--admin-accent)', fontWeight: 600 },
+
+    // Mobile tab strip
+    tabStrip:       { display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', gap: 0, marginBottom: '1rem', borderBottom: '1px solid var(--admin-border)', background: 'var(--admin-card)', whiteSpace: 'nowrap' },
+    tab:            { flexShrink: 0, padding: '0.6rem 1rem', background: 'none', border: 'none', borderBottom: '2px solid transparent', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap', lineHeight: 1, maxWidth: '10rem', overflow: 'hidden', textOverflow: 'ellipsis' },
+    tabActive:      { color: 'var(--admin-accent)', borderBottomColor: 'var(--admin-accent)', fontWeight: 700 },
+    tabAddBtn:      { flexShrink: 0, marginLeft: 'auto', marginRight: '0.5rem', width: 34, height: 34, borderRadius: 999, border: '1px solid var(--admin-border-strong)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    mfoInlineBtn:   { flexShrink: 0, width: 34, height: 34, borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
 };
 
 const sCtx = {
     backdrop:      { position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.4)' },
     panel:         { position: 'fixed', top: 0, right: 0, height: '100vh', width: 300, zIndex: 1101, background: 'var(--admin-card)', borderLeft: '1px solid var(--admin-border-strong)', display: 'flex', flexDirection: 'column', transform: 'translateX(100%)', transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)', boxShadow: '-8px 0 32px rgba(0,0,0,0.35)' },
     open:          { transform: 'translateX(0)' },
+    fullscreen:    { position: 'fixed', inset: 0, zIndex: 1200, background: 'var(--admin-card)', borderRadius: 0, display: 'flex', flexDirection: 'column', boxShadow: 'none', overflow: 'hidden', borderLeft: 'none', transform: 'translateX(0)' },
+    mobileSheet:   { position: 'fixed', left: 0, right: 0, bottom: 0, top: 'auto', width: '100%', maxWidth: '100%', height: '82vh', background: 'var(--admin-card)', borderRadius: '20px 20px 0 0', transform: 'translateY(100%)', transition: 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)', willChange: 'transform', boxShadow: '0 -8px 32px rgba(0,0,0,0.35)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    mobileSheetOpen: { transform: 'translateY(0)', animation: 'slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1)' },
     header:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)' },
     label:         { fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.09em', color: 'var(--admin-text-muted)', textTransform: 'uppercase' },
     closeBtn:      { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' },
@@ -904,8 +1230,7 @@ const css = `
 .fn-actions-row:hover .fn-actions { opacity: 1; }
 .mfo-actions { display: flex; align-items: center; opacity: 0; transition: opacity 0.15s; }
 .mfo-header-row:hover .mfo-actions { opacity: 1; }
-@media (max-width: 768px) {
-    .uwp-layout { flex-direction: column !important; }
-    .uwp-left { width: 100% !important; min-width: unset !important; border-right: none !important; border-bottom: 1px solid var(--admin-border) !important; padding: 0.75rem 1rem !important; }
-    .uwp-center { padding: 1rem !important; }
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }`;

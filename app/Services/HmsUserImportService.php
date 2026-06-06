@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Mail\PmsEmployeeIdIssuedMail;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Throwable;
 
 class HmsUserImportService
@@ -42,6 +44,7 @@ class HmsUserImportService
                     'name' => $name,
                     'email' => $email,
                     'role' => $role,
+                    'password' => Hash::make(Str::random(48)),
                     'is_active' => false,
                     'activated_at' => null,
                 ];

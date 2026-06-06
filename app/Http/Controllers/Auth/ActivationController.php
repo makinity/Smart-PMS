@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Fortify\PasswordValidationRules;
 use App\Http\Controllers\Controller;
 use App\Models\AccountActivationToken;
 use App\Models\User;
@@ -16,7 +17,7 @@ class ActivationController extends Controller
     public function verify(Request $request): JsonResponse
     {
         $request->validate([
-            'employee_id' => ['required', 'regex:/^EMP-[A-Z]{3}-\d{4}$/'],
+            'employee_id' => ['required', 'regex:/^EMP-[A-Z0-9-]{3,50}$/'],
             'email'       => ['required', 'email'],
         ]);
 
@@ -63,7 +64,7 @@ class ActivationController extends Controller
     {
         $request->validate([
             'token'                  => ['required', 'string'],
-            'password'               => ['required', 'string', 'min:8', 'confirmed'],
+            'password'               => ['required', 'string', PasswordValidationRules::strongPassword(), 'confirmed'],
             'password_confirmation'  => ['required', 'string'],
         ]);
 

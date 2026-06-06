@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const RATINGS   = [5, 4, 3, 2, 1];
 const RATING_LABELS = { 5: 'Outstanding', 4: 'Very Satisfactory', 3: 'Satisfactory', 2: 'Unsatisfactory', 1: 'Poor' };
 const DIMS      = ['q', 'e', 't'];
 const DIM_LABELS = { q: 'Quality', e: 'Efficiency', t: 'Timeliness' };
 const DIM_ICONS  = { q: 'bi-patch-check', e: 'bi-lightning-charge', t: 'bi-clock' };
+
+function useBreakpoint() {
+    const [w, setW] = useState(() => window.innerWidth);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    if (w >= 1024) return 'desktop';
+    if (w >= 768) return 'tablet';
+    return 'mobile';
+}
 
 function buildInitial(existing = []) {
     const grid = {};
@@ -21,6 +33,7 @@ function buildInitial(existing = []) {
 
 export default function QetModal({ indicator, onSave, onClose }) {
     const [grid, setGrid] = useState(() => buildInitial(indicator.qetStandards));
+    const bp = useBreakpoint();
 
     function set(dim, rating, val) {
         setGrid(g => ({ ...g, [dim]: { ...g[dim], [rating]: val } }));
@@ -35,8 +48,8 @@ export default function QetModal({ indicator, onSave, onClose }) {
     }
 
     return (
-        <div style={s.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-            <div style={s.modal}>
+        <div style={{ ...s.overlay, ...(bp === 'mobile' ? s.overlayMobile : {}) }} onClick={e => e.target === e.currentTarget && onClose()}>
+            <div style={{ ...s.modal, ...(bp === 'mobile' ? s.modalFull : {}) }}>
                 {/* Header */}
                 <div style={s.header}>
                     <div>
@@ -48,6 +61,9 @@ export default function QetModal({ indicator, onSave, onClose }) {
 
                 {/* Grid */}
                 <div style={s.tableWrap}>
+                    {(bp === 'tablet' || bp === 'mobile') && (
+                        <div style={s.hint}>Swipe right to see all rating columns</div>
+                    )}
                     <table style={s.table}>
                         <thead>
                             <tr>
@@ -102,13 +118,16 @@ function ratingColor(r) {
 
 const s = {
     overlay:      { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' },
+    overlayMobile:{ padding: 0 },
     modal:        { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius-lg)', width: '100%', maxWidth: 860, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--admin-shadow)' },
+    modalFull:    { position: 'fixed', inset: 0, maxWidth: '100%', maxHeight: '100%', borderRadius: 0, boxShadow: 'none' },
     header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
     headerSub:    { fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)', letterSpacing: '0.1em', marginBottom: '0.25rem' },
     headerTitle:  { fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' },
     closeBtn:     { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: '0.2rem' },
     tableWrap:    { overflowX: 'auto', overflowY: 'auto', flex: 1, padding: '1rem 1.5rem' },
-    table:        { width: '100%', borderCollapse: 'collapse', minWidth: 640 },
+    hint:         { marginBottom: '0.75rem', fontSize: '0.72rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' },
+    table:        { width: '100%', borderCollapse: 'collapse', minWidth: 760 },
     th:           { padding: '0.5rem 0.5rem', textAlign: 'left', fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--admin-border)' },
     ratingHeader: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' },
     ratingScore:  { width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--admin-text-primary)' },

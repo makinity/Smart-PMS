@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { router } from '@inertiajs/react';
 
-function CustomSelect({ value, onChange, options, placeholder, disabled }) {
+function CustomSelect({ value, onChange, options, placeholder, disabled, error }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
     const selected = options.find(o => String(o.value) === String(value));
@@ -15,7 +15,7 @@ function CustomSelect({ value, onChange, options, placeholder, disabled }) {
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             <button type="button"
-                style={{ ...cs.trigger, opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+                style={{ ...cs.trigger, opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer', borderColor: error ? '#f87171' : undefined }}
                 onClick={() => !disabled && setOpen(v => !v)}>
                 <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: selected ? 'var(--admin-text-primary)' : 'var(--admin-text-muted)' }}>
                     {selected ? selected.label : placeholder}
@@ -106,14 +106,13 @@ export default function LogTaskModal({ date, orsOptions, supervisors, onClose })
                     {/* UWP Output */}
                     <div style={s.field}>
                         <div style={s.label}>UWP OUTPUT / MAJOR FINAL OUTPUT</div>
-                        <div style={{ position: 'relative' }}>
-                            <select style={{ ...s.select, borderColor: errors.output ? '#f87171' : undefined }}
-                                value={outputKey} onChange={e => setOutputKey(e.target.value)}>
-                                <option value="">— Select Major Output —</option>
-                                {orsOptions.map(g => <option key={g.output_key} value={g.output_key}>{g.output_title}</option>)}
-                            </select>
-                            <i className="bi bi-chevron-down" style={s.selectIcon} />
-                        </div>
+                        <CustomSelect
+                            value={outputKey}
+                            onChange={setOutputKey}
+                            placeholder="— Select Major Output —"
+                            options={orsOptions.map(g => ({ value: g.output_key, label: g.output_title }))}
+                            error={!!errors.output}
+                        />
                         {errors.output && <span style={s.errText}>{errors.output}</span>}
                     </div>
 
@@ -126,6 +125,7 @@ export default function LogTaskModal({ date, orsOptions, supervisors, onClose })
                             disabled={!group}
                             placeholder="— Select Task based on Output —"
                             options={group?.indicators.map(ind => ({ value: ind.ipcr_item_id, label: ind.indicator_text })) ?? []}
+                            error={!!errors.ipcr_item_id}
                         />
                         {errors.ipcr_item_id && <span style={s.errText}>{errors.ipcr_item_id}</span>}
                     </div>
@@ -133,14 +133,13 @@ export default function LogTaskModal({ date, orsOptions, supervisors, onClose })
                     {/* Supervisor */}
                     <div style={s.field}>
                         <div style={s.label}>SUPERVISOR</div>
-                        <div style={{ position: 'relative' }}>
-                            <select style={{ ...s.select, borderColor: errors.supervisor_id ? '#f87171' : undefined }}
-                                value={supervisorId} onChange={e => setSupervisorId(e.target.value)}>
-                                <option value="">— Select Supervisor —</option>
-                                {supervisors.map(sup => <option key={sup.id} value={sup.id}>{sup.label}</option>)}
-                            </select>
-                            <i className="bi bi-chevron-down" style={s.selectIcon} />
-                        </div>
+                        <CustomSelect
+                            value={supervisorId}
+                            onChange={setSupervisorId}
+                            placeholder="— Select Supervisor —"
+                            options={supervisors.map(sup => ({ value: sup.id, label: sup.label }))}
+                            error={!!errors.supervisor_id}
+                        />
                         {errors.supervisor_id && <span style={s.errText}>{errors.supervisor_id}</span>}
                     </div>
 

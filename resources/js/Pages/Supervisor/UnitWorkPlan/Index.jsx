@@ -11,33 +11,32 @@ const statusStyle = s => ({
     textTransform: 'capitalize',
 });
 
-// Simple SVG icons
-const EditIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-    </svg>
-);
+const EditIcon = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>);
+const EyeIcon  = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>);
 
-const EyeIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-    </svg>
-);
+function useBreakpoint() {
+    const [w, setW] = useState(() => window.innerWidth);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    return w < 768 ? 'mobile' : w < 1024 ? 'tablet' : 'desktop';
+}
+
+const STATUS_OPTIONS = [
+    { key: 'all',       label: 'All' },
+    { key: 'draft',     label: 'Draft' },
+    { key: 'submitted', label: 'Submitted' },
+    { key: 'returned',  label: 'Returned' },
+    { key: 'approved',  label: 'Approved' },
+];
 
 export default function Index() {
     const { uwps = [], activePeriod } = usePage().props;
-    const [isMobile, setIsMobile] = useState(false);
+    const bp = useBreakpoint();
     const [search,       setSearch]       = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-
-    useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth < 640);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
@@ -51,7 +50,7 @@ export default function Index() {
         <AppLayout title="Unit Work Plans">
             <div style={card}>
                 {/* Header row */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <div>
                         <h4 style={h}>Unit Work Plans</h4>
                         <p style={sub}>Active period: <strong style={{ color: 'var(--admin-text-primary)' }}>{activePeriod}</strong></p>
@@ -59,51 +58,49 @@ export default function Index() {
                     <button style={btnPrimary} onClick={() => router.post('/supervisor/uwp')}>+ New UWP</button>
                 </div>
 
-                {/* Search + filter toolbar */}
-                <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                    <input
-                        type="text"
-                        placeholder="Search by period or office…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        style={searchInput}
-                    />
-                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectInput}>
-                        <option value="all">All statuses</option>
-                        <option value="draft">Draft</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="returned">Returned</option>
-                        <option value="approved">Approved</option>
-                    </select>
+                {/* Search bar */}
+                <input type="text" placeholder="Search by period or office…"
+                    value={search} onChange={e => setSearch(e.target.value)}
+                    style={{ ...searchInput, width: '100%', marginBottom: '0.6rem', boxSizing: 'border-box' }} />
+
+                {/* Status filter pills */}
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'nowrap', overflowX: 'auto', marginBottom: '1.25rem', scrollbarWidth: 'none' }}>
+                    {STATUS_OPTIONS.map(({ key, label }) => (
+                        <button key={key} onClick={() => setStatusFilter(key)} style={{
+                            flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99,
+                            border: '1px solid', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                            borderColor: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-border)',
+                            background: statusFilter === key ? 'rgba(59,130,246,0.12)' : 'transparent',
+                            color: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                        }}>
+                            {label}
+                        </button>
+                    ))}
                 </div>
 
                 {filtered.length > 0 ? (
-                    isMobile ? (
-                        /* Card list for small screens */
+                    bp === 'mobile' ? (
+                        /* Card list */
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {filtered.map(uwp => (
                                 <div key={uwp.id} style={listCard}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                        <span style={{ fontWeight: 600, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>{uwp.period}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                                        <span style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{uwp.period}</span>
                                         <span style={statusStyle(uwp.status)}>{uwp.status?.replace(/_/g, ' ')}</span>
                                     </div>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.25rem' }}>{uwp.office}</p>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{uwp.updated_at}</span>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>{uwp.office}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{uwp.updated_at}</span>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View">
-                                                <EyeIcon />
-                                            </a>
-                                            <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit">
-                                                <EditIcon />
-                                            </a>
+                                            <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></a>
+                                            <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit"><EditIcon /></a>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        /* Table for larger screens */
+                        /* Table */
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                                 <thead>
@@ -122,12 +119,8 @@ export default function Index() {
                                             <td style={{ ...td, color: 'var(--admin-text-muted)' }}>{uwp.updated_at}</td>
                                             <td style={{ ...td, textAlign: 'right' }}>
                                                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                    <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View">
-                                                        <EyeIcon />
-                                                    </a>
-                                                    <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit">
-                                                        <EditIcon />
-                                                    </a>
+                                                    <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></a>
+                                                    <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit"><EditIcon /></a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -161,5 +154,4 @@ const btnPrimary = { padding: '0.5rem 1.1rem', borderRadius: 8, background: 'var
 const iconBtn    = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '2rem', height: '2rem', borderRadius: 6, border: '1px solid var(--admin-border-strong)', color: 'var(--admin-accent)', textDecoration: 'none', transition: 'background 0.15s' };
 const listCard   = { background: 'var(--admin-bg)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, padding: '1rem' };
 const empty      = { padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' };
-const searchInput = { flex: 1, minWidth: 220, padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)' };
-const selectInput = { padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)', cursor: 'pointer' };
+const searchInput = { flex: 1, minWidth: 220, padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)', outline: 'none' };

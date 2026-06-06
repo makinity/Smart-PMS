@@ -30,6 +30,10 @@ return new class extends Migration {
 
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         foreach ($this->tables as $table) {
             Schema::dropIfExists($table);

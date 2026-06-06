@@ -38,11 +38,20 @@ Route::post('/activate/complete', [\App\Http\Controllers\Auth\ActivationControll
 Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/users', [\App\Http\Controllers\Admin\UsersController::class, 'index'])->name('users.index');
+    Route::post('/users', [\App\Http\Controllers\Admin\UsersController::class, 'store'])->name('users.store');
+    Route::patch('/users/{user}', [\App\Http\Controllers\Admin\UsersController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/send-code', [\App\Http\Controllers\Admin\UsersController::class, 'sendCode'])->name('users.send-code');
+    Route::patch('/users/{user}/activate', [\App\Http\Controllers\Admin\UsersController::class, 'activate'])->name('users.activate');
+    Route::patch('/users/{user}/deactivate', [\App\Http\Controllers\Admin\UsersController::class, 'deactivate'])->name('users.deactivate');
+    Route::patch('/users/{user}/disable', [\App\Http\Controllers\Admin\UsersController::class, 'disable'])->name('users.disable');
+    Route::patch('/users/{user}/enable', [\App\Http\Controllers\Admin\UsersController::class, 'enable'])->name('users.enable');
     Route::get('/offices', [\App\Http\Controllers\Admin\OfficeController::class, 'index'])->name('offices.index');
     Route::get('/performance-periods', [\App\Http\Controllers\Admin\PerformancePeriodsController::class, 'index'])->name('performance-periods.index');
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogsController::class, 'index'])->name('audit-logs.index');
     Route::get('/database', [\App\Http\Controllers\Admin\DatabaseController::class, 'index'])->name('database.index');
     Route::get('/hris', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.index');
+    Route::get('/hris-integration', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.integration');
+    Route::post('/hris/sync', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'sync'])->name('hris.sync');
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportsController::class, 'index'])->name('reports.index');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Admin/Profile'))->name('profile');
 });

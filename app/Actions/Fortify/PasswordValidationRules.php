@@ -7,13 +7,17 @@ use Illuminate\Validation\Rules\Password;
 
 trait PasswordValidationRules
 {
-    /**
-     * Get the validation rules used to validate passwords.
-     *
-     * @return array<int, Rule|array<mixed>|string>
-     */
     protected function passwordRules(): array
     {
-        return ['required', 'string', Password::default(), 'confirmed'];
+        return ['required', 'string', self::strongPassword(), 'confirmed'];
+    }
+
+    public static function strongPassword(): Password
+    {
+        return Password::min(8)
+            ->mixedCase()          // must have uppercase AND lowercase
+            ->numbers()            // must have at least one number
+            ->symbols()            // must have at least one symbol
+            ->uncompromised();     // checks against known breached password lists (common passwords included)
     }
 }

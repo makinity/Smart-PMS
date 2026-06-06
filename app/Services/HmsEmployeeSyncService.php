@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\PmsEmployeeIdIssuedMail;
 use App\Models\Office;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class HmsEmployeeSyncService
@@ -128,18 +131,26 @@ class HmsEmployeeSyncService
             return;
         }
 
-        User::query()->create([
+        $user = User::query()->create([
             'employee_id' => $this->generateNextEmployeeId(),
             'hms_employee_id' => $hmsEmployeeId,
             'name' => $name,
             'email' => $email !== '' ? $email : null,
-            'password' => null,
+            'password' => Hash::make(Str::random(48)),
             'role' => 'employee',
             'is_active' => false,
             'activated_at' => null,
             'office_id' => $office->id,
             'position' => $position !== '' ? $position : null,
         ]);
+
+        if ($email !== '') {
+            Mail::to($email)->send(new PmsEmployeeIdIssuedMail(
+                name: $name,
+                employeeId: (string) $user->employee_id,
+                email: $email,
+            ));
+        }
 
         $summary['created']++;
     }

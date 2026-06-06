@@ -8,19 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('opcrs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('office_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('performance_period_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('draft'); // draft, submitted, approved
-            $table->timestamps();
-
-            $table->unique(['office_id', 'performance_period_id']);
-        });
+        // Superseded by 2026_06_05_010845_recreate_opcrs_and_pivot_table.
+        // Keep as a no-op so the schema is created once by the later migration.
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('opcrs');
+        // No-op for the same reason as up().
     }
 };
