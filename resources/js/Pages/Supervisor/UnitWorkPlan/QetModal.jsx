@@ -47,7 +47,7 @@ export default function QetModal({ indicator, onSave, onClose }) {
         onSave(indicator.id, standards);
     }
 
-    if (bp === 'mobile') {
+    if (bp === 'mobile' || bp === 'tablet') {
         return (
             <>
                 <div style={{ position: 'fixed', inset: 0, zIndex: 1099, background: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
@@ -127,11 +127,11 @@ export default function QetModal({ indicator, onSave, onClose }) {
                     <table style={s.table}>
                         <thead>
                             <tr>
-                                <th style={{ ...s.th, width: 100 }}>DIMENSION</th>
+                                <th style={{ ...s.th, width: 110, textAlign: 'left', background: 'var(--admin-bg-secondary)' }}>DIMENSION</th>
                                 {RATINGS.map(r => (
-                                    <th key={r} style={s.th}>
+                                    <th key={r} style={{ ...s.th, background: ratingColor(r) }}>
                                         <div style={s.ratingHeader}>
-                                            <span style={{ ...s.ratingScore, background: ratingColor(r) }}>{r}</span>
+                                            <span style={{ ...s.ratingScore, background: ratingColorSolid(r), color: '#fff' }}>{r}</span>
                                             <span style={s.ratingLabel}>{RATING_LABELS[r]}</span>
                                         </div>
                                     </th>
@@ -141,18 +141,18 @@ export default function QetModal({ indicator, onSave, onClose }) {
                         <tbody>
                             {DIMS.map(dim => (
                                 <tr key={dim} style={s.row}>
-                                    <td style={s.dimCell}>
+                                    <td style={{ padding: '1rem 0.75rem', verticalAlign: 'middle', background: 'var(--admin-bg-secondary)', borderRight: '1px solid var(--admin-border)', textAlign: 'center' }}>
                                         <i className={`bi ${DIM_ICONS[dim]}`} style={s.dimIcon} />
-                                        <span style={s.dimLabel}>{DIM_LABELS[dim]}</span>
+                                        <div style={s.dimLabel}>{DIM_LABELS[dim]}</div>
                                     </td>
                                     {RATINGS.map(r => (
-                                        <td key={r} style={s.cell}>
+                                        <td key={r} style={{ ...s.cell, background: `${ratingColor(r)}22` }}>
                                             <textarea
                                                 style={s.textarea}
                                                 value={grid[dim][r]}
                                                 placeholder={`${DIM_LABELS[dim]} standard for rating ${r}…`}
                                                 onChange={e => set(dim, r, e.target.value)}
-                                                rows={3}
+                                                rows={5}
                                             />
                                         </td>
                                     ))}
@@ -173,7 +173,11 @@ export default function QetModal({ indicator, onSave, onClose }) {
 }
 
 function ratingColor(r) {
-    return { 5: 'rgba(74,222,128,0.25)', 4: 'rgba(59,130,246,0.25)', 3: 'rgba(234,179,8,0.25)', 2: 'rgba(249,115,22,0.25)', 1: 'rgba(239,68,68,0.25)' }[r];
+    return { 5: 'rgba(74,222,128,0.15)', 4: 'rgba(59,130,246,0.15)', 3: 'rgba(234,179,8,0.15)', 2: 'rgba(249,115,22,0.15)', 1: 'rgba(239,68,68,0.15)' }[r];
+}
+
+function ratingColorSolid(r) {
+    return { 5: '#22c55e', 4: '#3b82f6', 3: '#eab308', 2: '#f97316', 1: '#ef4444' }[r];
 }
 
 const sMob = {
@@ -181,26 +185,26 @@ const sMob = {
 };
 
 const s = {
-    overlay:      { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' },
-    modal:        { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius-lg)', width: '100%', maxWidth: 860, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--admin-shadow)' },
-    header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
+    overlay:      { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' },
+    modal:        { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius-lg)', width: '100%', maxWidth: 960, maxHeight: '92vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--admin-shadow)' },
+    header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '1.25rem 1.75rem', borderBottom: '1px solid var(--admin-border)' },
     headerSub:    { fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)', letterSpacing: '0.1em', marginBottom: '0.25rem' },
-    headerTitle:  { fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' },
+    headerTitle:  { fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)', lineHeight: 1.4 },
     closeBtn:     { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: '0.2rem' },
-    tableWrap:    { overflowX: 'auto', overflowY: 'auto', flex: 1, padding: '1rem 1.5rem' },
+    tableWrap:    { overflowX: 'auto', overflowY: 'auto', flex: 1, padding: '0 0 0 0' },
     hint:         { marginBottom: '0.75rem', fontSize: '0.72rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' },
     table:        { width: '100%', borderCollapse: 'collapse', minWidth: 760 },
-    th:           { padding: '0.5rem 0.5rem', textAlign: 'left', fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--admin-border)' },
-    ratingHeader: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' },
-    ratingScore:  { width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'var(--admin-text-primary)' },
+    th:           { padding: '0.75rem 1rem', textAlign: 'center', fontSize: '0.7rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '2px solid var(--admin-border)' },
+    ratingHeader: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' },
+    ratingScore:  { width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'var(--admin-text-primary)' },
     ratingLabel:  { fontSize: '0.62rem', color: 'var(--admin-text-muted)', textAlign: 'center', lineHeight: 1.2 },
     row:          { borderBottom: '1px solid var(--admin-border)' },
     dimCell:      { padding: '0.75rem 0.5rem', verticalAlign: 'top', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', minWidth: 80 },
-    dimIcon:      { fontSize: '1.1rem', color: 'var(--admin-accent)' },
-    dimLabel:     { fontSize: '0.72rem', fontWeight: 700, color: 'var(--admin-text-secondary)' },
-    cell:         { padding: '0.5rem', verticalAlign: 'top' },
-    textarea:     { width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--admin-border)', borderRadius: 6, color: 'var(--admin-text-primary)', fontSize: '0.75rem', padding: '0.4rem 0.5rem', resize: 'none', outline: 'none', lineHeight: 1.5, fontFamily: 'inherit' },
-    footer:       { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', padding: '1rem 1.5rem', borderTop: '1px solid var(--admin-border)' },
-    btnCancel:    { padding: '0.5rem 1.25rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 },
-    btnSave:      { padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 },
+    dimIcon:      { fontSize: '1.25rem', color: 'var(--admin-accent)' },
+    dimLabel:     { fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-text-secondary)', marginTop: '0.15rem' },
+    cell:         { padding: '0.75rem 0.6rem', verticalAlign: 'top' },
+    textarea:     { width: '100%', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.82rem', padding: '0.6rem 0.75rem', resize: 'vertical', outline: 'none', lineHeight: 1.6, fontFamily: 'inherit', minHeight: 100, transition: 'border-color 0.15s' },
+    footer:       { display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', padding: '1rem 1.75rem', borderTop: '1px solid var(--admin-border)' },
+    btnCancel:    { padding: '0.55rem 1.5rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 },
+    btnSave:      { padding: '0.55rem 1.5rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' },
 };
