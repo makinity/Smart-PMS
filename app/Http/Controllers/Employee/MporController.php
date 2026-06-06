@@ -66,7 +66,25 @@ class MporController extends Controller
         };
 
         // Build rows grouped by indicator text + function section
+        // Pre-seed all function sections from the committed IPCR so sections with
+        // zero entries (e.g. Support Functions) still appear in the output.
         $sections = [];
+        if ($ipcr) {
+            $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
+            foreach ($ipcr->items as $item) {
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
+                if (! $fn) continue;
+                $key = $fn->function_type;
+                if (! isset($sections[$key])) {
+                    $sections[$key] = [
+                        'key'    => $key,
+                        'label'  => $fn->name,
+                        'weight' => $fn->weight_percent,
+                        'rows'   => [],
+                    ];
+                }
+            }
+        }
 
         foreach ($entries as $entry) {
             $indicator = $entry->ipcrItem?->indicator;

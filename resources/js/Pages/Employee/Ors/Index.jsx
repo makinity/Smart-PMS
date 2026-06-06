@@ -353,7 +353,7 @@ function Legend({ scrollable }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, orsGateLocked, orsGateReason, orsOptions, supervisors, calendarEntries, activeEntry: initialActive, stats } = usePage().props;
+    const { period, orsGateLocked, orsGateReason, orsOptions, supervisors, calendarEntries, activeEntry: initialActive, stats, mporLockedMonths = [] } = usePage().props;
 
     const today = new Date().toISOString().slice(0, 10);
     const [cal,   setCal]   = useState(() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }; });
@@ -361,9 +361,16 @@ export default function Index() {
     const [selectedDate, setSelectedDate] = useState(today);
     const bp = useBreakpoint();
 
+    // MPOR lock: format cal month as YYYY-MM and check against locked months
+    const calMonthStr = `${cal.year}-${String(cal.month + 1).padStart(2, '0')}`;
+    const isCalMonthMporLocked = mporLockedMonths.includes(calMonthStr);
+    const effectivelyLocked = orsGateLocked || isCalMonthMporLocked;
+
     function onDayClick(dateStr, dayEntries) {
-        if (dayEntries.length > 0) setModal({ type: 'day', date: dateStr, entries: dayEntries });
-        else setModal({ type: 'log', date: dateStr });
+        const dateMonth = dateStr.slice(0, 7);
+        const dateLocked = mporLockedMonths.includes(dateMonth);
+        if (dayEntries.length > 0) setModal({ type: 'day', date: dateStr, entries: dayEntries, mporLocked: dateLocked });
+        else if (!dateLocked && !orsGateLocked) setModal({ type: 'log', date: dateStr });
     }
 
     function timerAction(action, entryId, openDetails = false) {
@@ -413,6 +420,17 @@ export default function Index() {
                 </div>
             )}
 
+            {/* MPOR lock banner for current calendar month */}
+            {!orsGateLocked && isCalMonthMporLocked && (
+                <div style={{ marginBottom: '1rem', padding: '0.85rem 1.25rem', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#a78bfa' }}>
+                    <i className="bi bi-lock-fill" />
+                    <div>
+                        <strong>MPOR Submitted — {calMonthStr}</strong>
+                        <span style={{ marginLeft: '0.5rem', fontWeight: 400 }}>This month's MPOR has been submitted. ORS entries are locked. If your supervisor returns the MPOR, this month will be unlocked.</span>
+                    </div>
+                </div>
+            )}
+
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${bp === 'mobile' ? 2 : 4}, 1fr)`, gap: '0.75rem', marginBottom: '0.75rem' }}>
                 {statCards.map(s => (
@@ -438,7 +456,7 @@ export default function Index() {
             {/* ── DESKTOP: full calendar ── */}
             {bp === 'desktop' && (
                 <div style={card}>
-                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={orsGateLocked} showLogBtn onLogTask={() => setModal({ type: 'log', date: today })} />
+                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={effectivelyLocked} showLogBtn onLogTask={() => setModal({ type: 'log', date: today })} />
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.35rem', marginBottom: '0.35rem' }}>
                         {WEEKDAYS.map(d => (
                             <div key={d} style={{ textAlign: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0.25rem 0' }}>{d}</div>
@@ -447,7 +465,7 @@ export default function Index() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.35rem' }}>
                         {cells.map((day, i) => (
                             <DayCell key={i} day={day} year={cal.year} month={cal.month}
-                                entries={calendarEntries} today={today} onDayClick={onDayClick} gateLocked={orsGateLocked} />
+                                entries={calendarEntries} today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked} />
                         ))}
                     </div>
                     <Legend />
@@ -457,7 +475,7 @@ export default function Index() {
             {/* ── TABLET: calendar with dot chips, FAB ── */}
             {bp === 'tablet' && (
                 <div style={card}>
-                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={orsGateLocked} showLogBtn={false} compact />
+                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={effectivelyLocked} showLogBtn={false} compact />
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.25rem', marginBottom: '0.25rem' }}>
                         {WEEKDAYS_SHORT.map((d, i) => (
                             <div key={i} style={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', padding: '0.2rem 0' }}>{d}</div>
@@ -466,12 +484,12 @@ export default function Index() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.25rem' }}>
                         {cells.map((day, i) => (
                             <DayCellTablet key={i} day={day} year={cal.year} month={cal.month}
-                                entries={calendarEntries} today={today} onDayClick={onDayClick} gateLocked={orsGateLocked} />
+                                entries={calendarEntries} today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked} />
                         ))}
                     </div>
                     <Legend scrollable />
                     {/* FAB */}
-                    {!orsGateLocked && (
+                    {!effectivelyLocked && (
                         <button onClick={() => setModal({ type: 'log', date: today })}
                             style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 50,
                                 width: 56, height: 56, borderRadius: '50%', border: 'none',
@@ -487,12 +505,12 @@ export default function Index() {
             {/* ── MOBILE: day list view, FAB ── */}
             {bp === 'mobile' && (
                 <div style={card}>
-                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={orsGateLocked} showLogBtn={false} compact />
+                    <CalHeader cal={cal} setCal={setCal} orsGateLocked={effectivelyLocked} showLogBtn={false} compact />
                     <MiniCalStrip year={cal.year} month={cal.month} entries={calendarEntries}
-                        today={today} onDayClick={onDayClick} gateLocked={orsGateLocked}
+                        today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked}
                         selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
                     <MobileDayList year={cal.year} month={cal.month} entries={calendarEntries}
-                        today={today} onDayClick={onDayClick} gateLocked={orsGateLocked} />
+                        today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked} />
                     <Legend scrollable />
                     {/* FAB */}
                     {!orsGateLocked && (
@@ -511,11 +529,12 @@ export default function Index() {
             {/* Modals */}
             {modal?.type === 'log' && (
                 <LogTaskModal date={modal.date} orsOptions={orsOptions} supervisors={supervisors}
-                    gateLocked={orsGateLocked} onClose={closeModal} />
+                    gateLocked={effectivelyLocked} onClose={closeModal} />
             )}
             {modal?.type === 'day' && (
                 <DaySummaryModal date={modal.date} entries={modal.entries} onClose={closeModal}
-                    onOpenEntry={openEntry} onLogTask={date => setModal({ type: 'log', date })} />
+                    onOpenEntry={openEntry}
+                    onLogTask={modal.mporLocked || orsGateLocked ? null : date => setModal({ type: 'log', date })} />
             )}
             {modal?.type === 'entry' && (
                 <TaskDetailsModal entry={modal.entry?.id === initialActive?.id ? initialActive : modal.entry} onClose={closeModal} />

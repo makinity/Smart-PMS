@@ -96,23 +96,24 @@ export default function Dashboard({ activePeriod, teamCount, uwpStatus, pendingR
 
                 {/* Recent submissions */}
                 <div style={card}>
-                    <p style={cardHeader}>Recent Accomplishment Submissions</p>
+                    <p style={cardHeader}>Recent MPOR Submissions</p>
                     <div className="ru-table-wrap">
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--admin-border-strong)' }}>
-                                    {['Employee','Status','Submitted'].map(h => <th key={h} style={th}>{h}</th>)}
+                                    {['Employee','Month','Status','Submitted'].map(h => <th key={h} style={th}>{h}</th>)}
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentSubmissions?.map(s => (
                                     <tr key={s.id} style={{ borderBottom: '1px solid var(--admin-border)' }}>
-                                        <td style={td}>{s.user?.name}</td>
+                                        <td style={td}>{s.employee?.name}</td>
+                                        <td style={td}>{s.month}</td>
                                         <td style={td}><span style={statusBadge(s.status)}>{s.status?.replace(/_/g, ' ')}</span></td>
-                                        <td style={{ ...td, color: 'var(--admin-text-muted)', whiteSpace: 'nowrap' }}>{s.created_at}</td>
+                                        <td style={{ ...td, color: 'var(--admin-text-muted)', whiteSpace: 'nowrap' }}>{s.submitted_at}</td>
                                     </tr>
                                 ))}
-                                {!recentSubmissions?.length && <tr><td colSpan={3} style={{ ...td, textAlign: 'center', color: 'var(--admin-text-muted)' }}>No submissions yet</td></tr>}
+                                {!recentSubmissions?.length && <tr><td colSpan={4} style={{ ...td, textAlign: 'center', color: 'var(--admin-text-muted)' }}>No submissions yet</td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -120,10 +121,10 @@ export default function Dashboard({ activePeriod, teamCount, uwpStatus, pendingR
                         {recentSubmissions?.map(s => (
                             <div key={s.id} style={{ padding: '0.85rem 0', borderBottom: '1px solid var(--admin-border)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>{s.user?.name}</span>
+                                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>{s.employee?.name}</span>
                                     <span style={statusBadge(s.status)}>{s.status?.replace(/_/g, ' ')}</span>
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{s.created_at}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{s.month} · {s.submitted_at}</div>
                             </div>
                         ))}
                         {!recentSubmissions?.length && <p style={{ textAlign: 'center', color: 'var(--admin-text-muted)', padding: '1rem 0', fontSize: '0.875rem' }}>No submissions yet</p>}

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             UwpSampleSeeder::class,
+            OrsSampleSeeder::class,
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Models\Ipcr;
 use App\Models\IpcrItem;
+use App\Models\Mpor;
 use App\Models\OrsEntry;
 use App\Models\OrsEntryEvidence;
 use App\Models\PerformancePeriod;
@@ -117,15 +118,23 @@ class OrsController extends Controller
             'validated' => (clone $statsQuery())->whereIn('status', ['rated', 'validated', 'locked'])->count(),
         ];
 
+        // MPOR-locked months — employee cannot log/submit ORS for these months
+        $mporLockedMonths = Mpor::where('employee_id', $user->id)
+            ->whereIn('status', ['submitted', 'approved', 'endorsed'])
+            ->pluck('month')
+            ->values()
+            ->toArray();
+
         return Inertia::render('Employee/Ors/Index', [
-            'period'         => $period,
-            'orsGateLocked'  => $orsGateLocked,
-            'orsGateReason'  => $orsGateReason,
-            'orsOptions'     => $orsOptions,
-            'supervisors'    => $supervisors,
-            'calendarEntries' => $entries,
-            'activeEntry'    => $activeEntry ? $this->formatEntry($activeEntry) : null,
-            'stats'          => $stats,
+            'period'           => $period,
+            'orsGateLocked'    => $orsGateLocked,
+            'orsGateReason'    => $orsGateReason,
+            'orsOptions'       => $orsOptions,
+            'supervisors'      => $supervisors,
+            'calendarEntries'  => $entries,
+            'activeEntry'      => $activeEntry ? $this->formatEntry($activeEntry) : null,
+            'stats'            => $stats,
+            'mporLockedMonths' => $mporLockedMonths,
         ]);
     }
 
@@ -147,6 +156,14 @@ class OrsController extends Controller
             'supervisor_id' => ['required', 'integer', 'exists:users,id'],
             'notes'        => ['nullable', 'string', 'max:1000'],
         ]);
+
+        // Block if MPOR for this month is already submitted/approved/endorsed
+        $workMonth = \Carbon\Carbon::parse($data['work_date'])->format('Y-m');
+        $mporLocked = Mpor::where('employee_id', $user->id)
+            ->where('month', $workMonth)
+            ->whereIn('status', ['submitted', 'approved', 'endorsed'])
+            ->exists();
+        abort_if($mporLocked, 422, "Your MPOR for {$workMonth} has already been submitted. ORS entries for this month are locked.");
 
         // Ensure ipcr_item belongs to this employee's IPCR
         $ipcrItem = IpcrItem::where('id', $data['ipcr_item_id'])
@@ -239,6 +256,14 @@ class OrsController extends Controller
         abort_if($orsEntry->employee_id !== $user->id, 403);
         abort_if($orsEntry->isLocked(), 422, 'Entry already submitted.');
         abort_if(! in_array($orsEntry->status, ['draft', 'recording', 'paused']), 422);
+
+        // Block if MPOR for this entry's month is locked
+        $workMonth = $orsEntry->work_date->format('Y-m');
+        $mporLocked = Mpor::where('employee_id', $user->id)
+            ->where('month', $workMonth)
+            ->whereIn('status', ['submitted', 'approved', 'endorsed'])
+            ->exists();
+        abort_if($mporLocked, 422, "Your MPOR for {$workMonth} has been submitted. This entry cannot be modified.");
 
         $data = $request->validate([
             'quantity'   => ['required', 'string', 'max:255'],

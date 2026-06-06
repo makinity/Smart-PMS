@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DeptHead;
 
 use App\Http\Controllers\Controller;
+use App\Models\Opcr;
 use App\Models\User;
 use App\Models\UnitWorkPlan;
 use App\Models\PerformancePeriod;
@@ -14,41 +15,45 @@ class DashboardController extends Controller
     public function index()
     {
         $user   = Auth::user();
-        $period = PerformancePeriod::where('is_active', true)->first();
+        $period = PerformancePeriod::current();
 
         $officeStaff = $this->safe(fn() =>
             User::where('office_id', $user->office_id)
                 ->whereIn('role', ['employee', 'supervisor'])->count(), 0);
 
         $opcrStatus = $this->safe(fn() =>
-            \App\Models\Opcr::where('office_id', $user->office_id)
-                ->where('performance_period_id', $period?->id)
+            Opcr::where('office_id', $user->office_id)
+                ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
                 ->value('status') ?? 'Not created', 'Not created');
 
         $uwpCount = $this->safe(fn() =>
             UnitWorkPlan::where('office_id', $user->office_id)
-                ->where('performance_period_id', $period?->id)->count(), 0);
+                ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
+                ->count(), 0);
 
         $pendingEndorse = $this->safe(fn() =>
-            \App\Models\AccomplishmentSubmission::where('performance_period_id', $period?->id)
-                ->whereHas('employee', fn($q) => $q->where('office_id', $user->office_id))
-                ->where('status', 'supervisor_endorsed')->count(), 0);
+            UnitWorkPlan::where('office_id', $user->office_id)
+                ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
+                ->where('status', 'submitted')
+                ->count(), 0);
 
         $recentSubmissions = $this->safe(fn() =>
-            \App\Models\AccomplishmentSubmission::with(['employee:id,name,role'])
-                ->where('performance_period_id', $period?->id)
-                ->whereHas('employee', fn($q) => $q->where('office_id', $user->office_id))
-                ->latest()->limit(5)
-                ->get(['id', 'employee_id', 'status', 'created_at']), collect());
+            UnitWorkPlan::with(['creator:id,name,role'])
+                ->where('office_id', $user->office_id)
+                ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
+                ->latest('submitted_at')
+                ->limit(5)
+                ->get(['id', 'created_by', 'status', 'submitted_at', 'period_covered']), collect());
 
         // Chart: submissions per day — last 7 days
         $days = collect(range(6, 0))->map(fn($i) => Carbon::today()->subDays($i));
 
         $dailyCounts = $this->safe(fn() =>
-            \App\Models\AccomplishmentSubmission::where('performance_period_id', $period?->id)
-                ->whereHas('employee', fn($q) => $q->where('office_id', $user->office_id))
-                ->where('created_at', '>=', Carbon::today()->subDays(6)->startOfDay())
-                ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+            UnitWorkPlan::where('office_id', $user->office_id)
+                ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
+                ->whereNotNull('submitted_at')
+                ->where('submitted_at', '>=', Carbon::today()->subDays(6)->startOfDay())
+                ->selectRaw('DATE(submitted_at) as day, COUNT(*) as count')
                 ->groupBy('day')->pluck('count', 'day'), collect());
 
         $submissionsChart = [

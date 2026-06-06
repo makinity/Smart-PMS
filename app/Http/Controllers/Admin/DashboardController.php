@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $totalUsers   = User::count();
         $totalOffices = Office::count();
-        $activePeriod = PerformancePeriod::where('is_active', true)->value('name') ?? 'None';
+        $activePeriod = PerformancePeriod::current()?->name ?? 'None';
         $activeUsers  = User::where('is_active', true)->count();
 
         // New users per day for last 7 days

@@ -204,6 +204,10 @@ export default function Index() {
                                 <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', minWidth: 110, textAlign: 'center' }}>{monthLabel}</span>
                                 <button onClick={() => navMonth(1)} style={navBtn}>›</button>
                             </div>
+                            <a href={`/stage-two/forms/mpor-excel?month=${month}`} style={{ ...btnSecondary, textDecoration: 'none' }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Export Excel
+                            </a>
                             {canSubmit && (
                                 <button onClick={handleSubmit} disabled={submitting} style={{ ...btnPrimary, opacity: submitting ? 0.7 : 1 }}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -321,4 +325,5 @@ const iconBox = { display: 'inline-flex', alignItems: 'center', justifyContent: 
 const avatarBox = { width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 };
 const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' };
 const navBtn    = { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', fontSize: '1.25rem', lineHeight: 1, padding: '0 0.2rem', display: 'flex', alignItems: 'center' };
-const btnPrimary = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', borderRadius: 10, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' };
+const btnPrimary  = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', borderRadius: 10, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' };
+const btnSecondary = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' };

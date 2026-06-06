@@ -55,10 +55,17 @@ export default function DaySummaryModal({ date, entries, onClose, onOpenEntry, o
 
                 {/* Footer */}
                 <div style={s.footer}>
-                    <button style={s.btnSave} onClick={() => onLogTask(date)}>
-                        <i className="bi bi-plus-circle-fill" style={{ marginRight: '0.4rem' }} />
-                        Log Task for this date
-                    </button>
+                    {onLogTask ? (
+                        <button style={s.btnSave} onClick={() => onLogTask(date)}>
+                            <i className="bi bi-plus-circle-fill" style={{ marginRight: '0.4rem' }} />
+                            Log Task for this date
+                        </button>
+                    ) : (
+                        <div style={{ fontSize: '0.78rem', color: '#a78bfa', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <i className="bi bi-lock-fill" />
+                            MPOR submitted — this month is locked
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

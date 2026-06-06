@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 
 export default function Dashboard({ activePeriod, totalOffices, totalEmployees, pendingOpcr, pendingCalibration, submissionBreakdown, recentSubmissions, submissionsChart, opcrChart }) {
     const lineRef = useRef(null);
-    const barRef  = useRef(null);
+    const barRef = useRef(null);
 
     const chartOpts = {
         responsive: true,
@@ -24,7 +24,15 @@ export default function Dashboard({ activePeriod, totalOffices, totalEmployees, 
                 type: 'line',
                 data: {
                     labels: submissionsChart.labels,
-                    datasets: [{ data: submissionsChart.data, borderColor: 'rgba(16,150,207,1)', backgroundColor: 'rgba(16,150,207,0.15)', fill: true, tension: 0.4, pointBackgroundColor: 'rgba(16,150,207,1)', pointRadius: 4 }],
+                    datasets: [{
+                        data: submissionsChart.data,
+                        borderColor: 'rgba(16,150,207,1)',
+                        backgroundColor: 'rgba(16,150,207,0.15)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(16,150,207,1)',
+                        pointRadius: 4,
+                    }],
                 },
                 options: chartOpts,
             });
@@ -33,27 +41,37 @@ export default function Dashboard({ activePeriod, totalOffices, totalEmployees, 
                 type: 'bar',
                 data: {
                     labels: opcrChart.labels,
-                    datasets: [{ data: opcrChart.data, backgroundColor: 'rgba(59,130,246,0.6)', borderColor: 'rgba(59,130,246,1)', borderRadius: 6, borderWidth: 1 }],
+                    datasets: [{
+                        data: opcrChart.data,
+                        backgroundColor: 'rgba(59,130,246,0.6)',
+                        borderColor: 'rgba(59,130,246,1)',
+                        borderRadius: 6,
+                        borderWidth: 1,
+                    }],
                 },
                 options: chartOpts,
             });
         });
-        return () => { line?.destroy(); bar?.destroy(); };
+
+        return () => {
+            line?.destroy();
+            bar?.destroy();
+        };
     }, []);
+
     const stats = [
-        { label: 'Active Period',       value: activePeriod,       caption: 'Current performance cycle', small: true },
-        { label: 'Total Offices',       value: totalOffices,        caption: 'Organizational units' },
-        { label: 'Total Employees',     value: totalEmployees,      caption: 'Active employee accounts' },
-        { label: 'Pending Calibration', value: pendingCalibration,  caption: 'Awaiting PMT review' },
+        { label: 'Active Period', value: activePeriod, caption: 'Current performance cycle', small: true },
+        { label: 'Total Offices', value: totalOffices, caption: 'Organizational units' },
+        { label: 'Total Employees', value: totalEmployees, caption: 'Active employee accounts' },
+        { label: 'Pending Calibration', value: pendingCalibration, caption: 'Awaiting PMT review' },
     ];
 
     const quickLinks = [
-        { title: 'OPCR Review',           desc: 'Review office performance commitments', href: '/pmt/opcr-review',           icon: 'bi-clipboard-check-fill' },
-        { title: 'Accomplishment Review', desc: 'Review and calibrate submissions',       href: '/pmt/accomplishment-review', icon: 'bi-award-fill' },
-        { title: 'Employee Calibration',  desc: 'Calibrate individual ratings',           href: '/pmt/employee-calibration',  icon: 'bi-person-check-fill' },
-        { title: 'Top Performers',        desc: 'Recognize high-performing employees',    href: '/pmt/top-performers',        icon: 'bi-trophy-fill' },
+        { title: 'OPCR Review', desc: 'Review office performance commitments', href: '/pmt/opcr-review', icon: 'bi-clipboard-check-fill' },
+        { title: 'Accomplishment Review', desc: 'Review and calibrate submissions', href: '/pmt/accomplishment-review', icon: 'bi-award-fill' },
+        { title: 'Employee Calibration', desc: 'Calibrate individual ratings', href: '/pmt/employee-calibration', icon: 'bi-person-check-fill' },
+        { title: 'Top Performers', desc: 'Recognize high-performing employees', href: '/pmt/top-performers', icon: 'bi-trophy-fill' },
     ];
-
 
     return (
         <AppLayout title="PMT Dashboard">
@@ -68,10 +86,9 @@ export default function Dashboard({ activePeriod, totalOffices, totalEmployees, 
             </div>
 
             <div className="stack">
-                {/* Charts */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }} className="charts-row">
                     <div style={{ ...card, minWidth: 0 }}>
-                        <p style={cardHeader}>Submissions — Last 7 Days</p>
+                        <p style={cardHeader}>IPCR Commitments - Last 7 Days</p>
                         <div style={{ position: 'relative', height: 180, width: '100%' }}>
                             <canvas ref={lineRef} />
                         </div>
@@ -84,7 +101,6 @@ export default function Dashboard({ activePeriod, totalOffices, totalEmployees, 
                     </div>
                 </div>
 
-                {/* Quick links */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
                     {quickLinks.map(l => (
                         <a key={l.href} href={l.href} style={linkCard}>
@@ -95,58 +111,75 @@ export default function Dashboard({ activePeriod, totalOffices, totalEmployees, 
                     ))}
                 </div>
 
-                {/* Recent submissions */}
                 <div style={card}>
-                    <p style={cardHeader}>Recent Accomplishment Submissions</p>
+                    <p style={cardHeader}>Recent IPCR Commitments</p>
                     <div className="ru-table-wrap">
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--admin-border-strong)' }}>
-                                    {['Employee','Role','Status','Date'].map(h => <th key={h} style={th}>{h}</th>)}
+                                    {['Employee', 'Office', 'Status', 'Committed'].map(h => <th key={h} style={th}>{h}</th>)}
                                 </tr>
                             </thead>
                             <tbody>
                                 {recentSubmissions?.map(s => (
                                     <tr key={s.id} style={{ borderBottom: '1px solid var(--admin-border)' }}>
-                                        <td style={td}>{s.user?.name}</td>
-                                        <td style={{ ...td, color: 'var(--admin-text-muted)' }}>{s.user?.role}</td>
+                                        <td style={td}>{s.employee?.name}</td>
+                                        <td style={{ ...td, color: 'var(--admin-text-muted)' }}>{s.office}</td>
                                         <td style={td}><span style={statusBadge(s.status)}>{s.status?.replace(/_/g, ' ')}</span></td>
-                                        <td style={{ ...td, color: 'var(--admin-text-muted)', whiteSpace: 'nowrap' }}>{s.created_at}</td>
+                                        <td style={{ ...td, color: 'var(--admin-text-muted)', whiteSpace: 'nowrap' }}>{s.committed_at}</td>
                                     </tr>
                                 ))}
-                                {!recentSubmissions?.length && <tr><td colSpan={4} style={{ ...td, textAlign: 'center', color: 'var(--admin-text-muted)' }}>No submissions yet</td></tr>}
+                                {!recentSubmissions?.length && <tr><td colSpan={4} style={{ ...td, textAlign: 'center', color: 'var(--admin-text-muted)' }}>No IPCR commitments yet</td></tr>}
                             </tbody>
                         </table>
                     </div>
                     <div className="ru-cards-wrap">
                         {recentSubmissions?.map(s => (
                             <div key={s.id} style={{ padding: '0.85rem 0', borderBottom: '1px solid var(--admin-border)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>{s.user?.name}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', gap: '0.5rem' }}>
+                                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>{s.employee?.name}</span>
                                     <span style={statusBadge(s.status)}>{s.status?.replace(/_/g, ' ')}</span>
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{s.user?.role} · {s.created_at}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{s.office} &middot; {s.committed_at}</div>
                             </div>
                         ))}
-                        {!recentSubmissions?.length && <p style={{ textAlign: 'center', color: 'var(--admin-text-muted)', padding: '1rem 0', fontSize: '0.875rem' }}>No submissions yet</p>}
+                        {!recentSubmissions?.length && <p style={{ textAlign: 'center', color: 'var(--admin-text-muted)', padding: '1rem 0', fontSize: '0.875rem' }}>No IPCR commitments yet</p>}
                     </div>
                 </div>
             </div>
+
             <style>{sharedStyles}</style>
         </AppLayout>
     );
 }
 
 const statusBadge = (s = '') => ({
-    padding: '0.2rem 0.6rem', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600,
-    background: s.includes('approved') || s.includes('released') || s.includes('endorsed') ? 'rgba(34,197,94,0.12)' : s.includes('pending') || s.includes('submitted') ? 'rgba(234,179,8,0.12)' : 'rgba(59,130,246,0.12)',
-    color: s.includes('approved') || s.includes('released') || s.includes('endorsed') ? '#4ade80' : s.includes('pending') || s.includes('submitted') ? '#facc15' : 'var(--admin-accent)',
-    border: '1px solid rgba(59,130,246,0.22)', textTransform: 'capitalize',
+    padding: '0.2rem 0.6rem',
+    borderRadius: 999,
+    fontSize: '0.72rem',
+    fontWeight: 600,
+    border: '1px solid rgba(59,130,246,0.22)',
+    textTransform: 'capitalize',
+    background: s.includes('approved') || s.includes('released')
+        ? 'rgba(34,197,94,0.12)'
+        : s.includes('returned')
+            ? 'rgba(239,68,68,0.12)'
+            : s.includes('committed') || s.includes('submitted') || s.includes('draft')
+                ? 'rgba(234,179,8,0.12)'
+                : 'rgba(59,130,246,0.12)',
+    color: s.includes('approved') || s.includes('released')
+        ? '#4ade80'
+        : s.includes('returned')
+            ? '#f87171'
+            : s.includes('committed') || s.includes('submitted') || s.includes('draft')
+                ? '#facc15'
+                : 'var(--admin-accent)',
 });
-const card       = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
-const linkCard   = { ...card, display: 'block', textDecoration: 'none', cursor: 'pointer', transition: 'opacity 0.15s' };
-const statLabel  = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' };
-const statValue  = { fontSize: '1.6rem', fontWeight: 800, color: 'var(--admin-text-primary)', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.2rem' };
+
+const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
+const linkCard = { ...card, display: 'block', textDecoration: 'none', cursor: 'pointer', transition: 'opacity 0.15s' };
+const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' };
+const statValue = { fontSize: '1.6rem', fontWeight: 800, color: 'var(--admin-text-primary)', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '0.2rem' };
 const statCaption = { fontSize: '0.75rem', color: 'var(--admin-text-secondary)' };
 const cardHeader = { fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '1rem', letterSpacing: '-0.01em' };
 const th = { padding: '0.6rem 0.75rem', textAlign: 'left', fontWeight: 600, fontSize: '0.78rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' };
