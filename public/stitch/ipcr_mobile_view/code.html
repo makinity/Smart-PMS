@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IPCR Detailed Form View - Performance Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb596",
+                    "on-background": "#0b1c30",
+                    "primary-fixed": "#dbe1ff",
+                    "on-surface-variant": "#434655",
+                    "on-primary-fixed": "#00174b",
+                    "surface-tint": "#0053db",
+                    "on-surface": "#0b1c30",
+                    "inverse-on-surface": "#eaf1ff",
+                    "tertiary-container": "#bc4800",
+                    "primary": "#004ac6",
+                    "outline": "#737686",
+                    "on-tertiary-container": "#ffede6",
+                    "on-primary-container": "#eeefff",
+                    "surface-container-highest": "#d3e4fe",
+                    "inverse-surface": "#213145",
+                    "background": "#f8f9ff",
+                    "surface-dim": "#cbdbf5",
+                    "outline-variant": "#c3c6d7",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3323cc",
+                    "inverse-primary": "#b4c5ff",
+                    "secondary-container": "#645efb",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "secondary-fixed": "#e2dfff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#fffbff",
+                    "surface-variant": "#d3e4fe",
+                    "surface": "#f8f9ff",
+                    "secondary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "tertiary-fixed": "#ffdbcd",
+                    "tertiary": "#943700",
+                    "surface-container-low": "#eff4ff",
+                    "surface-container-high": "#dce9ff",
+                    "on-tertiary-fixed": "#360f00",
+                    "primary-container": "#2563eb",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#0f0069",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f8f9ff",
+                    "secondary": "#4b41e1",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#e5eeff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "table-header": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "table-header": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Top Navigation Bar (Mobile Optimized) -->
+<header class="bg-surface-bright sticky top-0 z-50 border-b border-outline-variant h-16 flex items-center justify-between px-margin-mobile">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Performance Portal</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive for a modern enterprise application. The lighting is soft and studio-quality, highlighting a friendly but serious expression. The background is a blurred office environment with cool blue and white tones, matching a professional business aesthetic. High resolution and clean composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYvmeJogCfaIYy06PGGARqkNvMFiv36_kAZnAOnw2qn-NW7MKGt2uVkxZqm2xJmC36wbyJlk4PTFsf5igUSqT_mUxNr3NPF0un1lGF4L-slnYt_FI2zmkpYggN2vC8D4y7WQdxJmLvPdlv0dFsujq0BSaehKEQMJExP4Rg1BXLfgY_Qlk8rFCjPgDXLbzlWvnLBwRSijLQ8ZdPZuYFFuYeIkW1Xlt24MnEulVoxZFXoO6hiOYbOJxqUkH6rvshKjZ32HbJUyh-FBw"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-margin-mobile py-6 max-w-lg mx-auto">
+<!-- Page Header & Context -->
+<div class="mb-8">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="arrow_back">arrow_back</span>
+<span class="font-label-md text-label-md text-primary uppercase">IPCR Detailed View</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">H2 2024 Appraisal Cycle</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Reviewing: Individual Performance Commitment</p>
+<!-- Overall Status Badge -->
+<div class="mt-4 flex items-center gap-2">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md uppercase tracking-wider">Endorsed</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Last updated: Oct 12, 2024</span>
+</div>
+</div>
+<!-- Section: Core Functions (80%) -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-headline-md text-headline-md text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+                    CORE FUNCTIONS
+                </h3>
+<span class="font-label-md text-label-md bg-surface-container-high px-2 py-1 rounded text-primary">80% WEIGHT</span>
+</div>
+<!-- Card Item 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg font-bold text-on-background leading-tight">Communications prepared and routed</h4>
+<button class="p-1 hover:bg-surface-container-high rounded transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+</button>
+</div>
+<div class="space-y-4">
+<!-- Success Indicators -->
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Success Indicators</p>
+<p class="font-body-md text-body-md text-on-background">100% of priority communications routed within 24 hours of receipt.</p>
+</div>
+<!-- Accomplishments -->
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Actual Accomplishments</p>
+<p class="font-body-sm text-body-sm text-on-background italic">"Processed 450+ technical memos and correspondence with a 98% on-time delivery rate. Improved tracking via digital log."</p>
+</div>
+<!-- Ratings Grid -->
+<div class="border-t border-outline-variant pt-3">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-2">Performance Rating</p>
+<div class="grid grid-cols-4 gap-2">
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">Q</span>
+<span class="font-bold text-primary">4.80</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">E</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">T</span>
+<span class="font-bold text-primary">4.50</span>
+</div>
+<div class="text-center p-2 bg-primary-container text-on-primary-container rounded shadow-sm">
+<span class="block font-label-md text-[10px] text-on-primary-container opacity-80">AVG</span>
+<span class="font-bold">4.77</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-4 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg font-bold text-on-background leading-tight">Strategic Reports &amp; Analysis</h4>
+<button class="p-1 hover:bg-surface-container-high rounded transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Success Indicators</p>
+<p class="font-body-md text-body-md text-on-background">Bi-weekly performance dashboards submitted with 0% data error rate.</p>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Actual Accomplishments</p>
+<p class="font-body-sm text-body-sm text-on-background italic">"Completed all 12 bi-weekly reports. Identified 3 critical bottlenecks in workflow during the Q3 review."</p>
+</div>
+<div class="border-t border-outline-variant pt-3">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-2">Performance Rating</p>
+<div class="grid grid-cols-4 gap-2">
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">Q</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">E</span>
+<span class="font-bold text-primary">4.00</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">T</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-primary-container text-on-primary-container rounded shadow-sm">
+<span class="block font-label-md text-[10px] text-on-primary-container opacity-80">AVG</span>
+<span class="font-bold">4.67</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Support Functions (20%) -->
+<section class="mb-10">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-headline-md text-headline-md text-on-background flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="group">group</span>
+                    SUPPORT FUNCTIONS
+                </h3>
+<span class="font-label-md text-label-md bg-surface-container-high px-2 py-1 rounded text-primary">20% WEIGHT</span>
+</div>
+<!-- Card Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<h4 class="font-headline-md text-body-lg font-bold text-on-background leading-tight">Inter-Departmental Coordination</h4>
+<button class="p-1 hover:bg-surface-container-high rounded transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-3 rounded-lg">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-1">Success Indicators</p>
+<p class="font-body-md text-body-md text-on-background">Attendance in 100% of cross-functional team meetings.</p>
+</div>
+<div class="border-t border-outline-variant pt-3">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-2">Performance Rating</p>
+<div class="grid grid-cols-4 gap-2">
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">Q</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">E</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-surface-bright border border-outline-variant rounded">
+<span class="block font-label-md text-[10px] text-on-surface-variant">T</span>
+<span class="font-bold text-primary">5.00</span>
+</div>
+<div class="text-center p-2 bg-primary-container text-on-primary-container rounded shadow-sm">
+<span class="block font-label-md text-[10px] text-on-primary-container opacity-80">AVG</span>
+<span class="font-bold">5.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Final Summary Section -->
+<section class="bg-inverse-surface text-inverse-on-surface rounded-2xl p-6 shadow-xl mb-8">
+<h3 class="font-headline-md text-headline-md font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="summarize">summarize</span>
+                Final Appraisal Summary
+            </h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center border-b border-outline/30 pb-3">
+<span class="font-body-md text-body-md opacity-80">Core Functions (80%)</span>
+<span class="font-headline-md text-headline-md font-bold">4.72</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline/30 pb-3">
+<span class="font-body-md text-body-md opacity-80">Support Functions (20%)</span>
+<span class="font-headline-md text-headline-md font-bold">5.00</span>
+</div>
+<div class="pt-4">
+<div class="flex flex-col items-center justify-center p-4 bg-primary rounded-xl">
+<span class="font-label-md text-label-md uppercase tracking-[0.2em] mb-1 opacity-90">Final Overall Rating</span>
+<span class="text-4xl font-extrabold mb-1">4.78</span>
+<span class="bg-on-primary text-primary px-4 py-1 rounded-full font-bold text-label-md uppercase">Outstanding</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Comments / Rubric Drawer Toggle (CTA) -->
+<div class="flex flex-col gap-3">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined" data-icon="rate_review">rate_review</span>
+                View Appraisal Comments
+            </button>
+<button class="w-full h-14 bg-surface-container-high text-primary border border-primary/20 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                View Previous Cycles
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Fixed) -->
+<nav class="fixed bottom-0 left-0 right-0 bg-surface-container-low h-20 flex justify-around items-center border-t border-outline-variant px-4 shadow-2xl z-50 md:hidden">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-[10px]">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-bold">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in" data-weight="fill" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+<span class="font-label-md text-[10px]">Appraisals</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-[10px]">Team</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span class="font-label-md text-[10px]">Resources</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-[10px]">Settings</span>
+</div>
+</nav>
+<!-- FAB for quick action (only on primary screens usually, but added here for 'Submit Appeal' or 'Print') -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-tertiary-container text-on-tertiary-container rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+<script>
+        // Subtle interaction for cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

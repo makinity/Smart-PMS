@@ -158,6 +158,9 @@ Route::prefix('employee')->middleware(['auth', 'role:employee'])->name('employee
     Route::get('/ors/{orsEntry}/entry', [\App\Http\Controllers\Employee\OrsController::class, 'getEntry'])->name('ors.entry');
     Route::get('/my-tasks', [\App\Http\Controllers\Employee\MyTasksController::class, 'index'])->name('my-tasks.index');
     Route::get('/accomplishment', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'index'])->name('accomplishment.index');
+    Route::get('/accomplishment/smpor', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'smpor'])->name('accomplishment.smpor');
+    Route::get('/accomplishment/ipcr', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'ipcr'])->name('accomplishment.ipcr');
+    Route::post('/accomplishment/submit', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'submit'])->name('accomplishment.submit');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Employee/Profile'))->name('profile');
 });
 

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Performance Portal - SMPOR</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#737686",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed": "#00174b",
+                        "surface-container": "#e5eeff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary": "#004ac6",
+                        "on-background": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#645efb",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#b4c5ff",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "tertiary": "#943700",
+                        "secondary-fixed": "#e2dfff",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-variant": "#d3e4fe",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-tint": "#0053db",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#2563eb",
+                        "tertiary-container": "#bc4800",
+                        "secondary": "#4b41e1",
+                        "on-surface-variant": "#434655",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#dbe1ff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-tertiary-container": "#ffede6",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-low": "#eff4ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-container": "#eeefff",
+                        "background": "#f8f9ff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "table-header": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "table-header": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #eff4ff;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c3c6d7;
+            border-radius: 4px;
+        }
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+        .glass-header {
+            backdrop-filter: blur(8px);
+            background: rgba(248, 249, 255, 0.85);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface-bright dark:bg-inverse-surface border-b border-outline-variant dark:border-outline docked full-width top-0 sticky z-50 h-16">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-full">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">Performance Portal</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors cursor-pointer active:opacity-70 font-body-md text-body-md" href="#">Dashboard</a>
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 font-body-md text-body-md" href="#">Accomplishments</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors cursor-pointer active:opacity-70 font-body-md text-body-md" href="#">Team View</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors cursor-pointer active:opacity-70 font-body-md text-body-md" href="#">Archive</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-primary hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-primary hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold overflow-hidden">
+<img alt="User profile" data-alt="A professional portrait of a modern office worker in a crisp white shirt, photographed with soft cinematic lighting against a clean, neutral background to emphasize clarity and approachability in a corporate setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYTueuI-WzjN02HX3jCIecA1sieYZMhOYdP5SpvHppNJvpUeQ09seJwV2C1grzu0TTIzq3Qvi-hOE3IEcUpLnhxTXN76E1dq-hfBMJdocjc6juwOeCtDAWO967DyokOhaQ971uFTOjlq8WzMOVmOmafiI6Y4ufugRcCwyitTAwP15XogscG6t93UtRBaPy7ESAgwcd3pfaq8Is17IBXno90Y0VZo-_zenFw0xftQVvS5Ygtb6frxuF4Y3lhdV0LgjEx5kzQWXkSAg"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex max-w-container-max mx-auto">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col p-4 gap-2 docked left-0 h-[calc(100vh-64px)] w-64 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline">
+<div class="px-2 py-4 flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h2 class="font-headline-md text-[14px] leading-tight font-bold text-primary">Enterprise PM</h2>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">H2 Performance Cycle</p>
+</div>
+</div>
+</div>
+<button class="my-4 w-full bg-primary text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-primary-container transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+<span>New Entry</span>
+</button>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">home</span> Home
+                </a>
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span> My Appraisals
+                </a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">group</span> Team Performance
+                </a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">folder_open</span> Resources
+                </a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-highest rounded-lg transition-all scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+                </a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-margin-desktop overflow-hidden bg-background">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 text-on-surface-variant text-body-sm mb-6">
+<span>Reports</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-semibold">Summary Monthly Performance Output Report</span>
+</div>
+<!-- Page Header (Reproduction of Branding) -->
+<div class="bg-surface-container-lowest border border-outline-variant p-8 rounded-xl shadow-sm mb-8 text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-16 h-16 mb-2">
+<img alt="Davao Del Sur Seal" class="w-full h-full object-contain" data-alt="A highly detailed official heraldic seal for a Philippine province, featuring vibrant colors and traditional symbols of agriculture and governance, rendered in a crisp vector-like digital illustration style for corporate documentation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPwDumHShSxEjqgWK7TzcYJmBaxFy8Us9JOlYl54pBRmZeYAjg283wFmqYPTAVQgHaxRrrib3uBXht_X1_rq212tesRUr4q9qMsm4euh2PRWUS9pbD5_bP9QPItC_8B5LIHM4Pjbr9yTIot0KCKdQMnTPbM3LpHr61jiz4H81zKQDMxNmBjTT_7u317CG9iZOMiDwvJmqKxGStRuiQsB3W1zOCWpbjgoHXOSGLczvFfVhZpw7Wzi7vNrK8AoEvkNChb6LT-Zm8-xc"/>
+</div>
+<h1 class="font-body-md text-body-md font-semibold text-on-surface-variant">Republic of the Philippines</h1>
+<h2 class="font-headline-md text-headline-md uppercase font-bold text-on-surface tracking-tight">Province of Davao Del Sur</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Matti, Digos City</p>
+<div class="mt-6 border-y border-outline-variant py-3 w-full">
+<h3 class="font-headline-md text-headline-md font-extrabold text-primary">SUMMARY MONTHLY PERFORMANCE OUTPUT REPORT (SMPOR)</h3>
+</div>
+</div>
+<!-- Form Metadata -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 text-left">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase">Name:</label>
+<div class="p-2 bg-surface-container-low border-b-2 border-primary-container font-semibold">JUAN D. DELA CRUZ</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase">Office/Division:</label>
+<div class="p-2 bg-surface-container-low border-b-2 border-primary-container font-semibold">IT Department - Software Dev</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase">Semestral Period:</label>
+<div class="p-2 bg-surface-container-low border-b-2 border-primary-container font-semibold">July - December 2024</div>
+</div>
+</div>
+</div>
+<!-- Tab Switcher for Metrics -->
+<div class="flex gap-1 bg-surface-container p-1 rounded-full w-fit mb-4">
+<button class="px-6 py-2 bg-white text-primary font-bold rounded-full shadow-sm text-label-md">Consolidated View</button>
+<button class="px-6 py-2 text-on-surface-variant hover:text-primary rounded-full transition-colors text-label-md">Efficiency</button>
+<button class="px-6 py-2 text-on-surface-variant hover:text-primary rounded-full transition-colors text-label-md">Quality</button>
+<button class="px-6 py-2 text-on-surface-variant hover:text-primary rounded-full transition-colors text-label-md">Timeliness</button>
+</div>
+<!-- Complex Data Table -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full border-collapse text-left">
+<thead>
+<!-- Header Row 1 -->
+<tr class="bg-surface-container-high border-b border-outline-variant">
+<th class="sticky-col bg-surface-container-high p-4 font-table-header text-table-header uppercase min-w-[280px] border-r border-outline-variant" rowspan="2">Expected Outputs</th>
+<th class="p-2 text-center font-table-header text-table-header border-r border-outline-variant bg-primary-container text-white" colspan="7">EFFICIENCY</th>
+<th class="p-2 text-center font-table-header text-table-header border-r border-outline-variant bg-secondary text-white" colspan="8">QUALITY</th>
+<th class="p-2 text-center font-table-header text-table-header bg-tertiary text-white" colspan="8">TIMELINESS</th>
+</tr>
+<!-- Header Row 2 -->
+<tr class="bg-surface-container border-b border-outline-variant">
+<!-- Efficiency -->
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JAN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">FEB</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">APR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAY</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JUN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant bg-surface-dim font-bold">TOT</th>
+<!-- Quality -->
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JAN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">FEB</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">APR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAY</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JUN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant bg-surface-dim font-bold">TOT</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant bg-secondary-container text-white font-bold">AVG</th>
+<!-- Timeliness -->
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JAN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">FEB</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">APR</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">MAY</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant w-10">JUN</th>
+<th class="p-2 text-center font-label-md text-[10px] border-r border-outline-variant bg-surface-dim font-bold">TOT</th>
+<th class="p-2 text-center font-label-md text-[10px] bg-tertiary-container text-white font-bold">AVG</th>
+</tr>
+</thead>
+<tbody>
+<!-- Core Function Section -->
+<tr class="bg-primary/10 border-b border-outline-variant">
+<td class="sticky-col p-2 px-4 font-bold text-primary text-body-md uppercase tracking-wider" colspan="24">Core Functions (45%)</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors">
+<td class="sticky-col bg-white p-3 px-4 border-r border-outline-variant text-body-sm">Manage enterprise software systems deployments</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">1</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">2</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">1</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">3</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">2</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">9</td>
+<!-- Quality cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">24</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold text-secondary font-mono bg-surface-container">4.8</td>
+<!-- Timeliness cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">25</td>
+<td class="p-2 text-center font-bold text-tertiary font-mono bg-surface-container">5.0</td>
+</tr>
+<!-- Strategic Objectives Section -->
+<tr class="bg-secondary/10 border-b border-outline-variant">
+<td class="sticky-col p-2 px-4 font-bold text-secondary text-body-md uppercase tracking-wider" colspan="24">Strategic Objectives (35%)</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors">
+<td class="sticky-col bg-white p-3 px-4 border-r border-outline-variant text-body-sm">Implement Cloud Data Migration Strategy</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">1</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">0</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">1</td>
+<!-- Quality cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold text-secondary font-mono bg-surface-container">5.0</td>
+<!-- Timeliness cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">-</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">5</td>
+<td class="p-2 text-center font-bold text-tertiary font-mono bg-surface-container">5.0</td>
+</tr>
+<!-- Support Functions Section -->
+<tr class="bg-tertiary/10 border-b border-outline-variant">
+<td class="sticky-col p-2 px-4 font-bold text-tertiary text-body-md uppercase tracking-wider" colspan="24">Support Functions (20%)</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors">
+<td class="sticky-col bg-white p-3 px-4 border-r border-outline-variant text-body-sm">Attendance to regular staff meetings &amp; training</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">4</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">24</td>
+<!-- Quality cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">30</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold text-secondary font-mono bg-surface-container">5.0</td>
+<!-- Timeliness cells -->
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-mono">5</td>
+<td class="p-2 border-r border-outline-variant text-center font-bold bg-surface-container-low">30</td>
+<td class="p-2 text-center font-bold text-tertiary font-mono bg-surface-container">5.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Man-Days Lost Section -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 border border-outline-variant rounded-lg">
+<h4 class="font-bold text-on-surface uppercase text-body-sm mb-3">Attendance Impact</h4>
+<div class="space-y-3">
+<div class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="text-on-surface-variant text-body-sm">MAN DAY(S) LOST THRU ABSENCE</span>
+<span class="font-bold text-error">0 days</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-body-sm">MAN HRS./MINUTES LOST THRU TARDINESS</span>
+<span class="font-bold text-error">0 mins.</span>
+</div>
+</div>
+</div>
+<div class="bg-primary/5 p-4 border border-primary/20 rounded-lg flex items-center justify-center gap-4">
+<span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
+<div>
+<p class="font-bold text-primary text-body-md">Submission Status</p>
+<p class="text-on-surface-variant text-body-sm">All entries are confirmed to be true and correct as of Dec 15, 2024.</p>
+</div>
+</div>
+</div>
+<!-- Signatories Grid -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="text-center">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-12">Confirmed:</p>
+<div class="border-t-2 border-on-surface-variant mx-4 pt-2">
+<p class="font-bold uppercase text-body-md">MARIA R. SANTOS</p>
+<p class="text-body-sm text-on-surface-variant">Direct Supervisor</p>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-2">Date: __________________</p>
+</div>
+<div class="text-center">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-12">Noted:</p>
+<div class="border-t-2 border-on-surface-variant mx-4 pt-2">
+<p class="font-bold uppercase text-body-md">ENGR. ROBERTO V. LUNA</p>
+<p class="text-body-sm text-on-surface-variant">Department Head</p>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-2">Date: __________________</p>
+</div>
+<div class="text-center">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-12">Submitted By:</p>
+<div class="border-t-2 border-on-surface-variant mx-4 pt-2">
+<p class="font-bold uppercase text-body-md">JUAN D. DELA CRUZ</p>
+<p class="text-body-sm text-on-surface-variant">Employee Name</p>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-2">Date: __________________</p>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-on-surface border-t border-outline-variant dark:border-outline full-width bottom-0">
+<div class="w-full py-6 px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-4 max-w-container-max mx-auto font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant">
+<div class="flex flex-col md:flex-row items-center gap-4">
+<span class="font-label-md text-label-md font-semibold text-primary">Performance Portal</span>
+<span>© 2024 Enterprise Performance Management System. All rights reserved.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors cursor-pointer" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors cursor-pointer" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors cursor-pointer" href="#">Security Standards</a>
+</div>
+</div>
+</footer>
+<script>
+        // Minimal interaction for table cell focus
+        document.querySelectorAll('td.font-mono').forEach(cell => {
+            cell.addEventListener('click', function() {
+                if(this.textContent !== '-') {
+                    this.classList.toggle('bg-primary-container');
+                    this.classList.toggle('text-white');
+                }
+            });
+        });
+
+        // Floating Action Button logic (Suppressed as per rules for detailed report pages)
+    </script>
+</body></html>

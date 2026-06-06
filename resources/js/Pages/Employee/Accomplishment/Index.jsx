@@ -1,25 +1,324 @@
-﻿import AppLayout from '@/Layouts/AppLayout';
+import { useState, useRef } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import AppLayout from '@/Layouts/AppLayout';
 
-const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '2rem', boxShadow: 'var(--admin-shadow)' };
-const iconBox = { width: 48, height: 48, borderRadius: 12, background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' };
-const h = { fontWeight: 700, fontSize: '1.15rem', color: 'var(--admin-text-primary)', marginBottom: '0.4rem' };
-const p = { fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: 1.6, marginBottom: '1rem' };
-const badgesStyle = { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' };
-const badgeStyle = { padding: '0.25rem 0.75rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.22)' };
-const notice = { marginTop: '1.5rem', padding: '0.85rem 1rem', borderRadius: 'var(--admin-radius)', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', fontSize: '0.83rem', color: 'var(--admin-text-muted)' };
+// ── helpers ───────────────────────────────────────────────────────────────────
+const STEPS = [
+    { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
+    { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
+    { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
+    { key: 'dept_head_endorsed',      label: 'PMT',        icon: 'bi-patch-check' },
+    { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
+];
 
-export default function Index() {
+const STATUS_CFG = {
+    draft:                   { label: 'Draft',               c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' },
+    submitted_to_supervisor: { label: 'Submitted',           c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    supervisor_endorsed:     { label: 'Supervisor Endorsed', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)' },
+    dept_head_endorsed:      { label: 'Awaiting PMT',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    recommended_by_pmt:      { label: 'PMT Recommended',     c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
+    pmt_approved:            { label: 'PMT Approved',        c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
+    released_by_pmt:         { label: 'Released',            c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+    returned_to_employee:    { label: 'Returned',            c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+};
+
+const STEP_KEYS = STEPS.map(s => s.key);
+
+function activeStep(status) {
+    if (!status || status === 'draft' || status === 'returned_to_employee') return 0;
+    const i = STEP_KEYS.indexOf(status);
+    return i === -1 ? 1 : i;
+}
+
+function formatBytes(b) {
+    if (!b) return '';
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
+}
+
+// ── Pipeline Stepper ──────────────────────────────────────────────────────────
+function PipelineStepper({ status }) {
+    const cur      = activeStep(status);
+    const returned = status === 'returned_to_employee';
     return (
-        <AppLayout title="Accomplishment">
-            <div style={card}>
-                <div style={iconBox}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
-                <h4 style={h}>Accomplishment</h4>
-                <p style={p}>Submit and review your accomplishment reports for the current performance period.</p>
-                        <div style={{badgesStyle}}><span style={{badgeStyle}}>Stage 2</span>
-                        <span style={{badgeStyle}}>Submission</span></div>
-                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ position: 'absolute', top: 17, left: '5%', right: '5%', height: 2,
+                background: 'var(--admin-border)', zIndex: 0 }} />
+            {STEPS.map((step, i) => {
+                const done    = i < cur;
+                const current = i === cur;
+                return (
+                    <div key={step.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, zIndex: 1, flex: 1 }}>
+                        <div style={{
+                            width: 34, height: 34, borderRadius: '50%',
+                            background: returned && current ? '#ef4444' : done || current ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
+                            border: `2px solid ${returned && current ? '#ef4444' : done || current ? 'var(--admin-accent)' : 'var(--admin-border)'}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: done || current ? '#fff' : 'var(--admin-text-muted)',
+                            boxShadow: current ? '0 0 0 4px rgba(59,130,246,0.2)' : 'none',
+                        }}>
+                            <i className={`bi ${returned && current ? 'bi-arrow-counterclockwise' : done ? 'bi-check-lg' : step.icon}`}
+                                style={{ fontSize: '0.8rem' }} />
+                        </div>
+                        <span style={{ fontSize: '0.6rem', fontWeight: current ? 700 : 500,
+                            color: current ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                            textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            {step.label}
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+// ── Score Circle ──────────────────────────────────────────────────────────────
+function ScoreCircle({ score, rating }) {
+    const pct   = Math.min((score / 5) * 100, 100);
+    const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
+    const r = 28;
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ position: 'relative', width: 64, height: 64, flexShrink: 0 }}>
+                <svg width="64" height="64" style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx="32" cy="32" r={r} fill="none" stroke="var(--admin-border)" strokeWidth="5" />
+                    <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5"
+                        strokeDasharray={`${2 * Math.PI * r * pct / 100} ${2 * Math.PI * r}`}
+                        strokeLinecap="round" style={{ transition: 'stroke-dasharray 0.5s' }} />
+                </svg>
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.9rem', fontWeight: 800, color }}>
+                    {score > 0 ? score.toFixed(2) : '—'}
+                </div>
+            </div>
+            <div>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+                    color: 'var(--admin-text-muted)', marginBottom: 2 }}>Performance Score</div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>{rating ?? '—'}</div>
+            </div>
+        </div>
+    );
+}
+
+// ── File Row ──────────────────────────────────────────────────────────────────
+function FileRow({ name, size, onRemove }) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.45rem 0.75rem',
+            background: 'var(--admin-bg-secondary)', borderRadius: 8, border: '1px solid var(--admin-border)', marginBottom: 4 }}>
+            <i className="bi bi-file-earmark" style={{ color: 'var(--admin-accent)', flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                color: 'var(--admin-text-primary)' }}>{name}</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', flexShrink: 0 }}>{formatBytes(size)}</span>
+            {onRemove && (
+                <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#ef4444', fontSize: '0.82rem', padding: 0, flexShrink: 0 }}>
+                    <i className="bi bi-x-lg" />
+                </button>
+            )}
+        </div>
+    );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function Index() {
+    const { period, submission, smporMeta, ipcrMeta } = usePage().props;
+
+    const [remarks,    setRemarks]    = useState(submission?.remarks ?? '');
+    const [files,      setFiles]      = useState([]);
+    const [confirming, setConfirming] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const fileRef = useRef(null);
+
+    const status  = submission?.status ?? 'draft';
+    const locked  = submission ? !['draft', 'returned_to_employee'].includes(status) : false;
+    const sc      = STATUS_CFG[status] ?? STATUS_CFG.draft;
+    const canSubmit = !locked && !!period;
+
+    function onFilePick(e) {
+        setFiles(prev => [...prev, ...Array.from(e.target.files)]);
+        e.target.value = '';
+    }
+
+    function handleSubmit() {
+        if (!confirming) { setConfirming(true); return; }
+        setSubmitting(true);
+        const fd = new FormData();
+        if (remarks) fd.append('remarks', remarks);
+        files.forEach(f => fd.append('supporting_files[]', f));
+        router.post('/employee/accomplishment/submit', fd, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => { setSubmitting(false); setConfirming(false); setFiles([]); },
+            onError:   () => setSubmitting(false),
+        });
+    }
+
+    const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
+    const sectionLabel = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
+
+    if (!period) return (
+        <AppLayout title="Accomplishments">
+            <div style={{ ...card, padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
+                <i className="bi bi-calendar-x" style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }} />
+                No active performance period.
+            </div>
+        </AppLayout>
+    );
+
+    return (
+        <AppLayout title="Accomplishments" description={`Period: ${period.name}`}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                {/* ── Pipeline ── */}
+                <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', flexWrap: 'wrap', gap: 6 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Submission Pipeline</span>
+                        <span style={{ padding: '2px 10px', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, background: sc.bg, color: sc.c }}>{sc.label}</span>
+                    </div>
+                    <PipelineStepper status={status} />
+                    {status === 'returned_to_employee' && (
+                        <div style={{ marginTop: '0.75rem', padding: '0.65rem 0.9rem', borderRadius: 8,
+                            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                            fontSize: '0.82rem', color: '#f87171', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="bi bi-arrow-counterclockwise" />
+                            Returned — review any remarks and resubmit.
+                        </div>
+                    )}
+                </div>
+
+                {/* ── SMPOR + IPCR summary cards ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                    {/* SMPOR */}
+                    <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
+                            <div>
+                                <div style={sectionLabel}>SMPOR</div>
+                                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Summary MPOR</div>
+                            </div>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+                                background: smporMeta?.source === 'qar_official' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                                color: smporMeta?.source === 'qar_official' ? '#10b981' : '#f59e0b' }}>
+                                {smporMeta?.source === 'qar_official' ? 'QAR Official' : 'Preview'}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '0.75rem' }}>
+                            {[['Total Qty', smporMeta?.total_qty ?? 0], ['MPORs', smporMeta?.mpor_count ?? 0]].map(([l, v]) => (
+                                <div key={l}>
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--admin-text-primary)', lineHeight: 1 }}>{v}</div>
+                                    <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{l}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <a href="/employee/accomplishment/smpor"
+                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <i className="bi bi-table" /> View Full SMPOR
+                        </a>
+                    </div>
+
+                    {/* IPCR */}
+                    <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+                        <div style={{ marginBottom: '0.65rem' }}>
+                            <div style={sectionLabel}>IPCR</div>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Individual Performance</div>
+                        </div>
+                        {ipcrMeta
+                            ? <div style={{ marginBottom: '0.75rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div>
+                            : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>No IPCR data yet.</div>
+                        }
+                        <a href="/employee/accomplishment/ipcr"
+                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <i className="bi bi-clipboard2-data" /> View Full IPCR
+                        </a>
+                    </div>
+                </div>
+
+                {/* ── Submit form ── */}
+                <div style={{ ...card, padding: '1.25rem' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <i className="bi bi-send-check" style={{ color: 'var(--admin-accent)' }} /> Submit Accomplishments
+                    </div>
+
+                    {/* Files */}
+                    <div style={{ marginBottom: '1rem' }}>
+                        <div style={sectionLabel}>Supporting Documents</div>
+                        {/* Uploaded (locked) */}
+                        {locked && submission?.attachments?.map((a, i) => (
+                            <FileRow key={i} name={a.original_name} size={a.size} />
+                        ))}
+                        {/* New picks */}
+                        {!locked && files.map((f, i) => (
+                            <FileRow key={i} name={f.name} size={f.size} onRemove={() => setFiles(p => p.filter((_, j) => j !== i))} />
+                        ))}
+                        {!locked && (
+                            <>
+                                <div onClick={() => fileRef.current?.click()} style={{
+                                    border: '2px dashed var(--admin-border)', borderRadius: 10, padding: '1rem',
+                                    textAlign: 'center', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', marginTop: 4,
+                                }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--admin-accent)'}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--admin-border)'}>
+                                    <i className="bi bi-cloud-upload" style={{ fontSize: '1.3rem', display: 'block', marginBottom: 2 }} />
+                                    Click to attach files
+                                </div>
+                                <input ref={fileRef} type="file" multiple style={{ display: 'none' }} onChange={onFilePick} />
+                            </>
+                        )}
+                    </div>
+
+                    {/* Remarks */}
+                    <div style={{ marginBottom: '1rem' }}>
+                        <div style={sectionLabel}>Remarks <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+                        <textarea rows={3} maxLength={5000} disabled={locked}
+                            value={remarks} onChange={e => setRemarks(e.target.value)}
+                            placeholder="Add notes for your reviewers..."
+                            style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem 0.85rem',
+                                background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
+                                borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem',
+                                outline: 'none', resize: 'vertical', fontFamily: 'inherit', opacity: locked ? 0.7 : 1 }} />
+                        <div style={{ textAlign: 'right', fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{remarks.length}/5000</div>
+                    </div>
+
+                    {/* Confirm panel */}
+                    {confirming && (
+                        <div style={{ padding: '0.75rem 1rem', borderRadius: 8, background: 'rgba(59,130,246,0.06)',
+                            border: '1px solid var(--admin-border-strong)', marginBottom: '0.75rem',
+                            fontSize: '0.82rem', color: 'var(--admin-text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="bi bi-info-circle" style={{ color: 'var(--admin-accent)' }} />
+                            This will submit your SMPOR + IPCR to your supervisor. Proceed?
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                        {submission?.submitted_at && (
+                            <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)' }}>
+                                <i className="bi bi-clock-history" style={{ marginRight: 4 }} />
+                                Submitted {new Date(submission.submitted_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </span>
+                        )}
+                        <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+                            {confirming && (
+                                <button onClick={() => setConfirming(false)} style={{ padding: '0.5rem 1.1rem', borderRadius: 8,
+                                    border: '1px solid var(--admin-border-strong)', background: 'transparent',
+                                    color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    Cancel
+                                </button>
+                            )}
+                            <button onClick={handleSubmit} disabled={!canSubmit || submitting}
+                                style={{ padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
+                                    background: canSubmit ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
+                                    color: canSubmit ? '#fff' : 'var(--admin-text-muted)',
+                                    cursor: canSubmit && !submitting ? 'pointer' : 'not-allowed',
+                                    fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1,
+                                    display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <i className="bi bi-send-fill" />
+                                {submitting ? 'Submitting…' : locked ? 'Submitted' : confirming ? 'Confirm Submit' : 'Submit Accomplishments'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );
 }
-
