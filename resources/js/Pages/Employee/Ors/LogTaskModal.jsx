@@ -26,9 +26,9 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, error }
                 <div style={cs.dropdown}>
                     {options.map(o => (
                         <button key={o.value} type="button"
-                            style={{ ...cs.option, background: String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : undefined, color: String(o.value) === String(value) ? 'var(--admin-accent)' : 'var(--admin-text-primary)' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                            onMouseLeave={e => e.currentTarget.style.background = String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : ''}
+                            style={{ ...cs.option, background: String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)', color: String(o.value) === String(value) ? 'var(--admin-accent)' : 'var(--admin-text-primary)' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}
+                            onMouseLeave={e => e.currentTarget.style.background = String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)'}
                             onClick={() => { onChange(o.value); setOpen(false); }}>
                             {o.label}
                         </button>
@@ -42,7 +42,7 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, error }
 const cs = {
     trigger:  { width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--admin-border)', borderRadius: 8, fontSize: '0.9rem', outline: 'none' },
     dropdown: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, boxShadow: 'var(--admin-shadow)', zIndex: 10, maxHeight: 220, overflowY: 'auto' },
-    option:   { width: '100%', display: 'block', padding: '0.6rem 0.85rem', textAlign: 'left', fontSize: '0.85rem', border: 'none', cursor: 'pointer', lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' },
+    option:   { width: '100%', display: 'block', padding: '0.6rem 0.85rem', textAlign: 'left', fontSize: '0.85rem', border: 'none', background: 'var(--admin-card)', cursor: 'pointer', lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' },
 };
 
 function formatDate(dateStr) {

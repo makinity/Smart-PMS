@@ -18,7 +18,6 @@ function StatusBadge({ status }) {
     const map = {
         submitted: { label: 'Submitted', bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         approved:  { label: 'Approved',  bg: 'rgba(74,222,128,0.15)', color: '#22c55e',             border: 'rgba(74,222,128,0.3)' },
-        endorsed:  { label: 'Endorsed',  bg: 'rgba(139,92,246,0.15)', color: '#a78bfa',             border: 'rgba(139,92,246,0.3)' },
         returned:  { label: 'Returned',  bg: 'rgba(239,68,68,0.15)',  color: '#f87171',             border: 'rgba(239,68,68,0.3)' },
     };
     const c = map[status] ?? { label: status, bg: 'rgba(100,100,100,0.12)', color: 'var(--admin-text-muted)', border: 'rgba(100,100,100,0.2)' };
@@ -178,7 +177,7 @@ function ActionPanel({ mpor }) {
         setLoading(action);
         router.post(`/supervisor/mpor/${mpor.id}/${action}`, data, {
             preserveScroll: true,
-            onSuccess: () => toast(action === 'approve' ? 'MPOR approved.' : action === 'endorse' ? 'MPOR endorsed.' : 'MPOR returned to employee.', action === 'return' ? 'error' : 'submitted'),
+            onSuccess: () => toast(action === 'approve' ? 'MPOR approved.' : 'MPOR returned to employee.', action === 'return' ? 'error' : 'submitted'),
             onError:   () => toast('Action failed. Please try again.', 'error'),
             onFinish:  () => setLoading(null),
         });
@@ -188,25 +187,9 @@ function ActionPanel({ mpor }) {
         if (!await confirm('Approve this MPOR? The employee will be notified.')) return;
         post('approve');
     }
-    async function handleEndorse() {
-        if (!await confirm('Endorse this MPOR to the Department Head?')) return;
-        post('endorse');
-    }
     async function handleReturn() {
         if (!await confirm('Return this MPOR to the employee?')) return;
         post('return', { return_remarks: remarks });
-    }
-
-    if (mpor.status === 'endorsed') {
-        return (
-            <div style={{ ...actionCard, borderLeft: '3px solid #a78bfa' }}>
-                <p style={panelLabel}>Status</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.35rem' }}>
-                    <StatusBadge status="endorsed" />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>Endorsed by {mpor.endorsed_by} · {mpor.endorsed_at}</span>
-                </div>
-            </div>
-        );
     }
 
     if (mpor.status === 'returned') {
@@ -230,10 +213,7 @@ function ActionPanel({ mpor }) {
                     <StatusBadge status="approved" />
                     <span style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>Approved {mpor.approved_at}</span>
                 </div>
-                <button onClick={handleEndorse} disabled={!!loading} style={{ ...btnPrimary, background: '#a78bfa', opacity: loading ? 0.7 : 1 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    {loading === 'endorse' ? 'Endorsing…' : 'Endorse to Department Head'}
-                </button>
+                <span style={{ fontSize: '0.8rem', color: '#22c55e' }}>✓ Approved — included in Dept Head QAR</span>
             </div>
         );
     }
@@ -289,9 +269,8 @@ export default function Show() {
 
     // Timeline steps
     const timeline = [
-        { key: 'submitted', label: 'Submitted',  at: mpor.submitted_at,  active: ['submitted','approved','endorsed','returned'].includes(mpor.status) },
-        { key: 'approved',  label: 'Approved',   at: mpor.approved_at,   active: ['approved','endorsed'].includes(mpor.status) },
-        { key: 'endorsed',  label: 'Endorsed',   at: mpor.endorsed_at,   active: mpor.status === 'endorsed' },
+        { key: 'submitted', label: 'Submitted',  at: mpor.submitted_at,  active: ['submitted','approved','returned'].includes(mpor.status) },
+        { key: 'approved',  label: 'Approved',   at: mpor.approved_at,   active: mpor.status === 'approved' },
     ];
 
     return (
@@ -409,7 +388,7 @@ export default function Show() {
                             </div>
                         </div>
                     </div>
-                    <div style={{ ...card, borderLeft: ['approved','endorsed'].includes(mpor.status) ? '3px solid #22c55e' : mpor.status === 'returned' ? '3px solid #ef4444' : '3px solid var(--admin-border-strong)' }}>
+                    <div style={{ ...card, borderLeft: mpor.status === 'approved' ? '3px solid #22c55e' : mpor.status === 'returned' ? '3px solid #ef4444' : '3px solid var(--admin-border-strong)' }}>
                         <p style={statLabel}>Reviewed By</p>
                         <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginTop: '0.5rem' }}>
                             {mpor.approved_by ? (
@@ -419,7 +398,7 @@ export default function Show() {
                             )}
                         </div>
                         {mpor.approved_at && <div style={{ fontSize: '0.7rem', color: '#22c55e', marginTop: '0.2rem' }}>✓ Approved {mpor.approved_at}</div>}
-                        {mpor.endorsed_at && <div style={{ fontSize: '0.7rem', color: '#a78bfa', marginTop: '0.1rem' }}>↗ Endorsed {mpor.endorsed_at}</div>}
+                        {mpor.approved_at && <div style={{ fontSize: '0.7rem', color: '#22c55e', marginTop: '0.1rem' }}>✓ Approved — included in Dept Head QAR</div>}
                     </div>
                 </div>
 

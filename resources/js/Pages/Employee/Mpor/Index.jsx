@@ -19,8 +19,7 @@ function StatusBadge({ status }) {
         draft:     { label: 'Draft',     bg: 'rgba(234,179,8,0.15)',  color: '#ca8a04', border: 'rgba(234,179,8,0.3)' },
         submitted: { label: 'Submitted', bg: 'rgba(59,130,246,0.15)', color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         approved:  { label: 'Approved',  bg: 'rgba(74,222,128,0.15)', color: '#22c55e', border: 'rgba(74,222,128,0.3)' },
-        endorsed:  { label: 'Endorsed',  bg: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
-        returned:  { label: 'Returned',  bg: 'rgba(239,68,68,0.15)',  color: '#f87171', border: 'rgba(239,68,68,0.3)' },
+        endorsed:  { label: 'Endorsed',  bg: 'rgba(139,92,246,0.15)', color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },        returned:  { label: 'Returned',  bg: 'rgba(239,68,68,0.15)',  color: '#f87171', border: 'rgba(239,68,68,0.3)' },
     };
     const c = map[status] ?? map.draft;
     return (
@@ -297,7 +296,7 @@ export default function Index() {
                                 </div>
                             </div>
                         </div>
-                        <div style={{ ...card, borderLeft: mpor?.status === 'returned' ? '3px solid #ef4444' : (mpor?.status === 'approved' || mpor?.status === 'endorsed') ? '3px solid #22c55e' : '3px solid var(--admin-border-strong)' }}>
+                        <div style={{ ...card, borderLeft: mpor?.status === 'returned' ? '3px solid #ef4444' : mpor?.status === 'approved' ? '3px solid #22c55e' : '3px solid var(--admin-border-strong)' }}>
                             <p style={{ ...statLabel, marginBottom: '0.75rem' }}>Reviewer</p>
                             {supervisor ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -306,7 +305,7 @@ export default function Index() {
                                         <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{supervisor.name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{supervisor.position ?? 'Supervisor'}</div>
                                         {mpor?.status === 'returned'  && <div style={{ fontSize: '0.72rem', color: '#f87171', marginTop: '0.15rem' }}>Returned for revision</div>}
-                                        {(mpor?.status === 'approved' || mpor?.status === 'endorsed') && <div style={{ fontSize: '0.72rem', color: '#22c55e', marginTop: '0.15rem' }}>✓ Approved</div>}
+                                        {mpor?.status === 'approved' && <div style={{ fontSize: '0.72rem', color: '#22c55e', marginTop: '0.15rem' }}>✓ Approved</div>}
                                     </div>
                                 </div>
                             ) : (

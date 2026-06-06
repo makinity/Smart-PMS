@@ -97,7 +97,7 @@ class MporController extends Controller
             $fnWeight = $function?->weight_percent ?? ($fnType === 'core' ? 80 : 20);
             $sectionKey = $fnType;
 
-            $rowKey  = strtolower(trim($indicator->indicator_text ?? 'Unknown'));
+            $rowKey  = strtolower(trim($mfo?->title ?? 'Unknown'));
             $week    = $weekOf(Carbon::parse($entry->work_date));
             $mon     = $entry->monitoring->first();
 
@@ -116,7 +116,7 @@ class MporController extends Controller
 
             if (! isset($sections[$sectionKey]['rows'][$rowKey])) {
                 $sections[$sectionKey]['rows'][$rowKey] = [
-                    'title'    => $indicator->indicator_text ?? 'Unknown',
+                    'title'    => $mfo?->title ?? 'Unknown',
                     'qty'      => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                     'quality'  => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                     'timeliness' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
@@ -185,8 +185,6 @@ class MporController extends Controller
         if ($mpor) {
             if ($mpor->status === 'returned' && $mpor->returnedBy) {
                 $lastActivity = ['label' => 'Returned by ' . $mpor->returnedBy->name, 'at' => $mpor->returned_at?->format('M j, Y · h:i A')];
-            } elseif ($mpor->status === 'endorsed' && $mpor->endorsedBy) {
-                $lastActivity = ['label' => 'Endorsed by ' . $mpor->endorsedBy->name, 'at' => $mpor->endorsed_at?->format('M j, Y · h:i A')];
             } elseif ($mpor->status === 'approved' && $mpor->approvedBy) {
                 $lastActivity = ['label' => 'Approved by ' . $mpor->approvedBy->name, 'at' => $mpor->approved_at?->format('M j, Y · h:i A')];
             } elseif ($mpor->status === 'submitted') {
@@ -253,7 +251,7 @@ class MporController extends Controller
         $mpor = Mpor::firstOrNew(['employee_id' => $user->id, 'month' => $month]);
 
         abort_if(
-            in_array($mpor->status, ['submitted', 'approved', 'endorsed']),
+            in_array($mpor->status, ['submitted', 'approved']),
             422,
             'MPOR is already ' . $mpor->status . '.'
         );
@@ -265,7 +263,6 @@ class MporController extends Controller
             'generated_at' => $mpor->generated_at ?? now(),
             'created_by'   => $mpor->created_by   ?? $user->id,
             'approved_by'  => null, 'approved_at'  => null,
-            'endorsed_by'  => null, 'endorsed_at'  => null,
             'returned_by'  => null, 'returned_at'  => null, 'return_remarks' => null,
         ])->save();
 

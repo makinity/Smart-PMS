@@ -64,7 +64,10 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::patch('/opcr-review/{id}/approve', [\App\Http\Controllers\Pmt\OpcrController::class, 'approve'])->name('opcr-review.approve');
     Route::patch('/opcr-review/{id}/return', [\App\Http\Controllers\Pmt\OpcrController::class, 'returnOpcr'])->name('opcr-review.return');
     Route::get('/qar', [\App\Http\Controllers\Pmt\QarController::class, 'index'])->name('qar.index');
-    Route::get('/qar/{id}', fn () => \Inertia\Inertia::render('Pmt/Qar/Show'))->name('qar.show');
+    Route::get('/qar/{qar}/mpor/{mpor}', [\App\Http\Controllers\Pmt\QarController::class, 'mporShow'])->name('qar.mpor.show');
+    Route::get('/qar/{qar}', [\App\Http\Controllers\Pmt\QarController::class, 'show'])->name('qar.show');
+    Route::post('/qar/{qar}/approve', [\App\Http\Controllers\Pmt\QarController::class, 'approve'])->name('qar.approve');
+    Route::post('/qar/{qar}/return', [\App\Http\Controllers\Pmt\QarController::class, 'return'])->name('qar.return');
     Route::get('/uwp', fn () => \Inertia\Inertia::render('Pmt/UnitWorkPlan/Index'))->name('uwp.index');
     Route::get('/accomplishment-review', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');
     Route::get('/accomplishment-review/{id}', fn () => \Inertia\Inertia::render('Pmt/AccomplishmentReview/Show'))->name('accomplishment-review.show');
@@ -89,7 +92,8 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::get('/opcr/{id}', [\App\Http\Controllers\DeptHead\OpcrController::class, 'show'])->name('opcr.show');
     Route::patch('/opcr/{id}/submit', [\App\Http\Controllers\DeptHead\OpcrController::class, 'submit'])->name('opcr.submit');
     Route::get('/qar', [\App\Http\Controllers\DeptHead\QarController::class, 'index'])->name('qar.index');
-    Route::get('/qar/{id}', fn () => \Inertia\Inertia::render('DeptHead/Qar/MporShow'))->name('qar.show');
+    Route::get('/qar/mpor/{mpor}', [\App\Http\Controllers\DeptHead\QarController::class, 'mporShow'])->name('qar.mpor.show');
+    Route::post('/qar/submit', [\App\Http\Controllers\DeptHead\QarController::class, 'submit'])->name('qar.submit');
     Route::get('/accomplishment-review', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');
     Route::get('/accomplishment-review/{id}', fn () => \Inertia\Inertia::render('DeptHead/AccomplishmentReview/Show'))->name('accomplishment-review.show');
     Route::get('/profile', fn () => \Inertia\Inertia::render('DeptHead/Profile'))->name('profile');
@@ -131,7 +135,6 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::get('/mpor/{mpor}', [\App\Http\Controllers\Supervisor\MporController::class, 'show'])->name('mpor.show');
     Route::post('/mpor/{mpor}/approve', [\App\Http\Controllers\Supervisor\MporController::class, 'approve'])->name('mpor.approve');
     Route::post('/mpor/{mpor}/return', [\App\Http\Controllers\Supervisor\MporController::class, 'return'])->name('mpor.return');
-    Route::post('/mpor/{mpor}/endorse', [\App\Http\Controllers\Supervisor\MporController::class, 'endorse'])->name('mpor.endorse');
     Route::get('/accomplishment', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'index'])->name('accomplishment.index');
     Route::get('/accomplishment/{id}', fn () => \Inertia\Inertia::render('Supervisor/Accomplishment/Show'))->name('accomplishment.show');
     Route::get('/ors-monitoring', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'index'])->name('ors-monitoring.index');

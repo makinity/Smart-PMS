@@ -1,23 +1,327 @@
-﻿import AppLayout from '@/Layouts/AppLayout';
+import { useState, useEffect } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import AppLayout from '@/Layouts/AppLayout';
+import { useToast } from '@/Components/Snackbar';
+import { useConfirm } from '@/Components/ConfirmDialog';
 
-const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '2rem', boxShadow: 'var(--admin-shadow)' };
-const iconBox = { width: 48, height: 48, borderRadius: 12, background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' };
-const h = { fontWeight: 700, fontSize: '1.15rem', color: 'var(--admin-text-primary)', marginBottom: '0.4rem' };
-const p = { fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: 1.6, marginBottom: '1rem' };
-const badgesStyle = { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' };
-const badgeStyle = { padding: '0.25rem 0.75rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.22)' };
-const notice = { marginTop: '1.5rem', padding: '0.85rem 1rem', borderRadius: 'var(--admin-radius)', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', fontSize: '0.83rem', color: 'var(--admin-text-muted)' };
+function useBreakpoint() {
+    const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
+    useEffect(() => { const h = () => setW(window.innerWidth); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+    return w >= 1024 ? 'desktop' : w >= 640 ? 'tablet' : 'mobile';
+}
 
-export default function Index() {
+function StatusBadge({ status }) {
+    const map = {
+        submitted:   { label: 'Submitted',    bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
+        pmt_approved:{ label: 'PMT Approved', bg: 'rgba(74,222,128,0.15)', color: '#22c55e',             border: 'rgba(74,222,128,0.3)' },
+        returned:    { label: 'Returned',     bg: 'rgba(239,68,68,0.15)',  color: '#f87171',             border: 'rgba(239,68,68,0.3)' },
+    };
+    const c = map[status] ?? { label: status, bg: 'rgba(100,100,100,0.12)', color: 'var(--admin-text-muted)', border: 'rgba(100,100,100,0.2)' };
+    return <span style={{ padding: '0.22rem 0.7rem', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>{c.label}</span>;
+}
+
+function Avatar({ name, src, size = 36 }) {
+    const initials = (name ?? '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+    if (src) return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border)' }} />;
+    return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: 'var(--admin-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: size * 0.34, flexShrink: 0 }}>{initials}</div>;
+}
+
+function AnnexTable({ rows }) {
+    const th = { padding: '0.55rem 0.75rem', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--admin-text-muted)', textAlign: 'left', borderBottom: '2px solid var(--admin-border)', whiteSpace: 'nowrap', background: 'var(--admin-bg-secondary)' };
+    const td = { padding: '0.65rem 0.75rem', fontSize: '0.83rem', borderBottom: '1px solid var(--admin-border)', verticalAlign: 'top' };
+    const sticky = { position: 'sticky', left: 0, zIndex: 1 };
+
+    if (rows.length === 0) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>No Annex I rows.</div>;
+
     return (
-        <AppLayout title="QAR Details">
-            <div style={card}>
-                <div style={iconBox}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                <h4 style={h}>QAR Details</h4>
-                <p style={p}>View and manage a specific QAR entry.</p>
-                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
+        <div style={{ overflowX: 'auto', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 820 }}>
+                <thead>
+                    <tr>
+                        <th style={{ ...th, width: 70 }}>PPA Code</th>
+                        <th style={{ ...th, minWidth: 160, ...sticky }}>MFO / PPA</th>
+                        <th style={{ ...th, minWidth: 200 }}>Performance Indicator</th>
+                        <th style={{ ...th, minWidth: 120 }}>Target</th>
+                        <th style={{ ...th, textAlign: 'right', width: 110 }}>Actual</th>
+                        <th style={{ ...th, textAlign: 'right', width: 90 }}>Variance</th>
+                        <th style={{ ...th, minWidth: 130 }}>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row, i) => {
+                        const vc = row.variance === null ? 'var(--admin-text-muted)' : row.variance < 0 ? '#f87171' : '#22c55e';
+                        return (
+                            <tr key={i} onMouseEnter={e => e.currentTarget.style.background='var(--admin-bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background=''}>
+                                <td style={{ ...td, fontSize: '0.75rem', color: 'var(--admin-text-muted)', fontFamily: 'monospace' }}>{row.ppa_code}</td>
+                                <td style={{ ...td, fontWeight: 600, color: 'var(--admin-text-primary)', ...sticky, background: 'var(--admin-card)' }}>{row.mfo_title}</td>
+                                <td style={{ ...td, color: 'var(--admin-text-secondary)' }}>{row.indicator_text}</td>
+                                <td style={{ ...td, fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>
+                                    {row.target_quantity != null ? <strong>{row.target_quantity}</strong> : '—'}
+                                    {row.target_timeline ? <span style={{ display: 'block', fontSize: '0.72rem' }}>{row.target_timeline}</span> : null}
+                                </td>
+                                <td style={{ ...td, textAlign: 'right', fontWeight: 700, color: 'var(--admin-accent)' }}>{row.actual_performance}</td>
+                                <td style={{ ...td, textAlign: 'right', fontWeight: 700, color: vc }}>{row.variance !== null ? (row.variance >= 0 ? `+${row.variance}` : row.variance) : '—'}</td>
+                                <td style={{ ...td, fontSize: '0.75rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>{row.remarks}</td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function AnnexCards({ rows }) {
+    if (rows.length === 0) return <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>No Annex I rows.</div>;
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+            {rows.map((row, i) => {
+                const vc = row.variance === null ? 'var(--admin-text-muted)' : row.variance < 0 ? '#f87171' : '#22c55e';
+                return (
+                    <div key={i} style={{ background: 'var(--admin-bg-secondary)', borderRadius: 'var(--admin-radius)', padding: '0.85rem 1rem', border: '1px solid var(--admin-border)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-primary)', flex: 1 }}>{row.mfo_title}</span>
+                            <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--admin-text-muted)', flexShrink: 0 }}>#{row.ppa_code}</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-secondary)', marginBottom: '0.5rem' }}>{row.indicator_text}</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+                            {[['TARGET', row.target_quantity ?? '—', 'var(--admin-text-primary)'], ['ACTUAL', row.actual_performance, 'var(--admin-accent)'], ['VARIANCE', row.variance !== null ? (row.variance >= 0 ? `+${row.variance}` : row.variance) : '—', vc]].map(([l, v, c]) => (
+                                <div key={l} style={{ textAlign: 'center', background: 'var(--admin-card)', borderRadius: 8, padding: '0.4rem' }}>
+                                    <div style={{ fontSize: '0.6rem', color: 'var(--admin-text-muted)', marginBottom: '0.15rem' }}>{l}</div>
+                                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: c }}>{v}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+function ActionPanel({ qar }) {
+    const [remarks, setRemarks]     = useState('');
+    const [showReturn, setShowReturn] = useState(false);
+    const [loading, setLoading]     = useState(null);
+    const toast   = useToast();
+    const confirm = useConfirm();
+
+    function post(action, data = {}) {
+        setLoading(action);
+        router.post(`/pmt/qar/${qar.id}/${action}`, data, {
+            preserveScroll: true,
+            onSuccess: () => toast(action === 'approve' ? 'QAR approved.' : 'QAR returned to Dept Head.', action === 'return' ? 'error' : 'submitted'),
+            onError:   () => toast('Action failed.', 'error'),
+            onFinish:  () => setLoading(null),
+        });
+    }
+
+    if (qar.status === 'pmt_approved') {
+        return (
+            <div style={{ ...actionCard, borderLeft: '3px solid #22c55e' }}>
+                <p style={panelLabel}>Status</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <StatusBadge status="pmt_approved" />
+                    {qar.validated_at && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>Validated by {qar.validated_by} · {qar.validated_at}</span>}
+                </div>
+            </div>
+        );
+    }
+
+    if (qar.status === 'returned') {
+        return (
+            <div style={{ ...actionCard, borderLeft: '3px solid #ef4444' }}>
+                <p style={panelLabel}>Status</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <StatusBadge status="returned" />
+                    {qar.return_remarks && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>"{qar.return_remarks}"</span>}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ ...actionCard, borderLeft: '3px solid var(--admin-accent)' }}>
+            <p style={panelLabel}>Actions</p>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: showReturn ? '1rem' : 0 }}>
+                <button onClick={async () => { if (await confirm('Approve this QAR?')) post('approve'); }} disabled={!!loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    {loading === 'approve' ? 'Approving…' : 'Approve QAR'}
+                </button>
+                <button onClick={() => setShowReturn(v => !v)} disabled={!!loading} style={btnDanger}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                    Return to Dept Head
+                </button>
+            </div>
+            {showReturn && (
+                <div style={{ marginTop: '0.75rem' }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-muted)', display: 'block', marginBottom: '0.4rem' }}>Return Remarks (optional)</label>
+                    <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Reason for returning…" maxLength={2000} rows={3}
+                        style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button onClick={() => setShowReturn(false)} style={btnSecondary}>Cancel</button>
+                        <button onClick={async () => { if (await confirm('Return this QAR to the Department Head?')) post('return', { return_remarks: remarks }); }} disabled={!!loading} style={{ ...btnDanger, opacity: loading ? 0.7 : 1 }}>
+                            {loading === 'return' ? 'Returning…' : 'Confirm Return'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function Show() {
+    const { qar, office, deptHead, annexRows, mpors } = usePage().props;
+    const bp = useBreakpoint();
+    const isMobile = bp === 'mobile';
+
+    return (
+        <AppLayout title={`QAR — ${office?.name}`}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                {/* Header */}
+                <div style={card}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <a href="/pmt/qar" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', color: 'var(--admin-text-muted)', textDecoration: 'none', fontWeight: 600 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                            Back to QAR List
+                        </a>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                            <Avatar name={deptHead?.name ?? office?.name} src={deptHead?.avatar} size={isMobile ? 44 : 52} />
+                            <div>
+                                <p style={statLabel}>QAR Review</p>
+                                <h1 style={{ fontWeight: 700, fontSize: isMobile ? '1.1rem' : '1.3rem', color: 'var(--admin-text-primary)', lineHeight: 1.15 }}>{office?.name}</h1>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{deptHead?.name} · {deptHead?.position ?? 'Department Head'}</div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                            <div style={{ padding: '0.4rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-accent)' }}>{qar.quarter_key}</div>
+                            <StatusBadge status={qar.status} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Returned banner */}
+                {qar.status === 'returned' && qar.return_remarks && (
+                    <div style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.25)', borderLeft: '4px solid #ef4444', borderRadius: 'var(--admin-radius)', padding: '0.85rem 1.25rem', fontSize: '0.85rem', color: '#f87171' }}>
+                        <strong>Returned:</strong> {qar.return_remarks}
+                    </div>
+                )}
+
+                {/* Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '0.65rem' }}>
+                    <div style={card}><p style={statLabel}>Included MPORs</p><div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--admin-text-primary)', lineHeight: 1 }}>{mpors.length}</div></div>
+                    <div style={card}><p style={statLabel}>Annex I Rows</p><div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--admin-accent)', lineHeight: 1 }}>{annexRows.length}</div></div>
+                    <div style={{ ...card, gridColumn: isMobile ? 'span 2' : 'auto' }}>
+                        <p style={statLabel}>Submitted</p>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary)', marginTop: '0.2rem' }}>{qar.submitted_at ?? '—'}</div>
+                    </div>
+                </div>
+
+                {/* Included MPORs */}
+                <div style={card}>
+                    <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', marginBottom: '0.85rem' }}>Included MPORs</p>
+                    {mpors.length === 0 ? (
+                        <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>No MPORs linked.</div>
+                    ) : isMobile ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                            {mpors.map(m => (
+                                <div key={m.id} style={{ background: 'var(--admin-bg-secondary)', borderRadius: 'var(--admin-radius)', padding: '0.85rem 1rem', border: '1px solid var(--admin-border)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.6rem' }}>
+                                        <Avatar name={m.employee.name} src={m.employee.avatar} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.employee.name}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{m.employee.position}</div>
+                                        </div>
+                                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--admin-accent)' }}>{m.month_label}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <a href={`/pmt/qar/${qar.id}/mpor/${m.id}`} style={btnView}>View MPOR <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ background: 'var(--admin-bg-secondary)' }}>
+                                        {['Employee', 'Month', 'Approved', ''].map((h, i) => (
+                                            <th key={i} style={{ padding: '0.55rem 0.85rem', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--admin-text-muted)', textAlign: i===3?'right':'left', borderBottom: '1px solid var(--admin-border)', whiteSpace: 'nowrap' }}>{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {mpors.map(m => (
+                                        <tr key={m.id} onMouseEnter={e => e.currentTarget.style.background='var(--admin-bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background=''}>
+                                            <td style={tdS}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                    <Avatar name={m.employee.name} src={m.employee.avatar} />
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>{m.employee.name}</div>
+                                                        <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{m.employee.position}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style={tdS}><span style={{ fontWeight: 700, color: 'var(--admin-accent)' }}>{m.month_label}</span></td>
+                                            <td style={tdS}><span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>{m.approved_at ?? '—'}</span></td>
+                                            <td style={{ ...tdS, textAlign: 'right' }}>
+                                                <a href={`/pmt/qar/${qar.id}/mpor/${m.id}`} style={btnView}>View MPOR <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                {/* Annex I */}
+                <div style={card}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' }}>Annex I — Quarterly Performance Summary</p>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>QUARTERLY PHYSICAL REPORT OF OPERATIONS · {qar.quarter_key}</span>
+                    </div>
+                    {isMobile ? <AnnexCards rows={annexRows} /> : <AnnexTable rows={annexRows} />}
+                    {annexRows.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '0.65rem', marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--admin-border)' }}>
+                            <div>
+                                <p style={{ ...statLabel, marginBottom: '0.4rem' }}>Prepared by</p>
+                                <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{deptHead?.name ?? '—'}</div>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{deptHead?.position ?? 'Department Head'}</div>
+                                {qar.submitted_at && <div style={{ fontSize: '0.7rem', color: '#a78bfa', marginTop: '0.2rem' }}>Submitted {qar.submitted_at}</div>}
+                            </div>
+                            <div>
+                                <p style={{ ...statLabel, marginBottom: '0.4rem' }}>PMT Validation</p>
+                                {qar.status === 'pmt_approved' ? (
+                                    <div style={{ fontWeight: 600, color: '#22c55e', fontSize: '0.88rem' }}>✓ Validated by {qar.validated_by}</div>
+                                ) : qar.status === 'returned' ? (
+                                    <div style={{ fontWeight: 600, color: '#f87171', fontSize: '0.88rem' }}>Returned by PMT</div>
+                                ) : (
+                                    <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>Pending validation</div>
+                                )}
+                                {qar.validated_at && <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem' }}>{qar.validated_at}</div>}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Action panel */}
+                <ActionPanel qar={qar} />
+
             </div>
         </AppLayout>
     );
 }
 
+const card       = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
+const actionCard = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
+const statLabel  = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.15rem' };
+const panelLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' };
+const tdS        = { padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', verticalAlign: 'middle' };
+const btnView    = { display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.35rem 0.75rem', borderRadius: 7, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };
+const btnPrimary = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem', borderRadius: 10, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' };
+const btnDanger  = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem', borderRadius: 10, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', color: '#f87171', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' };
+const btnSecondary = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.1rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' };

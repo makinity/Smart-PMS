@@ -83,7 +83,7 @@ class MporExcelExportController extends Controller
             $fnType   = $fn?->function_type ?? 'core';
             $fnName   = $fn?->name ?? ($fnType === 'core' ? 'A. CORE FUNCTIONS' : 'B. SUPPORT FUNCTIONS');
             $fnWeight = $fn?->weight_percent ?? ($fnType === 'core' ? 80 : 20);
-            $rowKey   = strtolower(trim($indicator->indicator_text ?? 'Unknown'));
+            $rowKey   = strtolower(trim($mfo?->title ?? 'Unknown'));
             $week     = $weekOf($entry->work_date);
             $mon      = $entry->monitoring->first();
             $qty      = (int) $entry->quantity;
@@ -92,7 +92,7 @@ class MporExcelExportController extends Controller
                 $sections[$fnType] = ['label' => $fnName, 'weight' => $fnWeight, 'rows' => []];
             }
             if (! isset($sections[$fnType]['rows'][$rowKey])) {
-                $sections[$fnType]['rows'][$rowKey] = ['title' => $indicator->indicator_text, 'qty' => [1=>0,2=>0,3=>0,4=>0], 'quality' => [1=>0,2=>0,3=>0,4=>0], 'timeliness' => [1=>0,2=>0,3=>0,4=>0]];
+                $sections[$fnType]['rows'][$rowKey] = ['title' => $mfo?->title ?? 'Unknown', 'qty' => [1=>0,2=>0,3=>0,4=>0], 'quality' => [1=>0,2=>0,3=>0,4=>0], 'timeliness' => [1=>0,2=>0,3=>0,4=>0]];
             }
             $sections[$fnType]['rows'][$rowKey]['qty'][$week]        += $qty;
             $sections[$fnType]['rows'][$rowKey]['quality'][$week]    += $qty * ($mon->quality_rating ?? 0);
@@ -109,7 +109,9 @@ class MporExcelExportController extends Controller
                 $row['qual_w']     = array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['quality'],    $row['qty']);
                 $row['time_w']     = array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['timeliness'], $row['qty']);
             }
+            unset($row);
         }
+        unset($sec);
         ksort($sections);
 
         $grandQty    = [1=>0,2=>0,3=>0,4=>0];

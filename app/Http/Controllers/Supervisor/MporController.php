@@ -23,7 +23,7 @@ class MporController extends Controller
 
         $query = Mpor::with(['employee'])
             ->where('office_id', $user->office_id)
-            ->whereIn('status', ['submitted', 'approved', 'endorsed', 'returned'])
+            ->whereIn('status', ['submitted', 'approved', 'returned'])
             ->orderBy('submitted_at', 'desc');
 
         if ($search) {
@@ -32,7 +32,7 @@ class MporController extends Controller
         if ($month && preg_match('/^\d{4}-\d{2}$/', $month)) {
             $query->where('month', $month);
         }
-        if ($status && in_array($status, ['submitted', 'approved', 'endorsed', 'returned'])) {
+        if ($status && in_array($status, ['submitted', 'approved', 'returned'])) {
             $query->where('status', $status);
         }
 
@@ -62,7 +62,7 @@ class MporController extends Controller
         $user = Auth::user();
         abort_unless($mpor->office_id === $user->office_id, 403);
 
-        $mpor->load(['employee', 'approvedBy', 'endorsedBy', 'returnedBy']);
+        $mpor->load(['employee', 'approvedBy', 'returnedBy']);
 
         $month  = $mpor->month;
         $start  = Carbon::parse($month . '-01')->startOfMonth();
@@ -107,11 +107,12 @@ class MporController extends Controller
         foreach ($entries as $entry) {
             $indicator = $entry->ipcrItem?->indicator;
             if (! $indicator) continue;
-            $fn       = $indicator->uwpMfo?->uwpFunction;
+            $mfo      = $indicator->uwpMfo;
+            $fn       = $mfo?->uwpFunction;
             $fnType   = $fn?->function_type ?? 'core';
             $fnName   = $fn?->name ?? ($fnType === 'core' ? 'Core Functions' : 'Support Functions');
             $fnWeight = $fn?->weight_percent ?? ($fnType === 'core' ? 80 : 20);
-            $rowKey   = strtolower(trim($indicator->indicator_text ?? 'Unknown'));
+            $rowKey   = strtolower(trim($mfo?->title ?? 'Unknown'));
             $week     = $weekOf($entry->work_date);
             $mon      = $entry->monitoring->first();
             $qty      = (int) $entry->quantity;
@@ -120,7 +121,7 @@ class MporController extends Controller
                 $sections[$fnType] = ['key' => $fnType, 'label' => $fnName, 'weight' => $fnWeight, 'rows' => []];
             }
             if (! isset($sections[$fnType]['rows'][$rowKey])) {
-                $sections[$fnType]['rows'][$rowKey] = ['title' => $indicator->indicator_text, 'qty' => [1=>0,2=>0,3=>0,4=>0], 'quality' => [1=>0,2=>0,3=>0,4=>0], 'timeliness' => [1=>0,2=>0,3=>0,4=>0]];
+                $sections[$fnType]['rows'][$rowKey] = ['title' => $mfo?->title ?? 'Unknown', 'qty' => [1=>0,2=>0,3=>0,4=>0], 'quality' => [1=>0,2=>0,3=>0,4=>0], 'timeliness' => [1=>0,2=>0,3=>0,4=>0]];
             }
             $sections[$fnType]['rows'][$rowKey]['qty'][$week]        += $qty;
             $sections[$fnType]['rows'][$rowKey]['quality'][$week]    += $qty * ($mon->quality_rating ?? 0);
@@ -165,11 +166,9 @@ class MporController extends Controller
                 'status'         => $mpor->status,
                 'submitted_at'   => $mpor->submitted_at?->format('M j, Y · h:i A'),
                 'approved_at'    => $mpor->approved_at?->format('M j, Y · h:i A'),
-                'endorsed_at'    => $mpor->endorsed_at?->format('M j, Y · h:i A'),
                 'returned_at'    => $mpor->returned_at?->format('M j, Y · h:i A'),
                 'return_remarks' => $mpor->return_remarks,
                 'approved_by'    => $mpor->approvedBy?->name,
-                'endorsed_by'    => $mpor->endorsedBy?->name,
                 'returned_by'    => $mpor->returnedBy?->name,
             ],
             'employee'     => [
@@ -196,7 +195,6 @@ class MporController extends Controller
             'status'      => 'approved',
             'approved_by' => $user->id,
             'approved_at' => now(),
-            'endorsed_by' => null, 'endorsed_at' => null,
             'returned_by' => null, 'returned_at' => null, 'return_remarks' => null,
         ]);
 
@@ -218,7 +216,6 @@ class MporController extends Controller
             'return_remarks' => $request->return_remarks,
             'submitted_at'   => null,
             'approved_by'    => null, 'approved_at'  => null,
-            'endorsed_by'    => null, 'endorsed_at'  => null,
         ]);
 
         // Notify employee
@@ -234,35 +231,5 @@ class MporController extends Controller
         ]);
 
         return back()->with('success', 'MPOR returned to employee.');
-    }
-
-    public function endorse(Mpor $mpor)
-    {
-        $user = Auth::user();
-        abort_unless($mpor->office_id === $user->office_id, 403);
-        abort_unless($mpor->status === 'approved', 422, 'MPOR must be approved before endorsing.');
-
-        $mpor->update([
-            'status'      => 'endorsed',
-            'endorsed_by' => $user->id,
-            'endorsed_at' => now(),
-        ]);
-
-        // Notify dept heads in same office
-        $deptHeads = User::where('office_id', $user->office_id)->where('role', 'dept_head')->get();
-        foreach ($deptHeads as $dh) {
-            $dh->notifications()->create([
-                'id'   => \Illuminate\Support\Str::uuid(),
-                'type' => 'App\Notifications\WorkflowEventNotification',
-                'data' => json_encode([
-                    'event'   => 'mpor.endorsed_to_dept_head',
-                    'type'    => 'info',
-                    'message' => $mpor->employee?->name . '\'s MPOR for ' . $mpor->month . ' has been endorsed.',
-                    'link'    => '/stage-two/mpor',
-                ]),
-            ]);
-        }
-
-        return back()->with('success', 'MPOR endorsed to Department Head.');
     }
 }

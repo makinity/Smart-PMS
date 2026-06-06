@@ -37,8 +37,8 @@ function Avatar({ name, src, size = 40 }) {
     );
 }
 
-const STATUSES = ['', 'submitted', 'approved', 'endorsed', 'returned'];
-const STATUS_LABELS = { '': 'All', submitted: 'Submitted', approved: 'Approved', endorsed: 'Endorsed', returned: 'Returned' };
+const STATUSES = ['', 'submitted', 'approved', 'returned'];
+const STATUS_LABELS = { '': 'All', submitted: 'Submitted', approved: 'Approved', returned: 'Returned' };
 
 export default function Index({ mpors, search: initSearch, month: initMonth, status: initStatus }) {
     const bp = useBreakpoint();
@@ -97,7 +97,9 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                         />
                         {/* Status filter */}
                         <select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}>
-                            {STATUSES.map(s => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
+                            {['', 'submitted', 'approved', 'returned'].map(s => (
+                                <option key={s} value={s}>{{ '': 'All', submitted: 'Submitted', approved: 'Approved', returned: 'Returned' }[s]}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
