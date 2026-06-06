@@ -142,14 +142,15 @@ Route::prefix('employee')->middleware(['auth', 'role:employee'])->name('employee
     Route::get('/', [\App\Http\Controllers\Employee\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/ipcr-target', [\App\Http\Controllers\Employee\IpcrTargetController::class, 'index'])->name('ipcr-target.index');
     Route::patch('/ipcr-target/{id}/commit', [\App\Http\Controllers\Employee\IpcrTargetController::class, 'commit'])->name('ipcr-target.commit');
-    Route::get('/mpor', fn () => \Inertia\Inertia::render('Employee/Mpor/Index'))->name('mpor.index');
+    Route::get('/mpor', [\App\Http\Controllers\Employee\MporController::class, 'index'])->name('mpor.index');
+    Route::post('/mpor/submit', [\App\Http\Controllers\Employee\MporController::class, 'submit'])->name('mpor.submit');
     Route::get('/ors', [\App\Http\Controllers\Employee\OrsController::class, 'index'])->name('ors.index');
     Route::post('/ors', [\App\Http\Controllers\Employee\OrsController::class, 'store'])->name('ors.store');
     Route::post('/ors/{orsEntry}/timer', [\App\Http\Controllers\Employee\OrsController::class, 'timerAction'])->name('ors.timer');
     Route::post('/ors/{orsEntry}/submit', [\App\Http\Controllers\Employee\OrsController::class, 'submit'])->name('ors.submit');
     Route::patch('/ors/{orsEntry}', [\App\Http\Controllers\Employee\OrsController::class, 'updateEntry'])->name('ors.update');
     Route::get('/ors/{orsEntry}/entry', [\App\Http\Controllers\Employee\OrsController::class, 'getEntry'])->name('ors.entry');
-    Route::get('/my-tasks', fn () => \Inertia\Inertia::render('Employee/MyTask/Index'))->name('my-tasks.index');
+    Route::get('/my-tasks', [\App\Http\Controllers\Employee\MyTasksController::class, 'index'])->name('my-tasks.index');
     Route::get('/accomplishment', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'index'])->name('accomplishment.index');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Employee/Profile'))->name('profile');
 });

@@ -47,7 +47,7 @@ const roleLinks = {
         { href: '/employee/ipcr-target', label: 'IPCR Target', icon: 'bi-bullseye' },
         { href: '/employee/accomplishment', label: 'Accomplishment', icon: 'bi-award-fill' },
         { href: '/employee/mpor', label: 'MPOR', icon: 'bi-file-text-fill' },
-        { href: '/employee/my-task', label: 'My Tasks', icon: 'bi-check2-square' },
+        { href: '/employee/my-tasks', label: 'My Tasks', icon: 'bi-check2-square' },
         { href: '/employee/ors', label: 'ORS', icon: 'bi-activity' },
         { href: '/employee/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
