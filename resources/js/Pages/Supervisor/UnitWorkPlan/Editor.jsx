@@ -324,61 +324,24 @@ export default function Editor() {
                 </div>
             )}
 
-            {/* ── Tablet: Breadcrumb pills ── */}
+            {/* ── Tablet: same two-row tab nav as mobile ── */}
             {bp === 'tablet' && (
-                <div style={{ ...s.breadcrumbRow, position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)' }}>
-                    {/* Function pill */}
-                    <div ref={fnDropRef} style={{ position: 'relative' }}>
-                        <button style={s.fnPill} onClick={() => { setFnDropOpen(v => !v); setMfoDropOpen(false); }}>
-                            {activeFnForMfo?.name ?? activeFn?.name ?? 'Select Function'}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        {fnDropOpen && (() => {
-                            const r = fnDropRef.current?.getBoundingClientRect();
-                            return (
-                                <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
-                                    {functions.map(fn => (
-                                        <button key={fn.id} style={{ ...s.dropItem, ...(activeFnId === fn.id ? s.dropItemActive : {}) }}
-                                            onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); setFnDropOpen(false); }}>
-                                            {activeFnId === fn.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
-                                            {fn.name}
-                                        </button>
-                                    ))}
-                                    {uwp?.editable && (
-                                        <button style={{ ...s.dropItem, color: 'var(--admin-accent)' }} onClick={() => { setFnModal({}); setFnDropOpen(false); }}>
-                                            + Add Function
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })()}
+                <div style={{ position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
+                        {functions.map(fn => (
+                            <button key={fn.id} style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
+                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                                {fn.name}
+                            </button>
+                        ))}
                     </div>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
-                    {/* MFO pill */}
-                    <div ref={mfoDropRef} style={{ position: 'relative' }}>
-                        <button style={s.mfoPill} onClick={() => { setMfoDropOpen(v => !v); setFnDropOpen(false); }}>
-                            {activeMfo?.title ?? 'Select MFO'}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        {mfoDropOpen && (() => {
-                            const r = mfoDropRef.current?.getBoundingClientRect();
-                            return (
-                                <div style={{ ...s.dropdown, position: 'fixed', top: r ? r.bottom + 4 : 60, left: r ? r.left : 0 }}>
-                                    {(activeFnForMfo ?? activeFn)?.mfos?.map(mfo => (
-                                        <button key={mfo.id} style={{ ...s.dropItem, ...(activeMfoId === mfo.id ? s.dropItemActive : {}) }}
-                                            onClick={() => { setActiveMfoId(mfo.id); setMfoDropOpen(false); }}>
-                                            {activeMfoId === mfo.id && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
-                                            {mfo.title}
-                                        </button>
-                                    ))}
-                                    {uwp?.editable && activeFn && (
-                                        <button style={{ ...s.dropItem, color: 'var(--admin-accent)' }} onClick={() => { setAddMfoCtx({ fn: activeFnForMfo ?? activeFn }); setMfoDropOpen(false); }}>
-                                            + Add MFO / PPA
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })()}
+                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
+                        {(activeFn?.mfos ?? []).map(mfo => (
+                            <button key={mfo.id} style={{ ...s.tab, ...(activeMfoId === mfo.id ? s.tabActive : {}) }}
+                                onClick={() => setActiveMfoId(mfo.id)}>
+                                {mfo.title}
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
@@ -387,10 +350,10 @@ export default function Editor() {
             {bp === 'mobile' && (
                 <div style={{ position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
                     {/* Function selector row */}
-                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', padding: '0.4rem 0.75rem', gap: '0.4rem', borderBottom: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
                         {functions.map(fn => (
                             <button key={fn.id}
-                                style={{ flexShrink: 0, padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', border: activeFnId === fn.id ? 'none' : '1px solid var(--admin-border-strong)', background: activeFnId === fn.id ? 'var(--admin-accent)' : 'transparent', color: activeFnId === fn.id ? '#fff' : 'var(--admin-text-muted)' }}
+                                style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
                                 onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
                                 {fn.name}
                             </button>
@@ -462,9 +425,9 @@ export default function Editor() {
             </div>
             </div>{/* ── end unified card wrapper ── */}
 
-            {/* FAB: mobile add button */}
-            {bp === 'mobile' && uwp?.editable && (
-                <div style={{ position: 'fixed', bottom: uwp?.editable ? '5.5rem' : '1.5rem', right: '1.25rem', zIndex: 98 }}>
+            {/* FAB: mobile/tablet add button */}
+            {bp !== 'desktop' && uwp?.editable && (
+                <div style={{ position: 'fixed', bottom: bp === 'mobile' && uwp?.editable ? '5.5rem' : '1.5rem', right: '1.25rem', zIndex: 98 }}>
                     <MobileAddMenu
                         activeFn={activeFn ?? activeFnForMfo}
                         functions={functions}
