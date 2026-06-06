@@ -134,8 +134,7 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
         <AppLayout user={auth?.user} auth={auth}>
             <Head title="HRIS Integration" />
 
-            <div className="text-slate-900">
-                <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div style={card}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                             <div style={{ minWidth: 0 }}>
@@ -221,7 +220,7 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
                             </div>
                         </form>
 
-                        <div className="stack">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             <div style={card}>
                                 <p style={cardHeader}>How it works</p>
                                 <ul style={{ listStyle: 'none', display: 'grid', gap: '0.6rem', color: 'var(--admin-text-secondary)', fontSize: '0.875rem', lineHeight: 1.6 }}>
@@ -244,7 +243,7 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
                                     <p style={cardHeader}>Sync Failures</p>
                                     <div style={{ display: 'grid', gap: '0.65rem' }}>
                                         {failures.map((failure, index) => (
-                                            <div key={`${failure.employee_id || failure.email || index}`} style={{ padding: '0.85rem 0.95rem', borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(255,255,255,0.35)' }}>
+                                            <div key={`${failure.employee_id || failure.email || index}`} style={{ padding: '0.85rem 0.95rem', borderRadius: 12, border: '1px solid var(--admin-border)', background: 'var(--admin-bg-secondary)' }}>
                                                 <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>
                                                     {failure.name || failure.employee_id || `Record ${index + 1}`}
                                                 </div>
@@ -258,7 +257,6 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
                             ) : null}
                         </div>
                     </div>
-                </div>
             </div>
         </AppLayout>
     );
@@ -322,8 +320,8 @@ const inputStyle = {
     boxSizing: 'border-box',
     padding: '0.7rem 0.9rem',
     borderRadius: 12,
-    border: '1px solid var(--admin-border)',
-    background: 'rgba(255,255,255,0.96)',
+    border: '1px solid var(--admin-border-strong)',
+    background: 'var(--admin-bg-secondary)',
     color: 'var(--admin-text-primary)',
     fontSize: '0.875rem',
     outline: 'none',
@@ -336,7 +334,7 @@ const actionPrimary = {
     gap: '0.5rem',
     padding: '0.7rem 1rem',
     borderRadius: 12,
-    border: '1px solid rgba(59,130,246,0.35)',
+    border: 'none',
     background: 'var(--admin-accent)',
     color: '#fff',
     fontSize: '0.875rem',
@@ -353,8 +351,8 @@ const actionSecondary = {
     gap: '0.5rem',
     padding: '0.7rem 1rem',
     borderRadius: 12,
-    border: '1px solid var(--admin-border)',
-    background: 'rgba(255,255,255,0.9)',
+    border: '1px solid var(--admin-border-strong)',
+    background: 'transparent',
     color: 'var(--admin-text-primary)',
     fontSize: '0.875rem',
     fontWeight: 700,

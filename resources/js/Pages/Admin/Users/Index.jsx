@@ -169,16 +169,22 @@ function IconClose({ className }) {
     );
 }
 
-function Badge({ children, tone = 'pending', className = '' }) {
-    const style =
-        STATUS_STYLES[tone] ||
-        ROLE_STYLES[tone] ||
-        'bg-violet-50 text-violet-700 border-violet-200';
+const BADGE_STYLES = {
+    active:      { background: 'rgba(74,222,128,0.15)',  color: '#22c55e',  border: '1px solid rgba(74,222,128,0.3)' },
+    inactive:    { background: 'rgba(234,179,8,0.15)',   color: '#ca8a04',  border: '1px solid rgba(234,179,8,0.3)' },
+    disabled:    { background: 'rgba(239,68,68,0.15)',   color: '#f87171',  border: '1px solid rgba(239,68,68,0.3)' },
+    pending:     { background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)' },
+    admin:       { background: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.3)' },
+    superadmin:  { background: 'rgba(99,102,241,0.15)',  color: '#818cf8',  border: '1px solid rgba(99,102,241,0.3)' },
+    supervisor:  { background: 'rgba(168,85,247,0.15)',  color: '#c084fc',  border: '1px solid rgba(168,85,247,0.3)' },
+    employee:    { background: 'rgba(20,184,166,0.15)',  color: '#2dd4bf',  border: '1px solid rgba(20,184,166,0.3)' },
+    user:        { background: 'rgba(139,92,246,0.15)',  color: '#a78bfa',  border: '1px solid rgba(139,92,246,0.3)' },
+};
 
+function Badge({ children, tone = 'pending' }) {
+    const st = BADGE_STYLES[tone] ?? BADGE_STYLES.pending;
     return (
-        <span
-            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${style} ${className}`}
-        >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 999, padding: '0.2rem 0.65rem', fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', ...st }}>
             {children}
         </span>
     );
@@ -197,15 +203,11 @@ function Field({ label, children }) {
 
 function Toggle({ label, checked, onChange, disabled = false }) {
     return (
-        <label
-            className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${
-                disabled ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-slate-200 bg-white text-slate-700'
-            }`}
-        >
-            <span className="font-medium">{label}</span>
+        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, border: '1px solid var(--admin-border-strong)', padding: '0.75rem 1rem', fontSize: '0.875rem', background: 'var(--admin-bg-secondary)', color: disabled ? 'var(--admin-text-muted)' : 'var(--admin-text-primary)', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1 }}>
+            <span style={{ fontWeight: 500 }}>{label}</span>
             <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                style={{ width: 16, height: 16, accentColor: 'var(--admin-accent)', cursor: disabled ? 'not-allowed' : 'pointer' }}
                 checked={checked}
                 onChange={(event) => onChange(event.target.checked)}
                 disabled={disabled}
@@ -215,19 +217,13 @@ function Toggle({ label, checked, onChange, disabled = false }) {
 }
 
 function MenuItem({ icon, label, tone = 'default', onClick, disabled = false }) {
-    const toneClasses =
-        tone === 'danger'
-            ? 'text-rose-600 hover:bg-rose-50'
-            : tone === 'warning'
-              ? 'text-amber-700 hover:bg-amber-50'
-              : 'text-slate-700 hover:bg-slate-100';
-
+    const color = tone === 'danger' ? '#f87171' : tone === 'warning' ? '#ca8a04' : 'var(--admin-text-secondary)';
     return (
         <button
             type="button"
             disabled={disabled}
             onClick={onClick}
-            className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${toneClasses}`}
+            style={{ display: 'flex', width: '100%', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'none', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', color, fontSize: '0.82rem', textAlign: 'left', opacity: disabled ? 0.5 : 1 }}
         >
             <span>{icon}</span>
             <span>{label}</span>
@@ -235,82 +231,25 @@ function MenuItem({ icon, label, tone = 'default', onClick, disabled = false }) 
     );
 }
 
-function ActionMenu({
-    user,
-    open,
-    onClose,
-    onEdit,
-    onSendCode,
-    onToggleActive,
-    onToggleDisabled,
-    protectedAccount,
-}) {
+function ActionMenu({ user, open, onClose, onEdit, onSendCode, onToggleActive, onToggleDisabled, protectedAccount }) {
     if (!open) return null;
-
     return (
         <div
             data-user-actions
-            className="absolute right-0 top-12 z-20 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
+            style={{ position: 'absolute', right: 0, top: 48, zIndex: 20, width: 200, borderRadius: 12, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '0.25rem' }}
         >
-            <MenuItem
-                icon={<IconEdit className="h-4 w-4" />}
-                label="Edit user"
-                onClick={() => {
-                    onClose();
-                    onEdit();
-                }}
-            />
-            <MenuItem
-                icon={<IconMail className="h-4 w-4" />}
-                label="Send employee ID"
-                disabled={!user.email}
-                onClick={() => {
-                    onClose();
-                    onSendCode();
-                }}
-            />
-            <MenuItem
-                icon={<IconShield className="h-4 w-4" />}
-                label={user.is_active ? 'Deactivate' : 'Activate'}
-                disabled={protectedAccount}
-                onClick={() => {
-                    onClose();
-                    onToggleActive();
-                }}
-            />
-            <MenuItem
-                icon={<IconAlert className="h-4 w-4" />}
-                tone={user.is_disabled ? 'warning' : 'danger'}
-                label={user.is_disabled ? 'Enable access' : 'Disable access'}
-                disabled={protectedAccount}
-                onClick={() => {
-                    onClose();
-                    onToggleDisabled();
-                }}
-            />
+            <MenuItem icon={<IconEdit className="h-4 w-4" />} label="Edit user" onClick={() => { onClose(); onEdit(); }} />
+            <MenuItem icon={<IconMail className="h-4 w-4" />} label="Send employee ID" disabled={!user.email} onClick={() => { onClose(); onSendCode(); }} />
+            <MenuItem icon={<IconShield className="h-4 w-4" />} label={user.is_active ? 'Deactivate' : 'Activate'} disabled={protectedAccount} onClick={() => { onClose(); onToggleActive(); }} />
+            <MenuItem icon={<IconAlert className="h-4 w-4" />} tone={user.is_disabled ? 'warning' : 'danger'} label={user.is_disabled ? 'Enable access' : 'Disable access'} disabled={protectedAccount} onClick={() => { onClose(); onToggleDisabled(); }} />
         </div>
     );
 }
 
-function UserFormModal({
-    open,
-    mode,
-    roles,
-    offices,
-    value,
-    safety,
-    onClose,
-    onChange,
-    onSubmit,
-    saving,
-}) {
+function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onChange, onSubmit, saving }) {
     useEffect(() => {
         if (!open) return undefined;
-
-        const onKeyDown = (event) => {
-            if (event.key === 'Escape') onClose();
-        };
-
+        const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [open, onClose]);
@@ -321,145 +260,82 @@ function UserFormModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 px-3 py-3 sm:items-center sm:p-6"
-            onClick={(event) => {
-                if (event.target === event.currentTarget) {
-                    onClose();
-                }
-            }}
+            style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', padding: '1rem' }}
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="w-full max-w-3xl overflow-hidden rounded-t-3xl border border-slate-200 bg-white shadow-2xl sm:rounded-3xl">
-                <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+            <div style={{ width: '100%', maxWidth: 720, borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', borderBottom: '1px solid var(--admin-border)', padding: '1.1rem 1.5rem' }}>
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600">
+                        <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--admin-accent)', marginBottom: '0.2rem' }}>
                             {mode === 'create' ? 'Create User' : 'Edit User'}
                         </p>
-                        <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>
                             {mode === 'create' ? 'Add account and role' : value.name || 'Update user'}
                         </h3>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
-                        aria-label="Close dialog"
-                    >
-                        <IconClose className="h-5 w-5" />
+                    <button type="button" onClick={onClose} style={{ background: 'none', border: '1px solid var(--admin-border-strong)', borderRadius: 8, padding: '0.4rem', cursor: 'pointer', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center' }}>
+                        <IconClose className="h-4 w-4" />
                     </button>
                 </div>
 
-                <form
-                    onSubmit={onSubmit}
-                    className="max-h-[calc(100vh-6rem)] overflow-y-auto px-5 py-5"
-                >
-                    {isProtected ? (
-                        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <form onSubmit={onSubmit} style={{ maxHeight: 'calc(100vh - 8rem)', overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
+                    {isProtected && (
+                        <div style={{ marginBottom: '1rem', borderRadius: 10, border: '1px solid rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.1)', padding: '0.75rem 1rem', fontSize: '0.82rem', color: '#ca8a04' }}>
                             This account is protected by admin safety rules.
                         </div>
-                    ) : null}
+                    )}
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Field label="Employee ID">
-                            <input
-                                value={value.employee_id || ''}
-                                onChange={(event) => onChange('employee_id', event.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                                placeholder="EMP-2026-00001"
-                            />
-                        </Field>
-                        <Field label="Full Name">
-                            <input
-                                value={value.name || ''}
-                                onChange={(event) => onChange('name', event.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                                placeholder="Juan Dela Cruz"
-                            />
-                        </Field>
-                        <Field label="Email">
-                            <input
-                                value={value.email || ''}
-                                onChange={(event) => onChange('email', event.target.value)}
-                                type="email"
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                                placeholder="name@gmail.com"
-                            />
-                        </Field>
-                        <Field label="Role">
-                            <select
-                                value={value.role || ''}
-                                onChange={(event) => onChange('role', event.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                            >
+                    <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                        {[
+                            { label: 'Employee ID', field: 'employee_id', placeholder: 'EMP-2026-00001' },
+                            { label: 'Full Name',   field: 'name',        placeholder: 'Juan Dela Cruz' },
+                            { label: 'Email',       field: 'email',       placeholder: 'name@gmail.com', type: 'email' },
+                            { label: 'Position',    field: 'position',    placeholder: 'Administrative Officer' },
+                        ].map(({ label, field, placeholder, type = 'text' }) => (
+                            <label key={field} style={fieldWrap}>
+                                <span style={fieldLabel}>{label}</span>
+                                <input
+                                    value={value[field] || ''}
+                                    onChange={(e) => onChange(field, e.target.value)}
+                                    type={type}
+                                    placeholder={placeholder}
+                                    style={inputStyle}
+                                />
+                            </label>
+                        ))}
+
+                        <label style={fieldWrap}>
+                            <span style={fieldLabel}>Role</span>
+                            <select value={value.role || ''} onChange={(e) => onChange('role', e.target.value)} style={inputStyle}>
                                 {roles.map((role) => {
                                     const key = role.key ?? role.id ?? role.name ?? role;
-                                    return (
-                                        <option key={key} value={key}>
-                                            {role.label ?? role.name ?? role}
-                                        </option>
-                                    );
+                                    return <option key={key} value={key}>{role.label ?? role.name ?? role}</option>;
                                 })}
                             </select>
-                        </Field>
-                        <Field label="Office">
-                            <select
-                                value={value.office_id || ''}
-                                onChange={(event) => onChange('office_id', event.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                            >
+                        </label>
+
+                        <label style={fieldWrap}>
+                            <span style={fieldLabel}>Office</span>
+                            <select value={value.office_id || ''} onChange={(e) => onChange('office_id', e.target.value)} style={inputStyle}>
                                 <option value="">No office assigned</option>
                                 {offices.map((office) => {
                                     const key = office.id ?? office.value;
-                                    return (
-                                        <option key={key} value={key}>
-                                            {office.name ?? office.label ?? office.title}
-                                        </option>
-                                    );
+                                    return <option key={key} value={key}>{office.name ?? office.label ?? office.title}</option>;
                                 })}
                             </select>
-                        </Field>
-                        <Field label="Position">
-                            <input
-                                value={value.position || ''}
-                                onChange={(event) => onChange('position', event.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:bg-white"
-                                placeholder="Administrative Officer"
-                            />
-                        </Field>
+                        </label>
                     </div>
 
-                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                        <Toggle
-                            label="Active"
-                            checked={Boolean(value.is_active)}
-                            onChange={(checked) => onChange('is_active', checked)}
-                            disabled={Boolean(isProtected)}
-                        />
-                        <Toggle
-                            label="Disabled"
-                            checked={Boolean(value.is_disabled)}
-                            onChange={(checked) => onChange('is_disabled', checked)}
-                            disabled={Boolean(isProtected)}
-                        />
-                        <Toggle
-                            label="Send employee ID"
-                            checked={Boolean(value.send_employee_id)}
-                            onChange={(checked) => onChange('send_employee_id', checked)}
-                        />
+                    <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                        <Toggle label="Active"           checked={Boolean(value.is_active)}         onChange={(v) => onChange('is_active', v)}         disabled={Boolean(isProtected)} />
+                        <Toggle label="Disabled"         checked={Boolean(value.is_disabled)}       onChange={(v) => onChange('is_disabled', v)}       disabled={Boolean(isProtected)} />
+                        <Toggle label="Send Employee ID" checked={Boolean(value.send_employee_id)}  onChange={(v) => onChange('send_employee_id', v)} />
                     </div>
 
-                    <div className="mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
+                    <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--admin-border)', paddingTop: '1rem' }}>
+                        <button type="button" onClick={onClose} style={actionSecondary}>Cancel</button>
+                        <button type="submit" disabled={saving} style={{ ...actionPrimary, opacity: saving ? 0.7 : 1 }}>
                             {saving ? 'Saving...' : mode === 'create' ? 'Create User' : 'Save Changes'}
                         </button>
                     </div>
@@ -469,211 +345,99 @@ function UserFormModal({
     );
 }
 
-function UserCard({
-    user,
-    activeMenuId,
-    onMenu,
-    onEdit,
-    onSendCode,
-    onToggleActive,
-    onToggleDisabled,
-    safety,
-}) {
+function UserCard({ user, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety }) {
     const status = formatStatus(user);
     const role = String(user.role || user.roles?.[0] || 'user').toLowerCase();
     const protectedAccount = Boolean(safety?.protected_user_ids?.includes?.(user.id));
-    const assignees = Array.isArray(user.assignments) ? user.assignments : [];
 
     return (
-        <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                    <IconUser className="h-5 w-5" />
+        <article style={{ borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', padding: '1.1rem', boxShadow: 'var(--admin-shadow)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <div style={{ ...iconBox, width: 42, height: 42, borderRadius: 12, flexShrink: 0, fontSize: '0.82rem', fontWeight: 700 }}>
+                    {initialsFor(user)}
                 </div>
-                <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="min-w-0">
-                            <h3 className="truncate text-base font-semibold text-slate-900">
-                                {user.name || user.employee_id}
-                            </h3>
-                            <p className="mt-1 text-sm text-slate-500">{user.employee_id || 'Employee ID not set'}</p>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <div style={{ minWidth: 0 }}>
+                            <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || user.employee_id}</h3>
+                            <p style={{ marginTop: '0.15rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.employee_id || 'No ID'}</p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
                             <Badge tone={status}>{status}</Badge>
-                            <Badge tone={role}>{user.role || 'user'}</Badge>
+                            <Badge tone={role}>{role}</Badge>
                         </div>
                     </div>
-                    <p className="mt-3 text-sm text-slate-600">{user.email || 'No email on file'}</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                        {user.office?.name || user.office || 'No office'} {user.position ? `- ${user.position}` : ''}
-                    </p>
+                    <p style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: 'var(--admin-text-secondary)' }}>{user.email || 'No email'}</p>
+                    <p style={{ marginTop: '0.2rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.office?.name || user.office || 'No office'}{user.position ? ` · ${user.position}` : ''}</p>
                 </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={onEdit}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-                    >
-                        <IconEdit className="h-4 w-4" />
-                        Edit
+            <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button type="button" onClick={onEdit} style={{ ...actionSecondary, padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: 34 }}>
+                        <IconEdit className="h-4 w-4" /> Edit
                     </button>
-                    <button
-                        type="button"
-                        onClick={onSendCode}
-                        disabled={!user.email}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <IconMail className="h-4 w-4" />
-                        Send ID
+                    <button type="button" onClick={onSendCode} disabled={!user.email} style={{ ...actionSecondary, padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: 34, opacity: user.email ? 1 : 0.45 }}>
+                        <IconMail className="h-4 w-4" /> Send ID
                     </button>
                 </div>
-
-                <div className="relative" data-user-actions>
-                    <button
-                        type="button"
-                        onClick={() => onMenu(activeMenuId === user.id ? null : user.id)}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
-                        aria-label="Open actions"
-                    >
-                        <IconDots className="h-5 w-5" />
+                <div style={{ position: 'relative' }} data-user-actions>
+                    <button type="button" onClick={() => onMenu(activeMenuId === user.id ? null : user.id)} style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <IconDots className="h-4 w-4" />
                     </button>
-                    <ActionMenu
-                        user={user}
-                        open={activeMenuId === user.id}
-                        onClose={() => onMenu(null)}
-                        onEdit={onEdit}
-                        onSendCode={onSendCode}
-                        onToggleActive={onToggleActive}
-                        onToggleDisabled={onToggleDisabled}
-                        protectedAccount={protectedAccount}
-                    />
+                    <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={onEdit} onSendCode={onSendCode} onToggleActive={onToggleActive} onToggleDisabled={onToggleDisabled} protectedAccount={protectedAccount} />
                 </div>
             </div>
-
-            {assignees.length ? (
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Assignees
-                    </span>
-                    {assignees.slice(0, 3).map((assignee) => (
-                        <span
-                            key={assignee.id ?? assignee.employee_id ?? assignee.name}
-                            className="inline-flex h-8 items-center rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600"
-                        >
-                            {(assignee.initials || initialsFor(assignee)).slice(0, 3)}
-                        </span>
-                    ))}
-                    {assignees.length > 3 ? (
-                        <span className="inline-flex h-8 items-center rounded-full border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600">
-                            +{assignees.length - 3}
-                        </span>
-                    ) : null}
-                </div>
-            ) : null}
         </article>
     );
 }
 
-function UserTable({
-    users,
-    activeMenuId,
-    onMenu,
-    onEdit,
-    onSendCode,
-    onToggleActive,
-    onToggleDisabled,
-    safety,
-}) {
+function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety }) {
     return (
-        <div className="hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:block">
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 text-left">
-                    <thead className="bg-slate-50/80">
-                        <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                            <th className="px-5 py-4">User</th>
-                            <th className="px-5 py-4">Role</th>
-                            <th className="px-5 py-4">Office</th>
-                            <th className="px-5 py-4">Status</th>
-                            <th className="px-5 py-4">Updated</th>
-                            <th className="px-5 py-4 text-right">Actions</th>
+        <div style={{ borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border)', overflow: 'hidden' }} className="lg-table-wrap">
+            <style>{`.lg-table-wrap { display: none; } @media (min-width: 1024px) { .lg-table-wrap { display: block; } }`}</style>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead style={{ background: 'var(--admin-bg-secondary)' }}>
+                        <tr>
+                            {['User','Role','Office','Status','Updated','Actions'].map((h, i) => (
+                                <th key={h} style={{ padding: '0.75rem 1.25rem', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', borderBottom: '1px solid var(--admin-border)', textAlign: i === 5 ? 'right' : 'left' }}>{h}</th>
+                            ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                         {users.map((user) => {
                             const status = formatStatus(user);
                             const role = String(user.role || user.roles?.[0] || 'user').toLowerCase();
                             const protectedAccount = Boolean(safety?.protected_user_ids?.includes?.(user.id));
-
                             return (
-                                <tr key={user.id} className="align-top">
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-start gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-semibold text-sky-700">
-                                                {initialsFor(user)}
-                                            </div>
+                                <tr key={user.id} style={{ borderBottom: '1px solid var(--admin-border)', verticalAlign: 'top' }}>
+                                    <td style={{ padding: '0.85rem 1.25rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                                            <div style={{ ...iconBox, width: 38, height: 38, borderRadius: 10, flexShrink: 0, fontSize: '0.75rem', fontWeight: 700 }}>{initialsFor(user)}</div>
                                             <div>
-                                                <div className="font-semibold text-slate-900">
-                                                    {user.name || 'Unnamed user'}
-                                                </div>
-                                                <div className="mt-1 text-sm text-slate-500">
-                                                    {user.employee_id || 'No employee ID'}
-                                                </div>
-                                                <div className="mt-1 text-sm text-slate-500">
-                                                    {user.email || 'No email'}
-                                                </div>
+                                                <div style={{ fontWeight: 600, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>{user.name || 'Unnamed'}</div>
+                                                <div style={{ marginTop: '0.15rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.employee_id || 'No ID'}</div>
+                                                <div style={{ marginTop: '0.1rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.email || 'No email'}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <Badge tone={role}>{user.role || 'user'}</Badge>
-                                    </td>
-                                    <td className="px-5 py-4 text-sm text-slate-600">
+                                    <td style={{ padding: '0.85rem 1.25rem' }}><Badge tone={role}>{role}</Badge></td>
+                                    <td style={{ padding: '0.85rem 1.25rem', fontSize: '0.82rem', color: 'var(--admin-text-secondary)' }}>
                                         <div>{user.office?.name || user.office || 'No office'}</div>
-                                        {user.position ? <div className="mt-1 text-slate-400">{user.position}</div> : null}
+                                        {user.position && <div style={{ marginTop: '0.1rem', color: 'var(--admin-text-muted)', fontSize: '0.75rem' }}>{user.position}</div>}
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <Badge tone={status}>{status}</Badge>
-                                    </td>
-                                    <td className="px-5 py-4 text-sm text-slate-500">{formatDate(user.updated_at)}</td>
-                                    <td className="relative px-5 py-4 text-right">
-                                        <div className="inline-flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => onEdit(user)}
-                                                className="rounded-2xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => onSendCode(user)}
-                                                disabled={!user.email}
-                                                className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                Send ID
-                                            </button>
-                                            <div className="relative" data-user-actions>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onMenu(activeMenuId === user.id ? null : user.id)}
-                                                    className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50"
-                                                    aria-label="Open actions"
-                                                >
-                                                    <IconDots className="h-5 w-5" />
+                                    <td style={{ padding: '0.85rem 1.25rem' }}><Badge tone={status}>{status}</Badge></td>
+                                    <td style={{ padding: '0.85rem 1.25rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{formatDate(user.updated_at)}</td>
+                                    <td style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>
+                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            <button type="button" onClick={() => onEdit(user)} style={{ ...actionSecondary, padding: '0.35rem 0.75rem', fontSize: '0.78rem', minHeight: 32 }}>Edit</button>
+                                            <button type="button" onClick={() => onSendCode(user)} disabled={!user.email} style={{ ...actionSecondary, padding: '0.35rem 0.75rem', fontSize: '0.78rem', minHeight: 32, opacity: user.email ? 1 : 0.45 }}>Send ID</button>
+                                            <div style={{ position: 'relative' }} data-user-actions>
+                                                <button type="button" onClick={() => onMenu(activeMenuId === user.id ? null : user.id)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                                    <IconDots className="h-4 w-4" />
                                                 </button>
-                                                <ActionMenu
-                                                    user={user}
-                                                    open={activeMenuId === user.id}
-                                                    onClose={() => onMenu(null)}
-                                                    onEdit={() => onEdit(user)}
-                                                    onSendCode={() => onSendCode(user)}
-                                                    onToggleActive={() => onToggleActive(user)}
-                                                    onToggleDisabled={() => onToggleDisabled(user)}
-                                                    protectedAccount={protectedAccount}
-                                                />
+                                                <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={() => onEdit(user)} onSendCode={() => onSendCode(user)} onToggleActive={() => onToggleActive(user)} onToggleDisabled={() => onToggleDisabled(user)} protectedAccount={protectedAccount} />
                                             </div>
                                         </div>
                                     </td>
@@ -689,23 +453,15 @@ function UserTable({
 
 function Pagination({ links }) {
     if (!links?.length) return null;
-
     return (
-        <div className="flex flex-wrap items-center gap-2">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             {links.map((link, index) => (
                 <button
                     key={`${link.label}-${index}`}
                     type="button"
                     disabled={!link.url}
-                    onClick={() => {
-                        if (!link.url) return;
-                        router.get(link.url, {}, { preserveScroll: true, preserveState: true });
-                    }}
-                    className={`rounded-2xl border px-4 py-2 text-sm transition ${
-                        link.active
-                            ? 'border-sky-500 bg-sky-600 text-white'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
-                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                    onClick={() => { if (!link.url) return; router.get(link.url, {}, { preserveScroll: true, preserveState: true }); }}
+                    style={{ borderRadius: 8, border: link.active ? 'none' : '1px solid var(--admin-border-strong)', padding: '0.35rem 0.85rem', fontSize: '0.82rem', cursor: link.url ? 'pointer' : 'not-allowed', background: link.active ? 'var(--admin-accent)' : 'transparent', color: link.active ? '#fff' : 'var(--admin-text-primary)', opacity: !link.url ? 0.45 : 1, fontWeight: link.active ? 700 : 400 }}
                     dangerouslySetInnerHTML={{ __html: link.label }}
                 />
             ))}
@@ -917,8 +673,7 @@ export default function Index({
         <AppLayout user={auth?.user} auth={auth}>
             <Head title="Users" />
 
-            <div className="text-slate-900">
-                <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div style={card}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                             <div style={{ minWidth: 0 }}>
@@ -974,79 +729,35 @@ export default function Index({
 
                     <div style={card}>
                         <p style={cardHeader}>Directory Filters</p>
-                        <form
-                            onSubmit={submitSearch}
-                            style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'minmax(260px, 1.8fr) repeat(3, minmax(140px, 0.8fr)) auto' }}
-                        >
-                            <label style={fieldWrap}>
-                                <span style={fieldLabel}>Search</span>
-                                <div style={searchWrap}>
-                                    <IconSearch className="h-4 w-4" />
-                                    <input
-                                        value={query.search}
-                                        onChange={(event) => setQuery((current) => ({ ...current, search: event.target.value }))}
-                                        placeholder="Name, email, employee ID"
-                                        style={inputStyle}
-                                    />
+                        <form onSubmit={submitSearch} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {/* Search row */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)' }}>
+                                <IconSearch className="h-4 w-4" style={{ flexShrink: 0, color: 'var(--admin-text-muted)' }} />
+                                <input
+                                    value={query.search}
+                                    onChange={(e) => setQuery(q => ({ ...q, search: e.target.value }))}
+                                    placeholder="Name, email, employee ID"
+                                    style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}
+                                />
+                            </div>
+                            {/* Dropdowns + buttons row */}
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                                {[
+                                    { key: 'role',   label: 'Role',   opts: [['', 'All roles'],   ...roleOptions.map(r => [r.key ?? r, r.label ?? r])] },
+                                    { key: 'status', label: 'Status', opts: [['', 'All statuses'], ['active','Active'], ['inactive','Inactive'], ['disabled','Disabled']] },
+                                    { key: 'office', label: 'Office', opts: [['', 'All offices'],  ...offices.map(o => [o.id ?? o.value, o.name ?? o.label])] },
+                                ].map(({ key, label, opts }) => (
+                                    <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: 130, flex: 1 }}>
+                                        <span style={fieldLabel}>{label}</span>
+                                        <select value={query[key]} onChange={(e) => setQuery(q => ({ ...q, [key]: e.target.value }))} style={inputStyle}>
+                                            {opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                        </select>
+                                    </label>
+                                ))}
+                                <div style={{ display: 'flex', gap: '0.5rem', paddingBottom: 0 }}>
+                                    <button type="submit" style={actionPrimary}>Filter</button>
+                                    <button type="button" onClick={() => { setQuery({ search: '', role: '', status: '', office: '' }); router.get('/administrator/users', {}, { preserveState: false, preserveScroll: true, replace: true }); }} style={actionSecondary}>Reset</button>
                                 </div>
-                            </label>
-
-                            <label style={fieldWrap}>
-                                <span style={fieldLabel}>Role</span>
-                                <select
-                                    value={query.role}
-                                    onChange={(event) => setQuery((current) => ({ ...current, role: event.target.value }))}
-                                    style={inputStyle}
-                                >
-                                    <option value="">All roles</option>
-                                    {roleOptions.map((role) => {
-                                        const key = role.key ?? role.id ?? role.name ?? role;
-                                        return <option key={key} value={key}>{role.label ?? role.name ?? role}</option>;
-                                    })}
-                                </select>
-                            </label>
-
-                            <label style={fieldWrap}>
-                                <span style={fieldLabel}>Status</span>
-                                <select
-                                    value={query.status}
-                                    onChange={(event) => setQuery((current) => ({ ...current, status: event.target.value }))}
-                                    style={inputStyle}
-                                >
-                                    <option value="">All statuses</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="disabled">Disabled</option>
-                                </select>
-                            </label>
-
-                            <label style={fieldWrap}>
-                                <span style={fieldLabel}>Office</span>
-                                <select
-                                    value={query.office}
-                                    onChange={(event) => setQuery((current) => ({ ...current, office: event.target.value }))}
-                                    style={inputStyle}
-                                >
-                                    <option value="">All offices</option>
-                                    {offices.map((office) => {
-                                        const key = office.id ?? office.value;
-                                        return <option key={key} value={key}>{office.name ?? office.label ?? office.title}</option>;
-                                    })}
-                                </select>
-                            </label>
-
-                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end' }}>
-                                <button type="submit" style={actionPrimary}>Filter</button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setQuery({ search: '', role: '', status: '', office: '' });
-                                        router.get('/administrator/users', {}, { preserveState: false, preserveScroll: true, replace: true });
-                                    }}
-                                    style={actionSecondary}
-                                >
-                                    Reset
-                                </button>
                             </div>
                         </form>
                     </div>
@@ -1065,7 +776,8 @@ export default function Index({
                                     onToggleDisabled={handleToggleDisabled}
                                     safety={safety}
                                 />
-                                <div className="space-y-4 lg:hidden" style={{ marginTop: '0.75rem' }}>
+                                <div className="mobile-cards" style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <style>{`@media (min-width: 1024px) { .mobile-cards { display: none !important; } }`}</style>
                                     {safeUsers.map((user) => (
                                         <UserCard
                                             key={user.id}
@@ -1091,8 +803,6 @@ export default function Index({
                         )}
                     </div>
                 </div>
-            </div>
-
             <UserFormModal
                 open={Boolean(editor)}
                 mode={editor?.id ? 'edit' : 'create'}
@@ -1182,8 +892,8 @@ const inputStyle = {
     boxSizing: 'border-box',
     padding: '0.7rem 0.9rem',
     borderRadius: 12,
-    border: '1px solid var(--admin-border)',
-    background: 'rgba(255,255,255,0.96)',
+    border: '1px solid var(--admin-border-strong)',
+    background: 'var(--admin-bg-secondary)',
     color: 'var(--admin-text-primary)',
     fontSize: '0.875rem',
     outline: 'none',
@@ -1195,8 +905,8 @@ const searchWrap = {
     gap: '0.55rem',
     padding: '0.7rem 0.9rem',
     borderRadius: 12,
-    border: '1px solid var(--admin-border)',
-    background: 'rgba(255,255,255,0.96)',
+    border: '1px solid var(--admin-border-strong)',
+    background: 'var(--admin-bg-secondary)',
     color: 'var(--admin-text-muted)',
 };
 
@@ -1207,7 +917,7 @@ const actionPrimary = {
     gap: '0.5rem',
     padding: '0.7rem 1rem',
     borderRadius: 12,
-    border: '1px solid rgba(59,130,246,0.35)',
+    border: 'none',
     background: 'var(--admin-accent)',
     color: '#fff',
     fontSize: '0.875rem',
@@ -1224,8 +934,8 @@ const actionSecondary = {
     gap: '0.5rem',
     padding: '0.7rem 1rem',
     borderRadius: 12,
-    border: '1px solid var(--admin-border)',
-    background: 'rgba(255,255,255,0.9)',
+    border: '1px solid var(--admin-border-strong)',
+    background: 'transparent',
     color: 'var(--admin-text-primary)',
     fontSize: '0.875rem',
     fontWeight: 700,
