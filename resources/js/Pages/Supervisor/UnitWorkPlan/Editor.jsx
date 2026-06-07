@@ -113,12 +113,16 @@ export default function Editor() {
 
     async function handleSubmit() {
         if (!await confirm('Submit this UWP for review? You will not be able to edit it after submission.')) return;
+        let success = false;
         try {
             await axios.patch(apiUrl('submit'));
-            toast('UWP submitted for review.', 'submitted');
-            router.visit('/supervisor/uwp');
+            success = true;
         } catch {
             toast('Failed to submit UWP.', 'error');
+        }
+        if (success) {
+            toast('UWP submitted for review.', 'submitted');
+            router.visit('/supervisor/uwp');
         }
     }
 

@@ -45,6 +45,34 @@ class IpcrExcelExportController extends Controller
         ->where('performance_period_id', $period->id)
         ->firstOrFail();
 
+        // Pre-compute ratings for all items keyed by ipcr_item_id
+        $ratingsMap = [];
+        $summaryMap = [];
+        foreach ($ipcr->items as $item) {
+            $entries = \App\Models\OrsEntry::where('ipcr_item_id', $item->id)
+                ->where('status', 'rated')->where('quantity', '>', 0)
+                ->whereBetween('work_date', [$period->start_date, $period->end_date])
+                ->with('monitoring')->get();
+
+            if ($entries->isEmpty()) {
+                $ratingsMap[$item->id] = ['Q' => null, 'E' => null, 'T' => null, 'A' => null];
+                $summaryMap[$item->id] = '';
+                continue;
+            }
+            $totalQty = $entries->sum('quantity');
+            $qualPts  = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->quality_rating ?? 0));
+            $timePts  = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->timeliness_rating ?? 0));
+            $Q = $totalQty > 0 ? round($qualPts / $totalQty, 2) : null;
+            $T = $totalQty > 0 ? round($timePts / $totalQty, 2) : null;
+            $target = is_numeric($item->indicator?->target_quantity) ? (float)$item->indicator->target_quantity : null;
+            $E = ($target && $target > 0) ? min(5.00, round(($totalQty / $target) * 5, 2)) : $Q;
+            $A = ($Q !== null && $T !== null) ? round(($Q + $E + $T) / 3, 2) : null;
+
+            $ratingsMap[$item->id] = compact('Q', 'E', 'T', 'A');
+            $summaryMap[$item->id] = "Total Qty: {$totalQty}" .
+                ($item->indicator?->target_quantity ? " / Target: {$item->indicator->target_quantity}" : '');
+        }
+
         $spreadsheet = new Spreadsheet();
         $ws = $spreadsheet->getActiveSheet()->setTitle('IPCR');
 
@@ -235,6 +263,7 @@ class IpcrExcelExportController extends Controller
             $target = trim(implode(' ', array_filter([$si->target_quantity, $si->target_timeline])));
 
             $byType[$type][$fnName][$mfoName][] = [
+                'id'     => $item->id,
                 'text'   => $si->indicator_text,
                 'target' => $target,
                 'std'    => $std,
@@ -269,9 +298,12 @@ class IpcrExcelExportController extends Controller
                     foreach ($indicators as $idx => $si) {
                         if ($idx === 0) $ws->setCellValue("A{$r}", $mfoName);
                         $ws->setCellValue("B{$r}", $si['text']);
-                        $ws->setCellValue("C{$r}", '');
-                        $ws->setCellValue("D{$r}", ''); $ws->setCellValue("E{$r}", '');
-                        $ws->setCellValue("F{$r}", ''); $ws->setCellValue("G{$r}", '');
+                        $r_ratings = $ratingsMap[$si['id']] ?? ['Q' => null, 'E' => null, 'T' => null, 'A' => null];
+                        $ws->setCellValue("C{$r}", $summaryMap[$si['id']] ?? '');
+                        $ws->setCellValue("D{$r}", $r_ratings['Q'] ?? '');
+                        $ws->setCellValue("E{$r}", $r_ratings['E'] ?? '');
+                        $ws->setCellValue("F{$r}", $r_ratings['T'] ?? '');
+                        $ws->setCellValue("G{$r}", $r_ratings['A'] ?? '');
                         $ws->setCellValue("H{$r}", '');
                         $ws->setCellValue("I{$r}", $si['std'][5]);
                         $ws->setCellValue("J{$r}", $si['std'][4]);
@@ -283,6 +315,15 @@ class IpcrExcelExportController extends Controller
                             'font'      => ['size' => 8],
                             'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
                             'borders'   => $this->border(self::BDR_GRAY),
+                        ]);
+                        $ws->getStyle("D{$r}:G{$r}")->applyFromArray([
+                            'font'      => ['bold' => true, 'size' => 9],
+                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                        ]);
+                        // Center-align rating cells
+                        $ws->getStyle("D{$r}:G{$r}")->applyFromArray([
+                            'font'      => ['bold' => true, 'size' => 9],
+                            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                         ]);
 
                         $maxLines = max(1,

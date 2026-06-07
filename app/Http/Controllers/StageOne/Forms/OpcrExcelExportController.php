@@ -273,13 +273,16 @@ class OpcrExcelExportController extends Controller
         }
 
         // ── Write data rows ────────────────────────────────────────────────────
-        foreach ([
-            'core'    => ['A. CORE FUNCTIONS',    self::BG_CORE],
-            'support' => ['C. SUPPORT FUNCTIONS', self::BG_SUPP],
-        ] as $type => [$label, $bg]) {
+        foreach ($byType as $type => $fnGroups) {
+            if (empty($fnGroups)) continue;
+
+            // Get first function name for this type to use as section label
+            $sectionLabel = array_key_first($fnGroups);
+            $bg = $type === 'core' ? self::BG_CORE : self::BG_SUPP;
+
             // Section banner
             $ws->mergeCells("A{$r}:{$lastCol}{$r}");
-            $ws->setCellValue("A{$r}", $label);
+            $ws->setCellValue("A{$r}", $sectionLabel);
             $ws->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
                 'font'      => ['bold' => true, 'size' => 9],
                 'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],
@@ -289,18 +292,7 @@ class OpcrExcelExportController extends Controller
             $ws->getRowDimension($r)->setRowHeight(16);
             $r++;
 
-            foreach ($byType[$type] as $fnName => $mfos) {
-                // Function name sub-header
-                $ws->mergeCells("A{$r}:{$lastCol}{$r}");
-                $ws->setCellValue("A{$r}", $fnName);
-                $ws->getStyle("A{$r}")->applyFromArray([
-                    'font'      => ['bold' => true, 'size' => 8, 'color' => ['argb' => 'FF000000']],
-                    'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'indent' => 2],
-                    'borders'   => $this->border(self::BDR_BLACK),
-                ]);
-                $ws->getRowDimension($r)->setRowHeight(14);
-                $r++;
+            foreach ($fnGroups as $fnName => $mfos) {
 
                 foreach ($mfos as $mfoTitle => $indicators) {
                     $mfoStart = $r;

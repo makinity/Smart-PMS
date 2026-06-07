@@ -52,10 +52,19 @@ const roleLinks = {
     ],
 };
 
+const roleHeaders = {
+    admin: { icon: 'bi-shield-lock-fill', label: 'Admin Portal' },
+    pmt: { icon: 'bi-shield-check', label: 'PMT Portal' },
+    'dept-head': { icon: 'bi-building-fill', label: 'Dept Head Portal' },
+    supervisor: { icon: 'bi-people-fill', label: 'Supervisor Portal' },
+    employee: { icon: 'bi-person-fill', label: 'Employee Portal' },
+};
+
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
     const { url, props } = usePage();
     const role = props.auth?.user?.roles?.[0] ?? 'employee';
     const links = roleLinks[role] ?? roleLinks.employee;
+    const header = roleHeaders[role] ?? roleHeaders.employee;
 
     // On mobile the sidebar is always "expanded" (full labels) regardless of desktop collapsed state
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -70,11 +79,11 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         <aside className={`admin-sidebar${collapsed && !isMobile ? ' sb-collapsed' : ''}${mobileOpen ? ' sb-mobile-open' : ''}`}>
             {/* Brand + toggle */}
             <div className="sb-brand">
-                <i className="bi bi-shield-lock-fill sb-brand-icon" />
+                <i className={`bi ${header.icon} sb-brand-icon`} />
                 {showFull && (
                     <div className="sb-brand-text">
                         <div className="sb-app-name">Smart PMS</div>
-                        <div className="sb-sub">Admin Portal</div>
+                        <div className="sb-sub">{header.label}</div>
                     </div>
                 )}
                 {/* Desktop collapse toggle */}

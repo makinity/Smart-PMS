@@ -276,7 +276,7 @@ export default function IpcrPreview() {
                                     <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{rating ?? 'Score'}</div>
                                 </div>
                             )}
-                            <a href="/stage-two/forms/ipcr-excel"
+                            <a href="/stage-one/forms/ipcr-excel"
                                 style={{ padding: '0.45rem 0.9rem', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
                                     background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)',
                                     color: '#10b981', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>

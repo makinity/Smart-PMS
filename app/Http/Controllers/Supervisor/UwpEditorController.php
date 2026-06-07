@@ -33,7 +33,7 @@ class UwpEditorController extends Controller
     {
         $this->authorizeUwp($uwp);
         $uwp->update(['status' => 'submitted']);
-        return back()->with('success', 'UWP submitted for review.');
+        return response()->json(['status' => 'submitted']);
     }
 
     // ── Functions ────────────────────────────────────────────────────────────
