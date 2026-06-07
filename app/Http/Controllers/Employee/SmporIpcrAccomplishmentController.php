@@ -380,7 +380,10 @@ class SmporIpcrAccomplishmentController extends Controller
             'attachments'    => collect($s->attachments ?? [])->map(fn($a) => [
                 ...$a, 'url' => Storage::url($a['path']),
             ])->values()->all(),
-            'submitted_at'   => $s->submitted_at?->toIso8601String(),
+            'submitted_at'           => $s->submitted_at?->toIso8601String(),
+            'final_rating'           => $s->final_rating,
+            'final_adjectival_rating'=> $s->final_adjectival_rating,
+            'pmt_remarks'            => $s->pmt_remarks,
         ];
     }
 }

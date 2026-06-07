@@ -256,10 +256,24 @@ export default function Index() {
                             <div style={sectionLabel}>IPCR</div>
                             <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Individual Performance</div>
                         </div>
-                        {ipcrMeta
-                            ? <div style={{ marginBottom: '0.75rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div>
-                            : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>No IPCR data yet.</div>
-                        }
+                        {status === 'released_by_pmt' && submission?.final_rating ? (
+                            <div style={{ marginBottom: '0.75rem' }}>
+                                <ScoreCircle score={parseFloat(submission.final_rating)} rating={submission.final_adjectival_rating} />
+                                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <i className="bi bi-patch-check-fill" style={{ color: '#4ade80', fontSize: '0.78rem' }} />
+                                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#4ade80' }}>Official PMT Rating</span>
+                                </div>
+                                {submission.pmt_remarks && (
+                                    <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                        "{submission.pmt_remarks}"
+                                    </div>
+                                )}
+                            </div>
+                        ) : ipcrMeta ? (
+                            <div style={{ marginBottom: '0.75rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div>
+                        ) : (
+                            <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>No IPCR data yet.</div>
+                        )}
                         <a href="/employee/accomplishment/ipcr"
                             style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-clipboard2-data" /> View Full IPCR
@@ -268,6 +282,13 @@ export default function Index() {
                 </div>
 
                 {/* ── Submit form ── */}
+                {status === 'released_by_pmt' ? (
+                    <div style={{ ...card, padding: '1.25rem', textAlign: 'center', borderLeft: '3px solid #4ade80' }}>
+                        <i className="bi bi-award-fill" style={{ fontSize: '2rem', color: '#4ade80', display: 'block', marginBottom: 8 }} />
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#4ade80', marginBottom: 4 }}>Officially Released</div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>Your accomplishment has been reviewed and officially released by PMT.</div>
+                    </div>
+                ) : (
                 <div style={{ ...card, padding: '1.25rem' }}>
                     <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <i className="bi bi-send-check" style={{ color: 'var(--admin-accent)' }} /> Submit Accomplishments
@@ -333,6 +354,7 @@ export default function Index() {
                         </button>
                     </div>
                 </div>
+                )}
             </div>
 
             {showConfirm && (

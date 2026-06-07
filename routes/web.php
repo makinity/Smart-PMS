@@ -70,7 +70,10 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::post('/qar/{qar}/return', [\App\Http\Controllers\Pmt\QarController::class, 'return'])->name('qar.return');
     Route::get('/uwp', fn () => \Inertia\Inertia::render('Pmt/UnitWorkPlan/Index'))->name('uwp.index');
     Route::get('/accomplishment-review', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');
-    Route::get('/accomplishment-review/{id}', fn () => \Inertia\Inertia::render('Pmt/AccomplishmentReview/Show'))->name('accomplishment-review.show');
+    Route::get('/accomplishment-review/{accomplishment}', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'show'])->name('accomplishment-review.show');
+    Route::post('/accomplishment-review/{accomplishment}/release', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'release'])->name('accomplishment-review.release');
+    Route::post('/accomplishment-review/{accomplishment}/calibrate-release', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'calibrateAndRelease'])->name('accomplishment-review.calibrate-release');
+    Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
     Route::get('/office-calibration', [\App\Http\Controllers\Pmt\OfficeCalibrationController::class, 'index'])->name('office-calibration.index');
     Route::get('/office-calibration/{id}', fn () => \Inertia\Inertia::render('Pmt/OfficeCalibration/Show'))->name('office-calibration.show');
     Route::get('/employee-calibration', [\App\Http\Controllers\Pmt\EmployeeCalibrationController::class, 'index'])->name('employee-calibration.index');
