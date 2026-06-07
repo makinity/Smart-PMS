@@ -198,6 +198,7 @@ Route::middleware('auth')->prefix('stage-one')->name('stage-one.')->group(functi
     Route::get('/forms/opcr-excel',     [\App\Http\Controllers\StageOne\Forms\OpcrExcelExportController::class, 'export'])->name('forms.opcr-excel');
     Route::get('/forms/uwp-export',     [\App\Http\Controllers\StageOne\Forms\UwpExportController::class, 'export'])->name('forms.uwp-export');
     Route::get('/forms/uwp-excel',      [\App\Http\Controllers\StageOne\Forms\UwpExcelExportController::class, 'export'])->name('forms.uwp-excel');
+    Route::get('/forms/ors-excel',      [\App\Http\Controllers\StageOne\Forms\OrsExcelExportController::class, 'export'])->name('forms.ors-excel');
 });
 
 // Stage Two exports

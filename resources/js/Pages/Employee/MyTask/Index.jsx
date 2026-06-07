@@ -9,7 +9,9 @@ const gridCss = `
 @media (max-width:1280px) { .task-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width:900px)  { .task-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width:560px)  { .task-grid { grid-template-columns: 1fr; } }
+.task-card { cursor: pointer; transition: box-shadow 0.15s; }
 .task-card:hover { border-color: rgba(59,130,246,0.35) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 `;
 
 const STATUS_FILTERS = [
@@ -64,52 +66,50 @@ function Pagination({ links }) {
 
 function TaskCard({ task, onView }) {
     const cfg = statusCfg(task.status);
+    const isLive = task.status === 'recording';
 
     return (
-        <article style={s.card} className="task-card">
+        <article style={{ ...s.card, borderTop: `3px solid ${cfg.color}`, cursor: 'pointer' }}
+            className="task-card"
+            onClick={() => onView(task)}>
             {/* Title + status */}
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', alignItems: 'flex-start' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={s.cardTitle}>{task.output_title}</div>
                     <div style={s.cardSubtitle}>{task.indicator_text}</div>
                 </div>
-                <span style={{ ...s.statusPill, background: cfg.bg, color: cfg.color, borderColor: cfg.color, flexShrink: 0 }}>
+                <span style={{ ...s.statusPill, background: cfg.bg, color: cfg.color, borderColor: cfg.color, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {isLive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, animation: 'pulse 1.2s infinite', display: 'inline-block' }} />}
                     {cfg.label}
                 </span>
             </div>
 
-            {/* Spacer pushes meta + action to bottom */}
             <div style={{ flex: 1 }} />
 
-            {/* Meta grid: 2 cols */}
-            <div style={s.cardMetaGrid}>
-                <div>
-                    <div style={s.metaLabel}>Work Date</div>
-                    <div style={s.metaValue}>{formatDate(task.work_date)}</div>
-                </div>
-                <div>
-                    <div style={s.metaLabel}>Quantity</div>
-                    <div style={s.metaValue}>{task.quantity || '—'}</div>
-                </div>
-                <div>
-                    <div style={s.metaLabel}>Duration</div>
-                    <div style={{ ...s.metaValue, fontFamily: 'monospace' }}>{formatDuration(task.total_seconds ?? 0)}</div>
-                </div>
-                <div>
-                    <div style={s.metaLabel}>Updated</div>
-                    <div style={s.metaValue}>{formatDate(task.last_updated_at)}</div>
-                </div>
-            </div>
-
-            {/* Action */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => onView(task)} style={s.iconBtn} aria-label="View task details">
-                    <i className="bi bi-eye" />
-                </button>
+            {/* Footer chips */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {task.work_date && (
+                    <span style={chip}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {formatDate(task.work_date)}
+                    </span>
+                )}
+                {task.quantity > 0 && (
+                    <span style={chip}>✦ {task.quantity} qty</span>
+                )}
+                {task.total_seconds > 0 && (
+                    <span style={{ ...chip, fontFamily: 'monospace' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {formatDuration(task.total_seconds ?? 0)}
+                    </span>
+                )}
             </div>
         </article>
     );
 }
+
+const chip = { display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'var(--admin-text-muted)', background: 'var(--admin-bg-secondary)', padding: '2px 7px', borderRadius: 99, border: '1px solid var(--admin-border)' };
 
 export default function Index({ tasks, filters, summary, statusCounts, periodName, notice }) {
     const [search, setSearch] = useState(filters?.search ?? '');
@@ -537,14 +537,14 @@ const s = {
         alignItems: 'flex-start',
     },
     cardTitle: {
-        fontSize: '1rem',
-        fontWeight: 800,
+        fontSize: '0.82rem',
+        fontWeight: 600,
         color: 'var(--admin-text-primary)',
         lineHeight: 1.35,
         marginBottom: '0.2rem',
     },
     cardSubtitle: {
-        fontSize: '0.88rem',
+        fontSize: '0.78rem',
         color: 'var(--admin-text-secondary)',
         lineHeight: 1.45,
     },

@@ -155,6 +155,13 @@ function ModalContent({ entry, onClose, cfg, compact }) {
 
             {/* Footer */}
             <div style={s.footer}>
+                {entry.status === 'rated' && (
+                    <a href={`/stage-one/forms/ors-excel?ors_id=${entry.id}`}
+                        style={{ ...s.closeAction, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.28)', color: '#4ade80', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Export Excel
+                    </a>
+                )}
                 <button type="button" style={s.closeAction} onClick={onClose}>Close</button>
             </div>
         </>
@@ -247,6 +254,6 @@ const s = {
     reviewStatWide: { gridColumn: '1 / -1', padding: '0.85rem 0.9rem', borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(255,255,255,0.02)' },
     reviewRemarks:  { gridColumn: '1 / -1' },
     reviewNumber:   { fontSize: '1.45rem', fontWeight: 800, color: 'var(--admin-text-primary)', lineHeight: 1 },
-    footer:         { display: 'flex', justifyContent: 'flex-end', padding: '0.9rem 1.25rem 1.15rem', borderTop: '1px solid var(--admin-border)' },
+    footer:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.9rem 1.25rem 1.15rem', borderTop: '1px solid var(--admin-border)' },
     closeAction:    { minHeight: 42, padding: '0.55rem 1rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700 },
 };

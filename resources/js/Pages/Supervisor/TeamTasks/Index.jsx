@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import TaskDetailsModal from '@/Pages/Employee/MyTask/TaskDetailsModal';
 
 const STATUS_CFG = {
     draft:     { label: 'Draft',     c: '#94a3b8', bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.25)' },
@@ -34,15 +35,16 @@ function fmtDate(d) {
     return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
 }
 
-function TaskCard({ entry }) {
+function TaskCard({ entry, onClick }) {
     const sc = STATUS_CFG[entry.status] ?? STATUS_CFG.draft;
     const isLive = entry.status === 'recording';
 
     return (
         <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border)',
             borderRadius: 12, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem',
-            borderTop: `3px solid ${sc.c}` }}
-            className="task-card">
+            borderTop: `3px solid ${sc.c}`, cursor: 'pointer' }}
+            className="task-card"
+            onClick={onClick}>
             {/* Employee + status */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
@@ -64,13 +66,11 @@ function TaskCard({ entry }) {
                 </span>
             </div>
 
-            {/* Task indicator */}
             <p style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', lineHeight: 1.45, margin: 0,
                 display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {entry.indicator}
             </p>
 
-            {/* Footer chips */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginTop: 'auto' }}>
                 {entry.work_date && <Chip icon="📅">{fmtDate(entry.work_date)}</Chip>}
                 {entry.quantity > 0 && <Chip icon="✦">{entry.quantity} qty</Chip>}
@@ -94,6 +94,7 @@ export default function Index() {
     const { entries = [], period } = usePage().props;
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const [activeEntry, setActiveEntry] = useState(null);
 
     const filtered = entries.filter(e => {
         const matchStatus = filter === 'all' || e.status === filter;
@@ -175,10 +176,14 @@ export default function Index() {
                     </div>
                 ) : (
                     <div className="task-grid">
-                        {filtered.map(e => <TaskCard key={e.id} entry={e} />)}
+                        {filtered.map(e => <TaskCard key={e.id} entry={e} onClick={() => setActiveEntry(e)} />)}
                     </div>
                 )}
             </div>
+
+            {activeEntry && (
+                <TaskDetailsModal entry={activeEntry} onClose={() => setActiveEntry(null)} />
+            )}
         </AppLayout>
     );
 }
