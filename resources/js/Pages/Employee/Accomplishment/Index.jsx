@@ -120,13 +120,48 @@ function FileRow({ name, size, onRemove }) {
     );
 }
 
+// ── Confirm Submit Modal ──────────────────────────────────────────────────────
+function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
+    return (
+        <>
+            <div onClick={onCancel} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101,
+                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)',
+                boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 420 }}>
+                <div style={{ padding: '1.25rem 1.25rem 0.5rem' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(59,130,246,0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.85rem' }}>
+                        <i className="bi bi-send-fill" style={{ color: 'var(--admin-accent)', fontSize: '1.1rem' }} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: 6 }}>
+                        Submit Accomplishments?
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', lineHeight: 1.55 }}>
+                        This will submit your <strong>SMPOR</strong> and <strong>IPCR</strong> to your supervisor for review. You will not be able to edit your submission after this.
+                    </div>
+                </div>
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <button onClick={onCancel} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                        Cancel
+                    </button>
+                    <button onClick={onConfirm} disabled={submitting}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <i className="bi bi-send-fill" />
+                        {submitting ? 'Submitting…' : 'Confirm Submit'}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
     const { period, submission, smporMeta, ipcrMeta } = usePage().props;
 
     const [remarks,    setRemarks]    = useState(submission?.remarks ?? '');
     const [files,      setFiles]      = useState([]);
-    const [confirming, setConfirming] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const fileRef = useRef(null);
 
@@ -141,7 +176,6 @@ export default function Index() {
     }
 
     function handleSubmit() {
-        if (!confirming) { setConfirming(true); return; }
         setSubmitting(true);
         const fd = new FormData();
         if (remarks) fd.append('remarks', remarks);
@@ -149,7 +183,7 @@ export default function Index() {
         router.post('/employee/accomplishment/submit', fd, {
             forceFormData: true,
             preserveScroll: true,
-            onSuccess: () => { setSubmitting(false); setConfirming(false); setFiles([]); },
+            onSuccess: () => { setSubmitting(false); setShowConfirm(false); setFiles([]); },
             onError:   () => setSubmitting(false),
         });
     }
@@ -279,16 +313,6 @@ export default function Index() {
                         <div style={{ textAlign: 'right', fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{remarks.length}/5000</div>
                     </div>
 
-                    {/* Confirm panel */}
-                    {confirming && (
-                        <div style={{ padding: '0.75rem 1rem', borderRadius: 8, background: 'rgba(59,130,246,0.06)',
-                            border: '1px solid var(--admin-border-strong)', marginBottom: '0.75rem',
-                            fontSize: '0.82rem', color: 'var(--admin-text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <i className="bi bi-info-circle" style={{ color: 'var(--admin-accent)' }} />
-                            This will submit your SMPOR + IPCR to your supervisor. Proceed?
-                        </div>
-                    )}
-
                     {/* Actions */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                         {submission?.submitted_at && (
@@ -297,28 +321,27 @@ export default function Index() {
                                 Submitted {new Date(submission.submitted_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                         )}
-                        <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-                            {confirming && (
-                                <button onClick={() => setConfirming(false)} style={{ padding: '0.5rem 1.1rem', borderRadius: 8,
-                                    border: '1px solid var(--admin-border-strong)', background: 'transparent',
-                                    color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-                                    Cancel
-                                </button>
-                            )}
-                            <button onClick={handleSubmit} disabled={!canSubmit || submitting}
-                                style={{ padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
-                                    background: canSubmit ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
-                                    color: canSubmit ? '#fff' : 'var(--admin-text-muted)',
-                                    cursor: canSubmit && !submitting ? 'pointer' : 'not-allowed',
-                                    fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1,
-                                    display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <i className="bi bi-send-fill" />
-                                {submitting ? 'Submitting…' : locked ? 'Submitted' : confirming ? 'Confirm Submit' : 'Submit Accomplishments'}
-                            </button>
-                        </div>
+                        <button onClick={() => canSubmit && setShowConfirm(true)} disabled={!canSubmit}
+                            style={{ marginLeft: 'auto', padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
+                                background: canSubmit ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
+                                color: canSubmit ? '#fff' : 'var(--admin-text-muted)',
+                                cursor: canSubmit ? 'pointer' : 'not-allowed',
+                                fontSize: '0.85rem', fontWeight: 700,
+                                display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="bi bi-send-fill" />
+                            {locked ? 'Submitted' : 'Submit Accomplishments'}
+                        </button>
                     </div>
                 </div>
             </div>
+
+            {showConfirm && (
+                <ConfirmSubmitModal
+                    onConfirm={handleSubmit}
+                    onCancel={() => setShowConfirm(false)}
+                    submitting={submitting}
+                />
+            )}
         </AppLayout>
     );
 }

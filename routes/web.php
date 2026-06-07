@@ -136,7 +136,9 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::post('/mpor/{mpor}/approve', [\App\Http\Controllers\Supervisor\MporController::class, 'approve'])->name('mpor.approve');
     Route::post('/mpor/{mpor}/return', [\App\Http\Controllers\Supervisor\MporController::class, 'return'])->name('mpor.return');
     Route::get('/accomplishment', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'index'])->name('accomplishment.index');
-    Route::get('/accomplishment/{id}', fn () => \Inertia\Inertia::render('Supervisor/Accomplishment/Show'))->name('accomplishment.show');
+    Route::get('/accomplishment/{accomplishment}', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'show'])->name('accomplishment.show');
+    Route::post('/accomplishment/{accomplishment}/endorse', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'endorse'])->name('accomplishment.endorse');
+    Route::post('/accomplishment/{accomplishment}/return', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'return'])->name('accomplishment.return');
     Route::get('/ors-monitoring', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'index'])->name('ors-monitoring.index');
     Route::post('/ors-monitoring/{orsEntry}/rate', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'rate'])->name('ors-monitoring.rate');
     Route::get('/team-tasks', fn () => \Inertia\Inertia::render('Supervisor/TeamTasks/Index'))->name('team-tasks.index');

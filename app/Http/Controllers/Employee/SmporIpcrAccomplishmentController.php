@@ -34,16 +34,14 @@ class SmporIpcrAccomplishmentController extends Controller
 
         $submission = AccomplishmentSubmission::where('employee_id', $user->id)
             ->where('performance_period_id', $period->id)
-            ->with(['mpors', 'qarHeader'])
             ->first();
+
+        $smporMeta = $this->buildSmporMeta($user, $period, $submission);
 
         $ipcr = Ipcr::where('employee_id', $user->id)
             ->where('performance_period_id', $period->id)
             ->with('items.indicator.uwpMfo.uwpFunction')
             ->first();
-
-        // SMPOR meta (quick summary for the dashboard card)
-        $smporMeta = $this->buildSmporMeta($user, $period, $submission);
 
         // IPCR meta (score + rating for dashboard card)
         $ipcrMeta = $ipcr ? $this->buildIpcrMeta($ipcr) : null;
@@ -145,7 +143,7 @@ class SmporIpcrAccomplishmentController extends Controller
                 'employee_remarks'   => $data['remarks'] ?? null,
                 'attachments'        => $attachments ?: null,
                 'submitted_at'       => now(),
-                'supervisor_id'      => $user->office?->users()
+                'supervisor_id'      => $user->office?->employees()
                     ->whereHas('roles', fn($q) => $q->where('name', 'supervisor'))
                     ->value('id'),
             ]
