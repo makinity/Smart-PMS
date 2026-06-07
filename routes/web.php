@@ -95,7 +95,9 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::get('/qar/mpor/{mpor}', [\App\Http\Controllers\DeptHead\QarController::class, 'mporShow'])->name('qar.mpor.show');
     Route::post('/qar/submit', [\App\Http\Controllers\DeptHead\QarController::class, 'submit'])->name('qar.submit');
     Route::get('/accomplishment-review', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');
-    Route::get('/accomplishment-review/{id}', fn () => \Inertia\Inertia::render('DeptHead/AccomplishmentReview/Show'))->name('accomplishment-review.show');
+    Route::get('/accomplishment-review/{accomplishment}', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'show'])->name('accomplishment-review.show');
+    Route::post('/accomplishment-review/{accomplishment}/endorse', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'endorse'])->name('accomplishment-review.endorse');
+    Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
     Route::get('/profile', fn () => \Inertia\Inertia::render('DeptHead/Profile'))->name('profile');
 });
 

@@ -73,11 +73,12 @@ class AccomplishmentController extends Controller
             'supervisor_action_at' => now(),
         ]);
 
-        $accomplishment->employee->notify(new WorkflowEventNotification(
-            type:    'success',
+        $deptHead = \App\Models\User::find($accomplishment->dept_head_id);
+        $deptHead?->notify(new WorkflowEventNotification(
+            type:    'info',
             event:   'accomplishment.supervisor_endorsed',
-            message: "{$supervisor->name} endorsed your accomplishment submission.",
-            url:     '/employee/accomplishment',
+            message: "{$accomplishment->employee->name}'s accomplishment has been endorsed by {$supervisor->name} and is ready for your review.",
+            url:     '/dept-head/accomplishment-review',
         ));
 
         return back()->with('success', 'Accomplishment endorsed.');
@@ -225,7 +226,7 @@ class AccomplishmentController extends Controller
         $entries = OrsEntry::where('ipcr_item_id', $ipcrItemId)
             ->where('status', 'rated')->where('quantity', '>', 0)
             ->whereBetween('work_date', [$period->start_date, $period->end_date])
-            ->with('monitoring')->get();
+            ->with(['monitoring', 'ipcrItem.indicator'])->get();
 
         if ($entries->isEmpty()) return ['Q' => null, 'E' => null, 'T' => null, 'A' => null];
 
@@ -234,8 +235,11 @@ class AccomplishmentController extends Controller
         $timePts  = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->timeliness_rating ?? 0));
         $Q = $totalQty > 0 ? round($qualPts / $totalQty, 2) : null;
         $T = $totalQty > 0 ? round($timePts / $totalQty, 2) : null;
-        $A = ($Q && $T) ? round(($Q + $Q + $T) / 3, 2) : null;
+        $target = is_numeric($entries->first()?->ipcrItem?->indicator?->target_quantity)
+            ? (float) $entries->first()->ipcrItem->indicator->target_quantity : null;
+        $E = ($target && $target > 0) ? min(5.00, round(($totalQty / $target) * 5, 2)) : $Q;
+        $A = ($Q !== null && $T !== null) ? round(($Q + $E + $T) / 3, 2) : null;
 
-        return ['Q' => $Q, 'E' => $Q, 'T' => $T, 'A' => $A];
+        return ['Q' => $Q, 'E' => $E, 'T' => $T, 'A' => $A];
     }
 }

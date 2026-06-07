@@ -143,9 +143,10 @@ class SmporIpcrAccomplishmentController extends Controller
                 'employee_remarks'   => $data['remarks'] ?? null,
                 'attachments'        => $attachments ?: null,
                 'submitted_at'       => now(),
-                'supervisor_id'      => $user->office?->employees()
-                    ->whereHas('roles', fn($q) => $q->where('name', 'supervisor'))
+                'supervisor_id'      => \App\Models\User::where('office_id', $user->office_id)
+                    ->where('role', 'supervisor')
                     ->value('id'),
+                'dept_head_id'       => $user->office?->head_id,
             ]
         );
 
@@ -361,8 +362,10 @@ class SmporIpcrAccomplishmentController extends Controller
         $timePts   = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->timeliness_rating ?? 0));
         $Q = $totalQty > 0 ? round($qualPts / $totalQty, 2) : null;
         $T = $totalQty > 0 ? round($timePts / $totalQty, 2) : null;
-        $E = $Q; // Efficiency treated same as quality for now per spec
-        $A = ($Q && $T) ? round(($Q + $E + $T) / 3, 2) : null;
+        $target = is_numeric($entries->first()?->ipcrItem?->indicator?->target_quantity)
+            ? (float) $entries->first()->ipcrItem->indicator->target_quantity : null;
+        $E = ($target && $target > 0) ? min(5.00, round(($totalQty / $target) * 5, 2)) : $Q;
+        $A = ($Q !== null && $T !== null) ? round(($Q + $E + $T) / 3, 2) : null;
 
         return compact('Q', 'E', 'T', 'A');
     }

@@ -98,7 +98,7 @@ class QarController extends Controller
         // Compute variance
         foreach ($rows as &$row) {
             if ($row['target_quantity'] !== null) {
-                $row['variance'] = $row['target_quantity'] - $row['actual_performance'];
+                $row['variance'] = $row['actual_performance'] - $row['target_quantity'];
             }
         }
         unset($row);

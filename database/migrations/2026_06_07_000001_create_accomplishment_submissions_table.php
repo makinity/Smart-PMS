@@ -30,7 +30,7 @@ return new class extends Migration {
                 $table->text('pmt_remarks')->nullable();
                 $table->timestamp('pmt_action_at')->nullable();
                 $table->timestamps();
-                $table->unique(['employee_id', 'performance_period_id']);
+                $table->unique(['employee_id', 'performance_period_id'], 'acc_sub_employee_period_unique');
             });
         }
 
