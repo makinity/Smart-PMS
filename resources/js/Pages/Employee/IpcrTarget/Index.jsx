@@ -1,7 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
+
+function useBreakpoint() {
+    const [w, setW] = useState(() => window.innerWidth);
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    return w < 1024 ? 'compact' : 'desktop';
+}
+
+function useSidebarLeft() {
+    const getLeft = () => {
+        if (window.innerWidth < 768) return 0;
+        const el = document.querySelector('.app-main');
+        return el ? parseInt(getComputedStyle(el).marginLeft) || 0 : 0;
+    };
+    const [left, setLeft] = useState(getLeft);
+    useEffect(() => {
+        const update = () => setLeft(getLeft());
+        window.addEventListener('resize', update);
+        const t = setTimeout(update, 250);
+        return () => { window.removeEventListener('resize', update); clearTimeout(t); };
+    }, []);
+    return left;
+}
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS = {
@@ -20,54 +46,106 @@ const fnColor = type => FN_COLORS[type] ?? FN_COLORS.support;
 const RATING_LABELS = { 5: 'Outstanding', 4: 'Very Satisfactory', 3: 'Satisfactory', 2: 'Unsatisfactory', 1: 'Poor' };
 const DIM_LABELS = { q: 'Quality', e: 'Efficiency', t: 'Timeliness', quality: 'Quality', efficiency: 'Efficiency', timeliness: 'Timeliness' };
 
-// ── QET Toggle ────────────────────────────────────────────────────────────────
-function QetPanel({ qet }) {
-    const [open, setOpen] = useState(false);
-    const hasData = qet && Object.keys(qet).length > 0;
-    if (!hasData) return null;
+// ── QET Overlay (bottom sheet on compact, modal on desktop) ──────────────────
+function QetOverlay({ qet, title, onClose, bp, sidebarLeft }) {
+    const content = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {Object.entries(qet).map(([dim, ratings]) => (
+                <div key={dim} style={{ borderRadius: 8, border: '1px solid var(--admin-border)', overflow: 'hidden' }}>
+                    <div style={{ padding: '0.4rem 0.75rem', background: 'var(--admin-bg-secondary)',
+                        fontWeight: 700, fontSize: '0.72rem', color: 'var(--admin-text-primary)',
+                        borderBottom: '1px solid var(--admin-border)' }}>
+                        {DIM_LABELS[dim] ?? dim}
+                    </div>
+                    {[5,4,3,2,1].map(r => ratings[r] ? (
+                        <div key={r} style={{ display: 'flex', gap: '0.5rem', padding: '0.45rem 0.75rem',
+                            borderTop: r !== 5 ? '1px solid var(--admin-border)' : undefined, alignItems: 'flex-start' }}>
+                            <span style={{ flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)',
+                                background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)',
+                                borderRadius: 4, padding: '0.1rem 0.4rem', marginTop: 1, whiteSpace: 'nowrap' }}>
+                                {r} — {RATING_LABELS[r]}
+                            </span>
+                            <span style={{ fontSize: '0.73rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>{ratings[r]}</span>
+                        </div>
+                    ) : null)}
+                </div>
+            ))}
+        </div>
+    );
+
+    const header = (
+        <>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>QET Standards</div>
+            <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--admin-text-primary)', lineHeight: 1.4 }}>{title}</div>
+        </>
+    );
+
+    if (bp === 'compact') return (
+        <>
+            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.45)' }} />
+            <div style={{ position: 'fixed', bottom: 0, left: sidebarLeft, right: 0, zIndex: 1101,
+                background: 'var(--admin-card)', borderRadius: '20px 20px 0 0',
+                boxShadow: '0 -8px 32px rgba(0,0,0,0.3)', maxHeight: '80vh',
+                display: 'flex', flexDirection: 'column', animation: 'slideUp 0.22s ease' }}>
+                <div style={{ padding: '10px 1.25rem 0', flexShrink: 0, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--admin-border-strong)' }} />
+                    <button onClick={onClose} style={{ position: 'absolute', right: '1rem', top: 4,
+                        background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}>
+                        <i className="bi bi-x-lg" />
+                    </button>
+                </div>
+                <div style={{ padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--admin-border)', flexShrink: 0 }}>{header}</div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '0.75rem 1.25rem 1.5rem' }}>{content}</div>
+            </div>
+            <style>{`@keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }`}</style>
+        </>
+    );
+
     return (
-        <div style={{ marginTop: '0.6rem' }}>
-            <button
-                onClick={() => setOpen(v => !v)}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6, padding: '0.25rem 0.65rem', cursor: 'pointer', fontWeight: 600 }}
-            >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points={open ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} /></svg>
+        <>
+            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+                zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)',
+                border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)',
+                width: '90%', maxWidth: 620, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>{header}</div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'var(--admin-text-muted)', fontSize: '1.1rem', flexShrink: 0, marginLeft: 12 }}>
+                        <i className="bi bi-x-lg" />
+                    </button>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem' }}>{content}</div>
+            </div>
+        </>
+    );
+}
+
+// ── QET Toggle button ─────────────────────────────────────────────────────────
+function QetPanel({ qet, indicatorText, bp, sidebarLeft }) {
+    const [open, setOpen] = useState(false);
+    if (!qet || Object.keys(qet).length === 0) return null;
+    return (
+        <>
+            <button onClick={() => setOpen(true)}
+                style={{ marginTop: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                    fontSize: '0.75rem', color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.08)',
+                    border: '1px solid rgba(59,130,246,0.2)', borderRadius: 6, padding: '0.25rem 0.65rem',
+                    cursor: 'pointer', fontWeight: 600 }}>
                 QET Standards
             </button>
-            {open && (
-                <div style={{ marginTop: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {Object.entries(qet).map(([dim, ratings]) => (
-                        <div key={dim} style={{ borderRadius: 8, border: '1px solid var(--admin-border)', overflow: 'hidden' }}>
-                            {/* Dimension header */}
-                            <div style={{ padding: '0.35rem 0.7rem', background: 'var(--admin-bg-alt)', fontWeight: 700, fontSize: '0.72rem', color: 'var(--admin-text-primary)', borderBottom: '1px solid var(--admin-border)' }}>
-                                {DIM_LABELS[dim] ?? dim}
-                            </div>
-                            {/* Ratings stacked */}
-                            {[5, 4, 3, 2, 1].map(r => ratings[r] ? (
-                                <div key={r} style={{ display: 'flex', gap: '0.5rem', padding: '0.4rem 0.7rem', borderTop: r !== 5 ? '1px solid var(--admin-border)' : undefined, alignItems: 'flex-start' }}>
-                                    <span style={{ flexShrink: 0, fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-accent)', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)', borderRadius: 4, padding: '0.1rem 0.4rem', marginTop: 1 }}>
-                                        {r} — {RATING_LABELS[r]}
-                                    </span>
-                                    <span style={{ fontSize: '0.73rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>{ratings[r]}</span>
-                                </div>
-                            ) : null)}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+            {open && <QetOverlay qet={qet} title={indicatorText} onClose={() => setOpen(false)} bp={bp} sidebarLeft={sidebarLeft} />}
+        </>
     );
 }
 
 // ── MFO Accordion Block ───────────────────────────────────────────────────────
-function MfoBlock({ mfo }) {
+function MfoBlock({ mfo, bp, sidebarLeft }) {
     const [open, setOpen] = useState(true);
     return (
         <div style={s.mfoBlock}>
-            <button
-                onClick={() => setOpen(v => !v)}
-                style={s.mfoHeader}
-            >
+            <button onClick={() => setOpen(v => !v)} style={s.mfoHeader}>
                 <span style={s.mfoTitle}>{mfo.title}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {mfo.weight_percent > 0 && <span style={s.mfoWeight}>{mfo.weight_percent}%</span>}
@@ -82,37 +160,28 @@ function MfoBlock({ mfo }) {
             {open && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', padding: '0.85rem 1rem' }}>
                     {mfo.indicators.map((si, i) => (
-                        <IndicatorRow key={si.id} si={si} index={i} />
+                        <IndicatorRow key={si.id} si={si} index={i} bp={bp} sidebarLeft={sidebarLeft} />
                     ))}
                 </div>
             )}
         </div>
     );
 }
-function IndicatorRow({ si, index }) {
+function IndicatorRow({ si, index, bp, sidebarLeft }) {
     return (
         <div style={s.indicatorRow}>
-            {/* Output column */}
             <div style={s.outputCol}>
                 <div style={s.outputNum}>{index + 1}</div>
-                {si.reference_code && (
-                    <span style={s.refCode}>{si.reference_code}</span>
-                )}
+                {si.reference_code && <span style={s.refCode}>{si.reference_code}</span>}
             </div>
-
-            {/* Success Indicator column */}
             <div style={s.siCol}>
                 <p style={s.siText}>{si.indicator_text}</p>
-
                 {(si.target_quantity || si.target_timeline) && (
                     <div style={s.targetRow}>
-                        <span style={s.targetChip}>
-                            {[si.target_quantity, si.target_timeline].filter(Boolean).join(' ')}
-                        </span>
+                        <span style={s.targetChip}>{[si.target_quantity, si.target_timeline].filter(Boolean).join(' ')}</span>
                     </div>
                 )}
-
-                <QetPanel qet={si.qet} />
+                <QetPanel qet={si.qet} indicatorText={si.indicator_text} bp={bp} sidebarLeft={sidebarLeft} />
             </div>
         </div>
     );
@@ -124,6 +193,8 @@ export default function Index() {
     const toast   = useToast();
     const [committing, setCommitting] = useState(false);
     const [localStatus, setLocalStatus] = useState(ipcr?.status ?? 'draft');
+    const bp          = useBreakpoint();
+    const sidebarLeft = useSidebarLeft();
 
     const sc         = STATUS[localStatus] ?? STATUS.draft;
     const canCommit  = localStatus === 'draft' && ipcr && fns.length > 0;
@@ -227,7 +298,7 @@ export default function Index() {
                             </div>
 
                             {/* MFOs */}
-                            {fn.mfos.map(mfo => <MfoBlock key={mfo.id} mfo={mfo} />)}
+                            {fn.mfos.map(mfo => <MfoBlock key={mfo.id} mfo={mfo} bp={bp} sidebarLeft={sidebarLeft} />)}
                         </div>
                     );
                 })}
