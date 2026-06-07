@@ -64,7 +64,7 @@ function PipelineStepper({ status }) {
 }
 
 // ── Score Circle ──────────────────────────────────────────────────────────────
-function ScoreCircle({ score, rating }) {
+function ScoreCircle({ score, rating, label = 'Performance Score' }) {
     const pct = Math.min((score / 5) * 100, 100);
     const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
     const r = 28;
@@ -77,11 +77,11 @@ function ScoreCircle({ score, rating }) {
                         strokeDasharray={`${2 * Math.PI * r * pct / 100} ${2 * Math.PI * r}`} strokeLinecap="round" />
                 </svg>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 800, color }}>
-                    {score > 0 ? score.toFixed(2) : '—'}
+                    {score > 0 ? Number(score).toFixed(2) : '—'}
                 </div>
             </div>
             <div>
-                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>Performance Score</div>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>{label}</div>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>{rating ?? '—'}</div>
             </div>
         </div>
@@ -387,6 +387,24 @@ export default function Show() {
                     </div>
                 )}
 
+                {/* Official Final Rating — shown after release */}
+                {status === 'released_by_pmt' && (
+                    <div style={{ ...card, padding: '1.1rem 1.25rem', borderLeft: '3px solid #4ade80', background: 'rgba(74,222,128,0.04)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                            <div>
+                                <div style={sectionLabel}>Official Final Rating</div>
+                                <ScoreCircle score={submission?.final_rating ?? 0} rating={submission?.final_adjectival_rating} label="Final Rating" />
+                            </div>
+                            {submission?.pmt_remarks && (
+                                <div style={{ flex: 1, minWidth: 200, padding: '0.75rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)' }}>
+                                    <div style={sectionLabel}>PMT Remarks</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, fontStyle: 'italic' }}>{submission.pmt_remarks}</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Summary cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
@@ -403,7 +421,7 @@ export default function Show() {
                         </button>
                     </div>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                        <div style={{ marginBottom: '0.65rem' }}><div style={sectionLabel}>IPCR</div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Individual Performance</div></div>
+                        <div style={{ marginBottom: '0.65rem' }}><div style={sectionLabel}>IPCR Score</div></div>
                         {ipcrMeta ? <div style={{ marginBottom: '0.65rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div> : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.65rem' }}>No IPCR data.</div>}
                         <button onClick={() => setActiveTab('ipcr')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-clipboard2-data" /> View IPCR

@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
 const STATUS_CFG = {
-    submitted_to_supervisor: { label: 'Pending Review',      c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    supervisor_endorsed:     { label: 'Endorsed',            c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    dept_head_endorsed:      { label: 'Awaiting PMT',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    recommended_by_pmt:      { label: 'PMT Recommended',     c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
-    pmt_approved:            { label: 'PMT Approved',        c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
-    released_by_pmt:         { label: 'Released',            c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
-    returned_to_employee:    { label: 'Returned',            c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+    submitted_to_supervisor: { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    supervisor_endorsed:     { label: 'Endorsed',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    dept_head_endorsed:      { label: 'Awaiting PMT',    c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    released_by_pmt:         { label: 'Released',        c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+    returned_to_employee:    { label: 'Returned',        c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
 };
+
+const FILTERS = [
+    { key: 'all',                     label: 'All' },
+    { key: 'submitted_to_supervisor', label: 'Pending' },
+    { key: 'supervisor_endorsed',     label: 'Endorsed' },
+    { key: 'returned_to_employee',    label: 'Returned' },
+];
 
 function relativeTime(iso) {
     if (!iso) return '—';
@@ -21,23 +26,26 @@ function relativeTime(iso) {
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
-const FILTERS = [
-    { key: 'all',                    label: 'All' },
-    { key: 'submitted_to_supervisor',label: 'Pending' },
-    { key: 'supervisor_endorsed',    label: 'Endorsed' },
-    { key: 'returned_to_employee',   label: 'Returned' },
-];
+function useIsMobile() {
+    const [mobile, setMobile] = useState(() => window.innerWidth < 640);
+    useEffect(() => {
+        const h = () => setMobile(window.innerWidth < 640);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    return mobile;
+}
 
 export default function Index() {
     const { submissions = [] } = usePage().props;
-    const [search, setSearch]   = useState('');
-    const [filter, setFilter]   = useState('all');
+    const [search, setSearch] = useState('');
+    const [filter, setFilter] = useState('all');
+    const isMobile = useIsMobile();
 
     const filtered = submissions.filter(s => {
         const matchFilter = filter === 'all' || s.status === filter;
         const q = search.toLowerCase();
-        const matchSearch = !q || s.employee_name.toLowerCase().includes(q) || s.employee_office.toLowerCase().includes(q);
-        return matchFilter && matchSearch;
+        return matchFilter && (!q || s.employee_name.toLowerCase().includes(q) || s.employee_office.toLowerCase().includes(q));
     });
 
     const pendingCount = submissions.filter(s => s.status === 'submitted_to_supervisor').length;
@@ -92,27 +100,59 @@ export default function Index() {
                     </div>
                 ) : filtered.map(s => {
                     const sc = STATUS_CFG[s.status] ?? { label: s.status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
-                    const pending = s.status === 'submitted_to_supervisor';
+                    const pending     = s.status === 'submitted_to_supervisor';
+                    const initials    = s.employee_name?.slice(0, 2).toUpperCase();
+                    const borderColor = pending ? '#f59e0b' : sc.c;
+
+                    if (isMobile) {
+                        return (
+                            <div key={s.id} onClick={() => router.visit(`/supervisor/accomplishment/${s.id}`)}
+                                style={{ padding: '0.9rem 1rem', borderRadius: 10, cursor: 'pointer', marginBottom: 8,
+                                    background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
+                                    borderLeft: `3px solid ${borderColor}` }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+                                    <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                                        background: 'var(--admin-accent)', display: 'flex', alignItems: 'center',
+                                        justifyContent: 'center', fontSize: '0.68rem', fontWeight: 700, color: '#fff' }}>
+                                        {initials}
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {s.employee_name}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {s.employee_office}
+                                        </div>
+                                    </div>
+                                    <i className="bi bi-chevron-right" style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem', flexShrink: 0 }} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', paddingLeft: '2.5rem' }}>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)' }}>
+                                        {s.period} · {relativeTime(s.submitted_at)}
+                                    </span>
+                                    <span style={{ flexShrink: 0, fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: sc.bg, color: sc.c }}>
+                                        {sc.label}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    }
+
                     return (
                         <div key={s.id} onClick={() => router.visit(`/supervisor/accomplishment/${s.id}`)}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem',
                                 borderRadius: 10, cursor: 'pointer', marginBottom: 6,
-                                background: 'var(--admin-bg-secondary)',
-                                border: `1px solid var(--admin-border)`,
-                                borderLeft: `3px solid ${pending ? '#f59e0b' : sc.c}`,
-                                transition: 'background 0.1s' }}
+                                background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
+                                borderLeft: `3px solid ${borderColor}`, transition: 'background 0.1s' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.05)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}>
-                            {/* Avatar */}
                             <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                                 background: 'var(--admin-accent)', display: 'flex', alignItems: 'center',
                                 justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff' }}>
-                                {s.employee_name?.slice(0,2).toUpperCase()}
+                                {initials}
                             </div>
-                            {/* Info */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--admin-text-primary)',
-                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {s.employee_name}
                                     <span style={{ fontWeight: 400, color: 'var(--admin-text-muted)', fontSize: '0.8rem' }}> — {s.employee_office}</span>
                                 </div>
@@ -120,9 +160,7 @@ export default function Index() {
                                     {s.period} · Submitted {relativeTime(s.submitted_at)}
                                 </div>
                             </div>
-                            {/* Status */}
-                            <span style={{ flexShrink: 0, fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px',
-                                borderRadius: 99, background: sc.bg, color: sc.c }}>
+                            <span style={{ flexShrink: 0, fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: sc.bg, color: sc.c }}>
                                 {sc.label}
                             </span>
                             <i className="bi bi-chevron-right" style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem', flexShrink: 0 }} />
