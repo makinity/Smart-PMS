@@ -10,14 +10,25 @@ Route::get('/', fn () => redirect()->route('login'));
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if (! $user) return redirect()->route('login');
+
+    // Force-refresh Spatie permission cache then resolve role
+    $user->unsetRelation('roles');
     $role = $user->getRoleNames()->first() ?? $user->role;
+
+    // Auto-heal: if spatie role missing but DB role column set, sync and retry
+    if (! $role && $user->role) {
+        \Spatie\Permission\Models\Role::findOrCreate($user->role, 'web');
+        $user->syncRoles([$user->role]);
+        $role = $user->role;
+    }
+
     return match (true) {
         $role === 'admin'      => redirect()->route('admin.dashboard'),
         $role === 'pmt'        => redirect()->route('pmt.dashboard'),
         $role === 'dept-head'  => redirect()->route('dept-head.dashboard'),
         $role === 'supervisor' => redirect()->route('supervisor.dashboard'),
         $role === 'employee'   => redirect()->route('employee.dashboard'),
-        default => abort(403),
+        default                => redirect()->route('login'),
     };
 })->middleware('auth')->name('dashboard');
 
@@ -153,7 +164,7 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::post('/accomplishment/{accomplishment}/return', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'return'])->name('accomplishment.return');
     Route::get('/ors-monitoring', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'index'])->name('ors-monitoring.index');
     Route::post('/ors-monitoring/{orsEntry}/rate', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'rate'])->name('ors-monitoring.rate');
-    Route::get('/team-tasks', fn () => \Inertia\Inertia::render('Supervisor/TeamTasks/Index'))->name('team-tasks.index');
+    Route::get('/team-tasks', [\App\Http\Controllers\StageTwo\Monitoring\TeamTasksController::class, 'index'])->name('team-tasks.index');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Supervisor/Profile'))->name('profile');
 });
 

@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import useBreakpoint from '@/Components/useBreakpoint';
 import { formatDuration, statusCfg } from '../Ors/orsHelpers';
 import TaskDetailsModal from './TaskDetailsModal';
+
+const gridCss = `
+.task-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; align-items: stretch; }
+@media (max-width:1280px) { .task-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width:900px)  { .task-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width:560px)  { .task-grid { grid-template-columns: 1fr; } }
+.task-card:hover { border-color: rgba(59,130,246,0.35) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+`;
 
 const STATUS_FILTERS = [
     { key: 'all', label: 'All' },
@@ -59,17 +66,22 @@ function TaskCard({ task, onView }) {
     const cfg = statusCfg(task.status);
 
     return (
-        <article style={s.card}>
-            <div style={s.cardHeader}>
+        <article style={s.card} className="task-card">
+            {/* Title + status */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', alignItems: 'flex-start' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={s.cardTitle}>{task.output_title}</div>
                     <div style={s.cardSubtitle}>{task.indicator_text}</div>
                 </div>
-                <span style={{ ...s.statusPill, background: cfg.bg, color: cfg.color, borderColor: cfg.color }}>
+                <span style={{ ...s.statusPill, background: cfg.bg, color: cfg.color, borderColor: cfg.color, flexShrink: 0 }}>
                     {cfg.label}
                 </span>
             </div>
 
+            {/* Spacer pushes meta + action to bottom */}
+            <div style={{ flex: 1 }} />
+
+            {/* Meta grid: 2 cols */}
             <div style={s.cardMetaGrid}>
                 <div>
                     <div style={s.metaLabel}>Work Date</div>
@@ -81,7 +93,7 @@ function TaskCard({ task, onView }) {
                 </div>
                 <div>
                     <div style={s.metaLabel}>Duration</div>
-                    <div style={s.metaValueMono}>{formatDuration(task.total_seconds ?? 0)}</div>
+                    <div style={{ ...s.metaValue, fontFamily: 'monospace' }}>{formatDuration(task.total_seconds ?? 0)}</div>
                 </div>
                 <div>
                     <div style={s.metaLabel}>Updated</div>
@@ -89,26 +101,10 @@ function TaskCard({ task, onView }) {
                 </div>
             </div>
 
-            <div style={s.cardBody}>
-                <div style={s.noteLabel}>Notes</div>
-                <p style={s.noteText}>{task.notes || 'No notes added yet.'}</p>
-            </div>
-
-            <div style={s.cardFooter}>
-                <div style={s.footInfo}>
-                    <i className="bi bi-person-badge" />
-                    <span>{task.supervisor_name}</span>
-                    {task.supervisor_office ? (
-                        <>
-                            <span style={{ opacity: 0.45 }}>·</span>
-                            <span>{task.supervisor_office}</span>
-                        </>
-                    ) : null}
-                </div>
-
-                <button type="button" onClick={() => onView(task)} style={s.viewBtn}>
+            {/* Action */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => onView(task)} style={s.iconBtn} aria-label="View task details">
                     <i className="bi bi-eye" />
-                    View details
                 </button>
             </div>
         </article>
@@ -116,7 +112,6 @@ function TaskCard({ task, onView }) {
 }
 
 export default function Index({ tasks, filters, summary, statusCounts, periodName, notice }) {
-    const bp = useBreakpoint();
     const [search, setSearch] = useState(filters?.search ?? '');
     const [status, setStatus] = useState(filters?.status ?? 'all');
     const [activeTask, setActiveTask] = useState(null);
@@ -170,10 +165,6 @@ export default function Index({ tasks, filters, summary, statusCounts, periodNam
         ...item,
         count: item.key === 'all' ? (summary?.total ?? 0) : (statusCounts?.[item.key] ?? 0),
     })), [statusCounts, summary?.total]);
-
-    const columns = bp === 'desktop'
-        ? ['Work Date', 'Output / Indicator', 'Quantity', 'Duration', 'Status', 'Updated', 'Action']
-        : [];
 
     return (
         <AppLayout title="My Tasks" description="Employee task log">
@@ -241,73 +232,22 @@ export default function Index({ tasks, filters, summary, statusCounts, periodNam
                 </div>
 
                 <div style={s.listCard}>
-                    {bp === 'desktop' ? (
+                    {taskRows.length === 0 ? (
+                        <div style={s.emptyCell}>
+                            <i className="bi bi-inbox" style={s.emptyIcon} />
+                            <div style={s.emptyTitle}>No tasks found</div>
+                            <div style={s.emptyText}>Try changing the search terms or status filter.</div>
+                        </div>
+                    ) : (
                         <>
-                            <div style={s.tableWrap}>
-                                <table style={s.table}>
-                                    <thead>
-                                        <tr>
-                                            {columns.map((column) => (
-                                                <th key={column} style={s.th}>{column}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {taskRows.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={columns.length} style={s.emptyCell}>
-                                                    <i className="bi bi-inbox" style={s.emptyIcon} />
-                                                    <div style={s.emptyTitle}>No tasks found</div>
-                                                    <div style={s.emptyText}>Try changing the search terms or status filter.</div>
-                                                </td>
-                                            </tr>
-                                        ) : taskRows.map((task) => {
-                                            const cfg = statusCfg(task.status);
-                                            return (
-                                                <tr key={task.id} style={s.tr}>
-                                                    <td style={s.td}>{formatDate(task.work_date)}</td>
-                                                    <td style={s.td}>
-                                                        <div style={s.tablePrimary}>{task.output_title}</div>
-                                                        <div style={s.tableSecondary}>{task.indicator_text}</div>
-                                                    </td>
-                                                    <td style={s.td}>
-                                                        <div style={s.tablePrimary}>{task.quantity || '—'}</div>
-                                                    </td>
-                                                    <td style={s.td}>
-                                                        <div style={s.tableMono}>{formatDuration(task.total_seconds ?? 0)}</div>
-                                                    </td>
-                                                    <td style={s.td}>
-                                                        <span style={{ ...s.statusPill, background: cfg.bg, color: cfg.color, borderColor: cfg.color }}>
-                                                            {cfg.label}
-                                                        </span>
-                                                    </td>
-                                                    <td style={s.td}>{formatDate(task.last_updated_at)}</td>
-                                                    <td style={s.tdAction}>
-                                                        <button type="button" onClick={() => setActiveTask(task)} style={s.iconBtn} aria-label="View task details">
-                                                            <i className="bi bi-eye" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                            <style>{gridCss}</style>
+                            <div className="task-grid">
+                                {taskRows.map(task => (
+                                    <TaskCard key={task.id} task={task} onView={setActiveTask} />
+                                ))}
                             </div>
                         </>
-                    ) : (
-                        <div style={s.cardList}>
-                            {taskRows.length === 0 ? (
-                                <div style={s.emptyCell}>
-                                    <i className="bi bi-inbox" style={s.emptyIcon} />
-                                    <div style={s.emptyTitle}>No tasks found</div>
-                                    <div style={s.emptyText}>Try changing the search terms or status filter.</div>
-                                </div>
-                            ) : taskRows.map((task) => (
-                                <TaskCard key={task.id} task={task} onView={setActiveTask} />
-                            ))}
-                        </div>
                     )}
-
                     <Pagination links={tasks?.links ?? []} />
                 </div>
             </section>
@@ -587,6 +527,8 @@ const s = {
         borderRadius: 'var(--admin-radius)',
         border: '1px solid var(--admin-border)',
         background: 'rgba(255,255,255,0.03)',
+        height: '100%',
+        boxSizing: 'border-box',
     },
     cardHeader: {
         display: 'flex',

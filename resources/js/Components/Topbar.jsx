@@ -24,7 +24,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                 </button>
                 <div style={{ minWidth: 0 }}>
                     <h1 className="tb-title">{title}</h1>
-                    {description && <p className="tb-desc">{description}</p>}
+
                 </div>
             </div>
 
