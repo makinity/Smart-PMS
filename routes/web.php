@@ -74,6 +74,11 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::post('/accomplishment-review/{accomplishment}/release', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'release'])->name('accomplishment-review.release');
     Route::post('/accomplishment-review/{accomplishment}/calibrate-release', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'calibrateAndRelease'])->name('accomplishment-review.calibrate-release');
     Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\Pmt\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
+    Route::get('/opcr-accomplishment', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'index'])->name('opcr-accomplishment.index');
+    Route::get('/opcr-accomplishment/{opcraAccomplishment}', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'show'])->name('opcr-accomplishment.show');
+    Route::post('/opcr-accomplishment/{opcraAccomplishment}/release', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'release'])->name('opcr-accomplishment.release');
+    Route::post('/opcr-accomplishment/{opcraAccomplishment}/calibrate-release', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'calibrateAndRelease'])->name('opcr-accomplishment.calibrate-release');
+    Route::post('/opcr-accomplishment/{opcraAccomplishment}/return', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'return'])->name('opcr-accomplishment.return');
     Route::get('/office-calibration', [\App\Http\Controllers\Pmt\OfficeCalibrationController::class, 'index'])->name('office-calibration.index');
     Route::get('/office-calibration/{id}', fn () => \Inertia\Inertia::render('Pmt/OfficeCalibration/Show'))->name('office-calibration.show');
     Route::get('/employee-calibration', [\App\Http\Controllers\Pmt\EmployeeCalibrationController::class, 'index'])->name('employee-calibration.index');
@@ -101,6 +106,8 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::get('/accomplishment-review/{accomplishment}', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'show'])->name('accomplishment-review.show');
     Route::post('/accomplishment-review/{accomplishment}/endorse', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'endorse'])->name('accomplishment-review.endorse');
     Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
+    Route::get('/opcr-accomplishment', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'index'])->name('opcr-accomplishment.index');
+    Route::post('/opcr-accomplishment/submit', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'submit'])->name('opcr-accomplishment.submit');
     Route::get('/profile', fn () => \Inertia\Inertia::render('DeptHead/Profile'))->name('profile');
 });
 

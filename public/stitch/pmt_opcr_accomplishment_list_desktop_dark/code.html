@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SPMS Portal | OPCR Accomplishment</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-secondary-container": "#d6a9ff",
+                "on-background": "#dee2f2",
+                "on-tertiary": "#003824",
+                "secondary-fixed-dim": "#ddb7ff",
+                "tertiary-container": "#007d55",
+                "on-primary-fixed-variant": "#003ea8",
+                "inverse-on-surface": "#2b303c",
+                "secondary-container": "#6f00be",
+                "on-error-container": "#ffdad6",
+                "surface": "#0e131e",
+                "error": "#ffb4ab",
+                "on-error": "#690005",
+                "surface-container-highest": "#303541",
+                "inverse-primary": "#0053db",
+                "tertiary-fixed-dim": "#4edea3",
+                "on-surface-variant": "#c3c6d7",
+                "surface-container-lowest": "#090e19",
+                "secondary": "#ddb7ff",
+                "surface-bright": "#343946",
+                "error-container": "#93000a",
+                "on-primary": "#002a78",
+                "surface-tint": "#b4c5ff",
+                "background": "#0e131e",
+                "surface-variant": "#303541",
+                "secondary-fixed": "#f0dbff",
+                "outline": "#8d90a0",
+                "surface-dim": "#0e131e",
+                "on-secondary-fixed": "#2c0051",
+                "on-primary-container": "#eeefff",
+                "on-primary-fixed": "#00174b",
+                "tertiary": "#4edea3",
+                "outline-variant": "#434655",
+                "inverse-surface": "#dee2f2",
+                "primary-container": "#2563eb",
+                "on-surface": "#dee2f2",
+                "surface-container": "#1b1f2b",
+                "on-tertiary-container": "#bdffdb",
+                "tertiary-fixed": "#6ffbbe",
+                "surface-container-high": "#252a36",
+                "primary": "#b4c5ff",
+                "on-secondary-fixed-variant": "#6900b3",
+                "on-tertiary-fixed": "#002113",
+                "surface-container-low": "#171b27",
+                "on-secondary": "#490080",
+                "primary-fixed-dim": "#b4c5ff",
+                "on-tertiary-fixed-variant": "#005236",
+                "primary-fixed": "#dbe1ff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "md": "24px",
+                "xl": "48px",
+                "container-max": "1440px",
+                "base": "4px",
+                "lg": "32px",
+                "gutter": "24px",
+                "xs": "8px",
+                "sm": "16px"
+            },
+            "fontFamily": {
+                "body-sm": ["Inter"],
+                "headline-lg": ["Inter"],
+                "display-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "label-caps": ["Inter"],
+                "title-md": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(16, 23, 34, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.5), 0 0 1px 0 rgba(37, 99, 235, 0.2);
+        }
+        .inner-glow {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        body {
+            background-color: #0a0f1a;
+            color: #dee2f2;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- SideNavBar -->
+<aside class="bg-surface-container dark:bg-surface-container h-screen w-64 fixed left-0 top-0 shadow-md flex flex-col h-full py-lg px-sm border-r border-outline-variant/10 z-50">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">SPMS Portal</h1>
+<p class="text-on-surface-variant font-label-caps text-[10px] tracking-[0.2em] uppercase">Government Command Center</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="description">description</span>
+                OPCR Review
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="assignment_turned_in">assignment_turned_in</span>
+                QAR
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="rate_review">rate_review</span>
+                Accomplishment Review
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out text-primary font-bold border-r-4 border-primary bg-primary/5 rounded-l-lg" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="work_history" style="font-variation-settings: 'FILL' 1;">work_history</span>
+                OPCR Accomplishment
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="trending_up">trending_up</span>
+                Development
+            </a>
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="stars">stars</span>
+                Top Performers
+            </a>
+</nav>
+<div class="mt-auto border-t border-outline-variant/10 pt-lg">
+<a class="flex items-center px-sm py-xs duration-200 ease-in-out hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg text-on-surface-variant font-medium" href="#">
+<span class="material-symbols-outlined mr-sm" data-icon="account_circle">account_circle</span>
+                Profile
+            </a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-surface/90 dark:bg-surface/90 backdrop-blur-md shadow-sm border-b border-outline-variant/10 flex justify-between items-center h-16 px-gutter ml-64">
+<div class="flex items-center">
+<span class="font-title-md text-title-md text-primary font-bold">Strategic Performance Management System</span>
+</div>
+<div class="flex items-center space-x-md">
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 w-64 text-body-sm focus:ring-2 focus:ring-primary/50 transition-all text-on-surface" placeholder="Quick find documents..." type="text"/>
+</div>
+<div class="flex items-center space-x-sm">
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border border-surface"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline/20 ml-2">
+<img alt="Professional User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a middle-aged executive man with a confident smile, wearing a sharp navy blue suit and a crisp white shirt. The background is a blurred high-end corporate office with soft, cool-toned ambient lighting, creating a sophisticated and authoritative atmosphere consistent with a government command center interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuADb62Tc_mNK_Cj7t_qD4kC2wyAzwmC80FKi98PlvHC4B2GOcgzFDFfh8e_0gWTqB8j050WQ3aZMUK8o5G4UWIwL-sGQ7cKnio9hYw7tCmgQm4tdDT0Iqre0BP-0lMlRqQ-TgRcOyNioOJ3Gq7NcAtCxRw2FDjYR5ECWmNLhjwxyO4z8YkFziYYFyh-NES3IQsR0zU4w9IQUO2XEgvYUdDdlY71fmrpfcbr8au7z5sw15BjK9COwmrdshewlceYAM6bpaWKrvQlvcuE"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 pt-24 px-lg pb-xl min-h-screen bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-background mb-1">OPCR Accomplishment</h2>
+<p class="text-on-surface-variant font-body-md"><span class="text-primary font-semibold">3 pending review</span> · 8 total offices listed</p>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="bg-surface-container-high p-1 rounded-xl flex">
+<button class="px-md py-xs rounded-lg text-body-sm font-medium transition-all hover:bg-surface-container-highest text-on-surface-variant">All</button>
+<button class="px-md py-xs rounded-lg text-body-sm font-bold transition-all bg-primary-container text-on-primary-container shadow-sm">Pending Review</button>
+<button class="px-md py-xs rounded-lg text-body-sm font-medium transition-all hover:bg-surface-container-highest text-on-surface-variant">Released</button>
+<button class="px-md py-xs rounded-lg text-body-sm font-medium transition-all hover:bg-surface-container-highest text-on-surface-variant">Returned</button>
+</div>
+</div>
+</div>
+<!-- Dashboard Grid/List -->
+<div class="space-y-md">
+<!-- Office Row 1: HRMO -->
+<div class="glass-panel inner-glow rounded-xl p-sm flex items-center border-l-4 border-primary transition-transform hover:scale-[1.002] active:scale-100 cursor-pointer">
+<div class="flex-1 flex items-center">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mr-md">
+<span class="material-symbols-outlined text-primary" data-icon="groups">groups</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">HRMO</h3>
+<p class="text-body-sm text-on-surface-variant">Human Resource Management Office</p>
+</div>
+</div>
+<div class="flex items-center space-x-xl">
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">DOCUMENTS</div>
+<div class="font-bold text-on-surface">6/6 <span class="text-tertiary text-xs">released</span></div>
+</div>
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">RATING</div>
+<div class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20 text-xs font-bold uppercase">
+                                3.85 VS
+                            </div>
+</div>
+<div class="min-w-[140px]">
+<span class="inline-flex items-center px-sm py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20 text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse"></span>
+                                Pending Review
+                            </span>
+</div>
+</div>
+<div class="ml-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Office Row 2: Finance Office -->
+<div class="glass-panel inner-glow rounded-xl p-sm flex items-center border-l-4 border-primary transition-transform hover:scale-[1.002] active:scale-100 cursor-pointer">
+<div class="flex-1 flex items-center">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mr-md">
+<span class="material-symbols-outlined text-secondary" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Finance Office</h3>
+<p class="text-body-sm text-on-surface-variant">Treasury and Disbursement Division</p>
+</div>
+</div>
+<div class="flex items-center space-x-xl">
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">DOCUMENTS</div>
+<div class="font-bold text-on-surface">5/8 <span class="text-outline text-xs">uploaded</span></div>
+</div>
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">RATING</div>
+<div class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant border border-outline-variant/30 text-xs font-bold uppercase">
+                                3.20 S
+                            </div>
+</div>
+<div class="min-w-[140px]">
+<span class="inline-flex items-center px-sm py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20 text-xs font-bold">
+<span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse"></span>
+                                Pending Review
+                            </span>
+</div>
+</div>
+<div class="ml-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Office Row 3: Records Section -->
+<div class="glass-panel inner-glow rounded-xl p-sm flex items-center border-l-4 border-transparent transition-transform hover:scale-[1.002] active:scale-100 cursor-pointer">
+<div class="flex-1 flex items-center">
+<div class="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center mr-md">
+<span class="material-symbols-outlined text-tertiary" data-icon="folder_special">folder_special</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Records Section</h3>
+<p class="text-body-sm text-on-surface-variant">Archiving and Documentation Unit</p>
+</div>
+</div>
+<div class="flex items-center space-x-xl">
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">DOCUMENTS</div>
+<div class="font-bold text-on-surface">4/4 <span class="text-tertiary text-xs">released</span></div>
+</div>
+<div class="text-right">
+<div class="text-label-caps text-on-surface-variant mb-1">RATING</div>
+<div class="inline-flex items-center px-2 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/20 text-xs font-bold uppercase">
+                                4.10 VS
+                            </div>
+</div>
+<div class="min-w-[140px]">
+<span class="inline-flex items-center px-sm py-1 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/20 text-xs font-bold uppercase">
+                                Released
+                            </span>
+</div>
+</div>
+<div class="ml-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Performance Insights Card (Bento Style) -->
+<div class="grid grid-cols-12 gap-md mt-xl">
+<div class="col-span-8 glass-panel inner-glow rounded-xl p-lg flex flex-col justify-between overflow-hidden relative min-h-[240px]">
+<div class="relative z-10">
+<h4 class="font-title-md text-title-md font-bold text-primary mb-xs">Review Velocity</h4>
+<p class="text-body-sm text-on-surface-variant max-w-md">Your office is currently processing reviews 15% faster than last cycle. Keep maintaining the momentum to reach the target deadline.</p>
+</div>
+<div class="flex items-end justify-between relative z-10">
+<div class="flex items-center space-x-md">
+<div class="text-center">
+<div class="text-display-lg font-bold text-on-surface">1.2d</div>
+<div class="text-label-caps text-outline">Avg Turnaround</div>
+</div>
+<div class="h-12 w-px bg-outline-variant/30"></div>
+<div class="text-center">
+<div class="text-display-lg font-bold text-tertiary">92%</div>
+<div class="text-label-caps text-outline">Accuracy</div>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-lg font-bold text-body-sm hover:brightness-110 transition-all">
+                                View Analytics
+                            </button>
+</div>
+<!-- Abstract glow effect -->
+<div class="absolute -right-24 -top-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full"></div>
+</div>
+<div class="col-span-4 glass-panel inner-glow rounded-xl p-lg relative overflow-hidden flex flex-col justify-center">
+<div class="text-center">
+<div class="w-24 h-24 mx-auto mb-md relative">
+<svg class="w-full h-full transform -rotate-90">
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="8"></circle>
+<circle cx="48" cy="48" fill="transparent" r="40" stroke="#b4c5ff" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center font-display-lg text-on-surface font-bold">75%</div>
+</div>
+<h4 class="font-title-md text-title-md font-bold text-on-surface">Global Progress</h4>
+<p class="text-body-sm text-on-surface-variant mt-xs">6 of 8 Offices Completed</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interactions for rows
+        document.querySelectorAll('.glass-panel').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = 'rgba(180, 197, 255, 0.2)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+            });
+        });
+    </script>
+</body></html>

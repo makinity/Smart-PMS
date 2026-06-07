@@ -18,7 +18,7 @@ class UwpSampleSeeder extends Seeder
     {
         $office = Office::firstOrCreate(['name' => 'Human Resource Management Office']);
         $period = PerformancePeriod::current()
-            ?? PerformancePeriod::create(['name' => 'FY 2026', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => false]);
+            ?? PerformancePeriod::create(['name' => 'Jan-Jun 2026', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => false]);
         $supervisor = User::where('role', 'supervisor')->where('office_id', $office->id)->first()
             ?? User::where('role', 'supervisor')->first();
 

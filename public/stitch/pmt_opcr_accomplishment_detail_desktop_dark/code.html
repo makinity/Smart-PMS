@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OPCR Accomplishment Detail | SPMS Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#d6a9ff",
+                        "on-background": "#dee2f2",
+                        "on-tertiary": "#003824",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "tertiary-container": "#007d55",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "inverse-on-surface": "#2b303c",
+                        "secondary-container": "#6f00be",
+                        "on-error-container": "#ffdad6",
+                        "surface": "#0e131e",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#303541",
+                        "inverse-primary": "#0053db",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-surface-variant": "#c3c6d7",
+                        "surface-container-lowest": "#090e19",
+                        "secondary": "#ddb7ff",
+                        "surface-bright": "#343946",
+                        "error-container": "#93000a",
+                        "on-primary": "#002a78",
+                        "surface-tint": "#b4c5ff",
+                        "background": "#0e131e",
+                        "surface-variant": "#303541",
+                        "secondary-fixed": "#f0dbff",
+                        "outline": "#8d90a0",
+                        "surface-dim": "#0e131e",
+                        "on-secondary-fixed": "#2c0051",
+                        "on-primary-container": "#eeefff",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary": "#4edea3",
+                        "outline-variant": "#434655",
+                        "inverse-surface": "#dee2f2",
+                        "primary-container": "#2563eb",
+                        "on-surface": "#dee2f2",
+                        "surface-container": "#1b1f2b",
+                        "on-tertiary-container": "#bdffdb",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-container-high": "#252a36",
+                        "primary": "#b4c5ff",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-container-low": "#171b27",
+                        "on-secondary": "#490080",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "primary-fixed": "#dbe1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "xl": "48px",
+                        "container-max": "1440px",
+                        "base": "4px",
+                        "lg": "32px",
+                        "gutter": "24px",
+                        "xs": "8px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "title-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0f1a; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-card { background: rgba(16, 23, 34, 0.96); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .progress-glow { filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.6)); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-background bg-surface-container-lowest">
+<!-- Side Navigation Shell -->
+<aside class="bg-surface-container dark:bg-surface-container font-body-md text-body-md h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant/10 shadow-md flex flex-col h-full py-lg px-sm z-50">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">SPMS Portal</h1>
+<p class="text-on-surface-variant font-label-caps opacity-70">Government Command Center</p>
+</div>
+<nav class="flex-1 space-y-base">
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-primary font-bold border-r-4 border-primary bg-primary/5 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>OPCR</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span>QAR</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="work_history">work_history</span>
+<span>UWP</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="rate_review">rate_review</span>
+<span>Accomplishment Review</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-md rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Profile</span>
+</a>
+</nav>
+<div class="mt-auto p-sm bg-surface-container-high rounded-xl flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">DH</div>
+<div>
+<p class="font-body-sm font-bold truncate">Dept. Administrator</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant">HRMO Chief</p>
+</div>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-surface/90 dark:bg-surface/90 backdrop-blur-md text-primary dark:text-primary font-title-md text-title-md bg-surface/90 border-b border-outline-variant/10 shadow-sm flex justify-between items-center h-16 px-gutter ml-64">
+<div class="flex items-center gap-md">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">Strategic Performance Management System</span>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary" placeholder="Search systems..." type="text"/>
+</div>
+<div class="flex gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary scale-95 active:scale-100 transition-all">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary scale-95 active:scale-100 transition-all">settings</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen p-lg max-w-container-max mx-auto">
+<!-- Header Actions -->
+<div class="flex justify-between items-start mb-lg">
+<div>
+<a class="flex items-center gap-xs text-primary font-medium hover:underline mb-sm" href="#">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span>Back</span>
+</a>
+<h2 class="font-headline-lg text-headline-lg font-bold">Human Resource Management Office</h2>
+<p class="text-on-surface-variant font-body-md">FY 2026 Strategic Review Period</p>
+</div>
+<div class="flex flex-col items-end gap-sm">
+<div class="flex gap-xs">
+<span class="px-sm py-1 rounded-full bg-secondary-container/20 text-on-secondary-container border border-secondary-container/30 text-xs font-bold uppercase tracking-widest">Flagged for Calibration</span>
+<span class="px-sm py-1 rounded-full bg-error-container/20 text-error border border-error-container/30 text-xs font-bold uppercase tracking-widest" style="color: #ffb300; background: rgba(255, 179, 0, 0.1); border-color: rgba(255, 179, 0, 0.2);">Pending PMT Review</span>
+</div>
+</div>
+</div>
+<!-- Progress Stepper -->
+<div class="glass-card p-lg rounded-xl mb-lg border border-outline-variant/10 shadow-md">
+<div class="flex justify-between max-w-3xl mx-auto relative">
+<!-- Line background -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-outline-variant/20 -translate-y-1/2 z-0"></div>
+<!-- Active Line progress -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-primary-container -translate-y-1/2 z-0"></div>
+<!-- Step 1 -->
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="text-xs font-bold text-on-surface">Draft</span>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="text-xs font-bold text-on-surface">Submitted</span>
+</div>
+<!-- Step 3 (Active) -->
+<div class="relative z-10 flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center progress-glow shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rewarded_ads</span>
+</div>
+<span class="text-xs font-bold text-primary">Released</span>
+</div>
+</div>
+</div>
+<!-- Detail Grid -->
+<div class="grid grid-cols-12 gap-lg mb-lg">
+<!-- Score Card (60%) -->
+<div class="col-span-7 glass-card p-lg rounded-xl flex items-center gap-xl border border-outline-variant/10 shadow-md">
+<div class="relative w-[120px] h-[120px] flex items-center justify-center">
+<svg class="w-full h-full -rotate-90">
+<circle cx="60" cy="60" fill="transparent" r="54" stroke="rgba(255,255,255,0.05)" stroke-width="10"></circle>
+<circle cx="60" cy="60" fill="transparent" r="54" stroke="#2563eb" stroke-dasharray="339.29" stroke-dashoffset="67.85" stroke-linecap="round" stroke-width="10"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-headline-lg font-bold">3.85</span>
+</div>
+</div>
+<div>
+<h3 class="text-primary font-headline-lg font-bold">Very Satisfactory</h3>
+<p class="text-on-surface-variant font-body-md mt-xs">Calculated based on 6 of 6 validated office accomplishment indicators.</p>
+<div class="flex gap-md mt-md">
+<div class="px-md py-2 bg-surface-container-high rounded-lg border border-outline-variant/20">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Average Rating</p>
+<p class="text-lg font-bold">4.02</p>
+</div>
+<div class="px-md py-2 bg-surface-container-high rounded-lg border border-outline-variant/20">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">PMT Adjustment</p>
+<p class="text-lg font-bold text-error">-0.17</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Remarks Card (40%) -->
+<div class="col-span-5 glass-card p-lg rounded-xl border-l-4 border-tertiary-container border border-outline-variant/10 shadow-md flex flex-col justify-between">
+<div>
+<h4 class="font-label-caps text-tertiary font-bold mb-sm tracking-widest uppercase">DEPT HEAD REMARKS</h4>
+<p class="text-on-surface italic font-body-md leading-relaxed">"The HRMO has demonstrated exceptional agility in digitizing recruitment processes. However, a slight downward calibration is applied to ensure consistency with systemic cross-departmental benchmarks regarding employee retention metrics."</p>
+</div>
+<div class="mt-md flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-outline-variant/30 overflow-hidden">
+<img alt="Department Head" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtTNX4BTn1aSE5_2tF16-AcH6C6BCiKu4K9xZMMnrmFBdnUKMGGNBdXX99xutCb7Ex6doC36k5M3smZwEUURPBYSWbPz14K3u_qzqfmaHBggXNwi70XDvcvegkvfvyLOqBbY1sRWTorkJ_9v6ltu4NVsj15cRDOUUc-fI8q3vyXjsT2Ng_srYcIACS8mQfy1IP1YzPI7UrhAO6PKabDcPWXTF1aGV_lBi9Jk7wnBjLbVAIYUU3h_WnpkUFeRIBSCs7fCS_OPT9X9OW"/>
+</div>
+<div>
+<p class="text-xs font-bold">Eleanor Vance</p>
+<p class="text-[10px] text-on-surface-variant">Office of the Director</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Table Section -->
+<section class="glass-card rounded-xl border border-outline-variant/10 shadow-md overflow-hidden">
+<div class="p-md border-b border-outline-variant/10 flex justify-between items-center">
+<h3 class="font-title-md text-title-md">Employee Ratings Breakdown</h3>
+<button class="flex items-center gap-xs text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                    FILTER BY UNIT
+                </button>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-high/50">
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider">Employee Name</th>
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider">Position</th>
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider">Strategic Weight</th>
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider">Efficiency</th>
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider">Timeliness</th>
+<th class="px-md py-4 font-label-caps text-on-surface-variant uppercase tracking-wider text-right">Final Rating</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Alex Rivera</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">Senior HR Specialist</td>
+<td class="px-md py-4 text-sm">25%</td>
+<td class="px-md py-4 text-sm">4.50</td>
+<td class="px-md py-4 text-sm">4.20</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-tertiary-container/20 text-tertiary font-bold">4.35</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Samantha Chue</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">Administrative Officer V</td>
+<td class="px-md py-4 text-sm">20%</td>
+<td class="px-md py-4 text-sm">3.80</td>
+<td class="px-md py-4 text-sm">4.00</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-primary-container/20 text-primary font-bold">3.90</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Marcus Thorne</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">Training Coordinator</td>
+<td class="px-md py-4 text-sm">15%</td>
+<td class="px-md py-4 text-sm">3.50</td>
+<td class="px-md py-4 text-sm">3.20</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-secondary-container/20 text-on-secondary-container font-bold">3.35</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Elena Garcia</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">Recruitment Manager</td>
+<td class="px-md py-4 text-sm">20%</td>
+<td class="px-md py-4 text-sm">4.80</td>
+<td class="px-md py-4 text-sm">4.90</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-tertiary-container/20 text-tertiary font-bold">4.85</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Jason Lee</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">Records Officer</td>
+<td class="px-md py-4 text-sm">10%</td>
+<td class="px-md py-4 text-sm">4.00</td>
+<td class="px-md py-4 text-sm">4.00</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-primary-container/20 text-primary font-bold">4.00</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-high/30 transition-colors">
+<td class="px-md py-4 font-bold text-on-surface">Sara Jenkins</td>
+<td class="px-md py-4 text-on-surface-variant text-sm">HR Assistant III</td>
+<td class="px-md py-4 text-sm">10%</td>
+<td class="px-md py-4 text-sm">3.20</td>
+<td class="px-md py-4 text-sm">3.00</td>
+<td class="px-md py-4 text-right">
+<span class="px-3 py-1 rounded bg-on-surface-variant/20 text-on-surface font-bold">3.10</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Bottom Actions Footer -->
+<div class="fixed bottom-0 right-0 w-[calc(100%-16rem)] p-lg bg-surface/80 backdrop-blur-xl border-t border-outline-variant/10 flex justify-between items-center z-40">
+<button class="px-lg py-3 rounded-lg border border-error text-error font-bold hover:bg-error/10 transition-all uppercase tracking-wider text-xs">
+                Return for Revision
+            </button>
+<div class="flex gap-md">
+<button class="px-lg py-3 rounded-lg border border-secondary text-on-secondary-container font-bold hover:bg-secondary/10 transition-all uppercase tracking-wider text-xs">
+                    Calibrate &amp; Release
+                </button>
+<button class="px-xl py-3 rounded-lg bg-primary-container text-white font-bold shadow-[0_4px_12px_rgba(37,99,235,0.4)] hover:bg-primary-container/90 transition-all uppercase tracking-widest text-xs">
+                    Release Accomplishments
+                </button>
+</div>
+</div>
+<!-- Margin for footer -->
+<div class="h-32"></div>
+</main>
+<script>
+        // Micro-interactions for hovering cards
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('scale-[1.005]');
+                card.classList.add('duration-300');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('scale-[1.005]');
+            });
+        });
+    </script>
+</body></html>

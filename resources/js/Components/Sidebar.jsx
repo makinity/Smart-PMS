@@ -23,6 +23,7 @@ const roleLinks = {
         { href: '/pmt/employee-calibration', label: 'Employee Calibration', icon: 'bi-person-check-fill' },
         { href: '/pmt/top-performers', label: 'Top Performers', icon: 'bi-trophy-fill' },
         { href: '/pmt/accomplishment-review', label: 'Accomplishment Review', icon: 'bi-award-fill' },
+        { href: '/pmt/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },
         { href: '/pmt/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
     'dept-head': [
@@ -31,6 +32,7 @@ const roleLinks = {
         { href: '/dept-head/qar', label: 'QAR', icon: 'bi-file-earmark-check-fill' },
         { href: '/dept-head/uwp', label: 'UWP', icon: 'bi-kanban-fill' },
         { href: '/dept-head/accomplishment-review', label: 'Accomplishment Review', icon: 'bi-award-fill' },
+        { href: '/dept-head/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },
         { href: '/dept-head/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
     supervisor: [
