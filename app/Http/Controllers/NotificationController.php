@@ -20,6 +20,7 @@ class NotificationController extends Controller
                 'title'   => $n->data['message'] ?? $n->data['title'] ?? 'Notification',
                 'body'    => $n->data['body'] ?? null,
                 'type'    => $n->data['type'] ?? 'info',
+                'event'   => $n->data['event'] ?? null,
                 'url'     => $n->data['url'] ?? null,
                 'time'    => $n->created_at->diffForHumans(),
                 'is_read' => $n->read_at !== null,

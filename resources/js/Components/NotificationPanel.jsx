@@ -3,15 +3,47 @@ import { usePage } from '@inertiajs/react';
 import { useNotificationListener } from '@/Components/useNotificationListener';
 import axios from 'axios';
 
-/* ── type → icon + colour map ── */
+/* ── type → colour map (background + unread dot) ── */
 const TYPE_CFG = {
-    alert:   { icon: 'fa-solid fa-triangle-exclamation', bg: 'np-icon-alert',   dot: 'np-dot-alert'   },
-    success: { icon: 'fa-solid fa-circle-check',         bg: 'np-icon-success', dot: 'np-dot-success' },
-    info:    { icon: 'fa-regular fa-bell',               bg: 'np-icon-info',    dot: 'np-dot-info'    },
+    alert:   { bg: 'np-icon-alert',   dot: 'np-dot-alert'   },
+    success: { bg: 'np-icon-success', dot: 'np-dot-success' },
+    info:    { bg: 'np-icon-info',    dot: 'np-dot-info'    },
 };
 
-function cfg(type) {
-    return TYPE_CFG[type] ?? TYPE_CFG.info;
+/* ── operation (event domain) → icon ── */
+const DOMAIN_ICON = {
+    uwp:              'bi bi-file-earmark-text-fill',
+    opcr:             'bi bi-clipboard-data-fill',
+    opcra:            'bi bi-clipboard-data-fill',
+    ipcr:             'bi bi-person-vcard-fill',
+    mpor:             'bi bi-calendar-check-fill',
+    ors:              'bi bi-list-check',
+    qar:              'bi bi-patch-check-fill',
+    accomplishment:   'bi bi-trophy-fill',
+    development_plan: 'bi bi-mortarboard-fill',
+};
+
+/* ── action verb → icon (overrides domain for clear outcomes) ── */
+const ACTION_ICON = {
+    approved:           'bi bi-check-circle-fill',
+    pmt_approved:       'bi bi-check-circle-fill',
+    ready_for_commitment:'bi bi-check-circle-fill',
+    returned:           'bi bi-arrow-counterclockwise',
+    returned_to_employee:'bi bi-arrow-counterclockwise',
+    returned_by_dept_head:'bi bi-arrow-counterclockwise',
+    pmt_returned:       'bi bi-arrow-counterclockwise',
+};
+
+function iconForEvent(event) {
+    if (!event) return 'bi bi-bell-fill';
+    const [domain, ...rest] = event.split('.');
+    const action = rest.join('.');
+    return ACTION_ICON[action] ?? DOMAIN_ICON[domain] ?? 'bi bi-bell-fill';
+}
+
+function cfg(item) {
+    const colour = TYPE_CFG[item.type] ?? TYPE_CFG.info;
+    return { ...colour, icon: iconForEvent(item.event) };
 }
 
 export default function NotificationPanel() {
@@ -114,12 +146,12 @@ export default function NotificationPanel() {
                             <div className="np-empty">Loading…</div>
                         ) : items.length === 0 ? (
                             <div className="np-empty">
-                                <i className="fa-regular fa-bell-slash np-empty-icon" />
+                                <i className="bi bi-bell-slash np-empty-icon" />
                                 <span>You're all caught up.</span>
                             </div>
                         ) : (
                             items.map(item => {
-                                const { icon, bg, dot } = cfg(item.type);
+                                const { icon, bg, dot } = cfg(item);
                                 const Tag = item.url ? 'a' : 'button';
                                 return (
                                     <Tag
