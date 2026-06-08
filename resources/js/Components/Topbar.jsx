@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import NotificationPanel from '@/Components/NotificationPanel';
 
 export default function Topbar({ title, description, darkMode, onToggleDarkMode, onMobileMenuToggle }) {
     const { auth } = usePage().props;
@@ -30,10 +31,8 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                {/* Notification bell — placeholder, wired up later */}
-                <button className="tb-notif-btn" title="Notifications">
-                    <i className="bi bi-bell-fill" />
-                </button>
+                {/* Notification panel */}
+                <NotificationPanel />
 
             <div className="tb-user" ref={ref}>
                 <button className="tb-pill" onClick={() => setOpen(v => !v)}>

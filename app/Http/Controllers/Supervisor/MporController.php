@@ -7,6 +7,7 @@ use App\Models\Ipcr;
 use App\Models\Mpor;
 use App\Models\OrsEntry;
 use App\Models\User;
+use App\Notifications\WorkflowEventNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -203,6 +204,13 @@ class MporController extends Controller
             'returned_by' => null, 'returned_at' => null, 'return_remarks' => null,
         ]);
 
+        $mpor->employee?->notify(new WorkflowEventNotification(
+            type: 'success',
+            event: 'mpor.approved',
+            message: 'Your MPOR for ' . $mpor->month . ' has been approved by your supervisor.',
+            url: '/employee/mpor?month=' . $mpor->month,
+        ));
+
         return back()->with('success', 'MPOR approved.');
     }
 
@@ -224,16 +232,12 @@ class MporController extends Controller
         ]);
 
         // Notify employee
-        $mpor->employee?->notifications()->create([
-            'id'   => \Illuminate\Support\Str::uuid(),
-            'type' => 'App\Notifications\WorkflowEventNotification',
-            'data' => json_encode([
-                'event'   => 'mpor.returned_to_employee',
-                'type'    => 'alert',
-                'message' => 'Your MPOR for ' . $mpor->month . ' was returned by your supervisor.',
-                'link'    => '/employee/mpor?month=' . $mpor->month,
-            ]),
-        ]);
+        $mpor->employee?->notify(new WorkflowEventNotification(
+            type: 'alert',
+            event: 'mpor.returned_to_employee',
+            message: 'Your MPOR for ' . $mpor->month . ' was returned by your supervisor.',
+            url: '/employee/mpor?month=' . $mpor->month,
+        ));
 
         return back()->with('success', 'MPOR returned to employee.');
     }

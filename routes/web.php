@@ -230,3 +230,11 @@ Route::middleware('auth')->prefix('stage-three')->name('stage-three.')->group(fu
     Route::get('/forms/opcr-excel',  [\App\Http\Controllers\StageThree\Forms\OpcrExcelExportController::class, 'export'])->name('forms.opcr-excel');
     Route::get('/forms/opcr-export', [\App\Http\Controllers\StageThree\Forms\OpcrExportController::class, 'export'])->name('forms.opcr-export');
 });
+
+
+// Notification API
+Route::middleware('auth')->prefix('api/notifications')->name('api.notifications.')->group(function () {
+    Route::get('/',          [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+    Route::post('/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('read-all');
+    Route::post('/{id}/read',[\App\Http\Controllers\NotificationController::class, 'markRead'])->name('read');
+});

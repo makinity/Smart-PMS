@@ -54,7 +54,7 @@ class OrsMonitoringController extends Controller
             type:    'success',
             event:   'ors.rated_by_supervisor',
             message: "{$supervisor->name} rated your task: {$orsEntry->ipcrItem?->indicator?->indicator_text}",
-            url:     '/employee/ors?ors_entry_id=' . $orsEntry->id,
+            url:     '/employee/my-tasks?ors_entry_id=' . $orsEntry->id,
         ));
 
         return back()->with('success', 'Rating saved.');

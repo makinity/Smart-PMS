@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Opcr;
 use App\Models\PerformancePeriod;
 use App\Models\UnitWorkPlan;
+use App\Notifications\WorkflowEventNotification;
 use App\Services\AssignmentAi\AssignmentPredictorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -106,13 +107,18 @@ class UnitWorkPlanController extends Controller
             ['status' => 'draft']
         );
 
-        // If OPCR was returned by PMT, reset it to draft so it can be resubmitted
         if ($opcr->status === 'returned') {
             $opcr->update(['status' => 'draft', 'return_remarks' => null, 'returned_by' => null]);
         }
 
-        // Attach this UWP to the OPCR if not already attached
         $opcr->uwps()->syncWithoutDetaching([$uwp->id]);
+
+        $uwp->creator?->notify(new WorkflowEventNotification(
+            type: 'success',
+            event: 'uwp.approved',
+            message: Auth::user()->name . ' approved your Unit Work Plan.',
+            url: '/supervisor/uwp/' . $uwp->id,
+        ));
 
         return back()->with('success', 'UWP approved.');
     }
@@ -130,6 +136,13 @@ class UnitWorkPlanController extends Controller
             'return_remarks' => $request->remarks,
             'returned_by' => Auth::id(),
         ]);
+
+        $uwp->creator?->notify(new WorkflowEventNotification(
+            type: 'alert',
+            event: 'uwp.returned',
+            message: Auth::user()->name . ' returned your Unit Work Plan for revision.',
+            url: '/supervisor/uwp/' . $uwp->id,
+        ));
 
         return back()->with('success', 'UWP returned to supervisor.');
     }

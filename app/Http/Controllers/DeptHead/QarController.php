@@ -11,6 +11,7 @@ use App\Models\QarHeader;
 use App\Models\QarMporLink;
 use App\Models\QarRow;
 use App\Models\User;
+use App\Notifications\WorkflowEventNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -213,19 +214,14 @@ class QarController extends Controller
         });
 
         // Notify PMT
-        $pmtUsers = User::where('role', 'pmt')->get();
-        foreach ($pmtUsers as $pmt) {
-            $pmt->notifications()->create([
-                'id'   => \Illuminate\Support\Str::uuid(),
-                'type' => 'App\Notifications\WorkflowEventNotification',
-                'data' => json_encode([
-                    'event'   => 'qar.submitted_to_pmt',
-                    'type'    => 'info',
-                    'message' => 'QAR for ' . $quarterKey . ' has been submitted by ' . $user->name,
-                    'link'    => '/pmt/qar',
-                ]),
-            ]);
-        }
+        User::where('role', 'pmt')->each(fn ($pmt) =>
+            $pmt->notify(new WorkflowEventNotification(
+                type: 'info',
+                event: 'qar.submitted_to_pmt',
+                message: 'QAR for ' . $quarterKey . ' has been submitted by ' . $user->name,
+                url: '/pmt/qar',
+            ))
+        );
 
         return back()->with('success', 'QAR submitted to PMT successfully.');
     }

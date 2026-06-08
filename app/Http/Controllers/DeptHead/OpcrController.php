@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Opcr;
 use App\Models\PerformancePeriod;
 use App\Models\UnitWorkPlan;
+use App\Models\User;
+use App\Notifications\WorkflowEventNotification;
 use App\Services\AssignmentAi\AssignmentPredictorInterface;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -138,6 +140,16 @@ class OpcrController extends Controller
             ->where('status', 'draft')
             ->findOrFail($id);
         $opcr->update(['status' => 'submitted']);
+
+        $sender = Auth::user();
+        User::where('role', 'pmt')->each(fn ($pmt) =>
+            $pmt->notify(new WorkflowEventNotification(
+                type: 'info',
+                event: 'opcr.submitted',
+                message: $sender->name . ' submitted an OPCR for PMT review.',
+                url: '/pmt/opcr-review/' . $opcr->id,
+            ))
+        );
 
         return back()->with('success', 'OPCR submitted to PMT.');
     }

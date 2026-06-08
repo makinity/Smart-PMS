@@ -111,7 +111,7 @@ function TaskCard({ task, onView }) {
 
 const chip = { display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'var(--admin-text-muted)', background: 'var(--admin-bg-secondary)', padding: '2px 7px', borderRadius: 99, border: '1px solid var(--admin-border)' };
 
-export default function Index({ tasks, filters, summary, statusCounts, periodName, notice }) {
+export default function Index({ tasks, filters, summary, statusCounts, periodName, notice, autoOpenEntryId }) {
     const [search, setSearch] = useState(filters?.search ?? '');
     const [status, setStatus] = useState(filters?.status ?? 'all');
     const [activeTask, setActiveTask] = useState(null);
@@ -160,6 +160,14 @@ export default function Index({ tasks, filters, summary, statusCounts, periodNam
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [activeTask]);
+
+    // Auto-open task modal when arriving from a notification link
+    useEffect(() => {
+        if (!autoOpenEntryId) return;
+        const taskRows = tasks?.data ?? [];
+        const match = taskRows.find(t => t.id === autoOpenEntryId);
+        if (match) setActiveTask(match);
+    }, [autoOpenEntryId]);
 
     const filterButtons = useMemo(() => STATUS_FILTERS.map((item) => ({
         ...item,

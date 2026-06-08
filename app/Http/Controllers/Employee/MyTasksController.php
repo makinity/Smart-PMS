@@ -80,6 +80,7 @@ class MyTasksController extends Controller
             'statusCounts' => $statusCounts,
             'periodName' => $period?->name,
             'notice' => $period ? null : 'No active performance period is currently available.',
+            'autoOpenEntryId' => $request->integer('ors_entry_id') ?: null,
         ]);
     }
 

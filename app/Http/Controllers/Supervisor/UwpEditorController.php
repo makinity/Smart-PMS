@@ -26,14 +26,30 @@ class UwpEditorController extends Controller
     {
         $this->authorizeUwp($uwp);
         $uwp->update(['status' => 'draft']);
-        return response()->json(['status' => 'draft']);
+
+        return $request->wantsJson()
+            ? response()->json(['status' => 'draft'])
+            : back()->with('success', 'UWP saved as draft.');
     }
 
     public function submit(Request $request, UnitWorkPlan $uwp)
     {
         $this->authorizeUwp($uwp);
         $uwp->update(['status' => 'submitted']);
-        return response()->json(['status' => 'submitted']);
+
+        $deptHead = \App\Models\User::where('office_id', $uwp->office_id)
+            ->where('role', 'dept-head')
+            ->first();
+        $deptHead?->notify(new \App\Notifications\WorkflowEventNotification(
+            type: 'info',
+            event: 'uwp.submitted',
+            message: Auth::user()->name . ' submitted a Unit Work Plan for your review.',
+            url: '/dept-head/uwp/' . $uwp->id,
+        ));
+
+        return $request->wantsJson()
+            ? response()->json(['status' => 'submitted'])
+            : back()->with('success', 'UWP submitted.');
     }
 
     // ── Functions ────────────────────────────────────────────────────────────

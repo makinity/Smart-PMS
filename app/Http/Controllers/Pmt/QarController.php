@@ -9,6 +9,7 @@ use App\Models\Office;
 use App\Models\OrsEntry;
 use App\Models\QarHeader;
 use App\Models\User;
+use App\Notifications\WorkflowEventNotification;
 use App\Services\PerformanceRatingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -133,11 +134,12 @@ class QarController extends Controller
 
         // Notify dept head
         $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
-        $deptHead?->notifications()->create([
-            'id'   => \Illuminate\Support\Str::uuid(),
-            'type' => 'App\Notifications\WorkflowEventNotification',
-            'data' => json_encode(['event' => 'qar.pmt_approved', 'type' => 'info', 'message' => 'Your QAR for ' . $qar->quarter_key . ' has been approved by PMT.', 'link' => '/dept-head/qar']),
-        ]);
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'success',
+            event: 'qar.pmt_approved',
+            message: 'Your QAR for ' . $qar->quarter_key . ' has been approved by PMT.',
+            url: '/dept-head/qar',
+        ));
 
         return back()->with('success', 'QAR approved.');
     }
@@ -156,11 +158,12 @@ class QarController extends Controller
         ]);
 
         $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
-        $deptHead?->notifications()->create([
-            'id'   => \Illuminate\Support\Str::uuid(),
-            'type' => 'App\Notifications\WorkflowEventNotification',
-            'data' => json_encode(['event' => 'qar.pmt_returned', 'type' => 'alert', 'message' => 'Your QAR for ' . $qar->quarter_key . ' was returned by PMT.', 'link' => '/dept-head/qar']),
-        ]);
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'alert',
+            event: 'qar.pmt_returned',
+            message: 'Your QAR for ' . $qar->quarter_key . ' was returned by PMT.',
+            url: '/dept-head/qar',
+        ));
 
         return back()->with('success', 'QAR returned to Department Head.');
     }

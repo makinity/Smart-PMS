@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\FormatsAssignedEmployees;
 use App\Http\Controllers\Controller;
 use App\Models\Ipcr;
 use App\Models\Opcr;
+use App\Notifications\WorkflowEventNotification;
 use App\Services\AssignmentAi\AssignmentPredictorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -107,10 +108,7 @@ class OpcrController extends Controller
 
         $opcr->update(['status' => 'approved']);
 
-        // Auto-generate one IPCR per assigned employee
         $periodId = $opcr->performance_period_id;
-
-        // Collect all indicator assignments: employee_id → [indicator_ids]
         $employeeIndicators = [];
         foreach ($opcr->uwps as $uwp) {
             foreach ($uwp->uwpFunctions as $fn) {
@@ -129,9 +127,27 @@ class OpcrController extends Controller
                 ['employee_id' => $employeeId, 'performance_period_id' => $periodId],
                 ['opcr_id' => $opcr->id, 'status' => 'draft']
             );
-            // Sync indicators (add new ones without removing existing)
             $ipcr->indicators()->syncWithoutDetaching($indicatorIds);
+
+            // Notify the employee their IPCR targets are ready
+            $employee = \App\Models\User::find($employeeId);
+            $employee?->notify(new WorkflowEventNotification(
+                type: 'success',
+                event: 'ipcr.ready_for_commitment',
+                message: 'Your IPCR targets are now ready. You can view and commit to your performance targets.',
+                url: '/employee/ipcr-target',
+            ));
         }
+
+        // Notify the dept-head of this office
+        $deptHead = \App\Models\User::where('office_id', $opcr->office_id)
+            ->where('role', 'dept-head')->first();
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'success',
+            event: 'opcr.approved',
+            message: 'Your OPCR has been approved by PMT. IPCRs have been generated for assigned employees.',
+            url: '/dept-head/opcr/' . $opcr->id,
+        ));
 
         return back()->with('success', 'OPCR approved. IPCRs generated for assigned employees.');
     }
@@ -147,12 +163,20 @@ class OpcrController extends Controller
             'returned_by' => Auth::id(),
         ]);
 
-        // Reset all linked UWPs so supervisors can revise them
         $opcr->uwps()->update([
             'status' => 'returned',
-            'return_remarks' => 'OPCR returned by PMT: '.$request->remarks,
+            'return_remarks' => 'OPCR returned by PMT: ' . $request->remarks,
             'returned_by' => Auth::id(),
         ]);
+
+        $deptHead = \App\Models\User::where('office_id', $opcr->office_id)
+            ->where('role', 'dept-head')->first();
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'alert',
+            event: 'opcr.returned',
+            message: 'Your OPCR was returned by PMT for revision. Remarks: ' . $request->remarks,
+            url: '/dept-head/opcr/' . $opcr->id,
+        ));
 
         return back()->with('success', 'OPCR returned to dept. head.');
     }

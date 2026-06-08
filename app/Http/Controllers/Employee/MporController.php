@@ -7,14 +7,19 @@ use App\Models\Ipcr;
 use App\Models\Mpor;
 use App\Models\OrsEntry;
 use App\Models\User;
+use App\Notifications\WorkflowEventNotification;
+use App\Services\WorkflowNotificationDispatcher;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class MporController extends Controller
 {
+    public function __construct(
+        private readonly WorkflowNotificationDispatcher $notifier,
+    ) {}
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -283,16 +288,12 @@ class MporController extends Controller
             ->get();
 
         foreach ($supervisors as $sup) {
-            $sup->notifications()->create([
-                'id' => Str::uuid(),
-                'type' => 'App\Notifications\WorkflowEventNotification',
-                'data' => json_encode([
-                    'event' => 'mpor.submitted_to_supervisor',
-                    'type' => 'info',
-                    'message' => $user->name.' submitted their MPOR for '.$month,
-                    'link' => '/supervisor/mpor',
-                ]),
-            ]);
+            $this->notifier->notifyUser($sup, new WorkflowEventNotification(
+                type: 'info',
+                event: 'mpor.submitted_to_supervisor',
+                message: $user->name.' submitted their MPOR for '.$month,
+                url: route('supervisor.mpor.index'),
+            ));
         }
 
         return back()->with('success', 'MPOR submitted successfully.');
