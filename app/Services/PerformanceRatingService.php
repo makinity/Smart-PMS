@@ -54,48 +54,48 @@ class PerformanceRatingService
     public function calculateComputedScore(Ipcr $ipcr): float
     {
         [$ratingsByOutput, $ratingsByIndicator] = $this->buildRatedIpcrPerformanceMaps($ipcr);
-        
+
         if (empty($ratingsByOutput)) {
             return 0.0;
         }
 
-        $ipcr->loadMissing('unitWorkPlan.uwpFunctions');
-        $functions = $ipcr->unitWorkPlan?->uwpFunctions ?? collect();
+        // Resolve functions + output titles via indicator → mfo → function relationship
+        $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
 
-        if ($functions->isEmpty()) {
+        // Build: function_id → [weight, [output_title, ...]]
+        $functionMap = []; // [fId => ['weight' => x, 'titles' => [title => true]]]
+        foreach ($ipcr->items as $item) {
+            $fn = $item->indicator?->uwpMfo?->uwpFunction;
+            if (!$fn) continue;
+            $fId   = (int) $fn->id;
+            $title = trim((string) ($item->indicator?->uwpMfo?->title ?? $item->output_title ?? ''));
+            if ($title === '') continue;
+            if (!isset($functionMap[$fId])) {
+                $functionMap[$fId] = ['weight' => (float) ($fn->weight_percent ?? 0), 'titles' => []];
+            }
+            $functionMap[$fId]['titles'][$title] = true;
+        }
+
+        if (empty($functionMap)) {
             return 0.0;
         }
 
         $totalWeightedScore = 0.0;
-        
-        // Group output titles by function_id using the ipcr items
-        $outputTitlesByFunction = [];
-        foreach ($ipcr->items ?? [] as $item) {
-            $fId = (int) $item->uwp_function_id;
-            $title = trim((string) $item->output_title);
-            if ($title !== '') {
-                $outputTitlesByFunction[$fId][$title] = true;
-            }
-        }
-
-        foreach ($functions as $function) {
-            $fId = (int) $function->id;
-            $weight = (float) ($function->weight_percent ?? 0);
+        foreach ($functionMap as $fData) {
+            $weight = $fData['weight'];
             if ($weight <= 0) continue;
 
-            $titles = array_keys($outputTitlesByFunction[$fId] ?? []);
-            if (empty($titles)) continue;
-
             $outputRatings = [];
-            foreach ($titles as $title) {
+            foreach (array_keys($fData['titles']) as $title) {
                 if (isset($ratingsByOutput[$title])) {
-                    $outputRatings[] = (float) $ratingsByOutput[$title]['a'];
+                    $a = $ratingsByOutput[$title]['a'];
+                    if ($a !== null) $outputRatings[] = (float) $a;
                 }
             }
 
             if (!empty($outputRatings)) {
                 $functionAvg = array_sum($outputRatings) / count($outputRatings);
-                $totalWeightedScore += ($functionAvg * ($weight / 100));
+                $totalWeightedScore += $functionAvg * ($weight / 100);
             }
         }
 
@@ -131,7 +131,9 @@ class PerformanceRatingService
         $entries = OrsEntry::query()
             ->with([
                 'monitoring:ors_entry_id,quality_rating,timeliness_rating',
-                'ipcrItem:id,output_title,indicator_text',
+                'ipcrItem:id,output_title,indicator_text,uwp_success_indicator_id',
+                'ipcrItem.indicator:id,uwp_mfo_id,indicator_text',
+                'ipcrItem.indicator.uwpMfo:id,title',
             ])
             ->where('employee_id', $resolvedEmployeeId)
             ->where('ipcr_id', $ipcr->id)
@@ -147,13 +149,15 @@ class PerformanceRatingService
         $totalsByIndicator = [];
 
         foreach ($entries as $entry) {
-            $monitoring = $entry->monitoring;
+            $monitoring = $entry->monitoring->first();
             if (!$monitoring) continue;
 
             $quantity = (float) ($entry->quantity ?? 0);
             if ($quantity <= 0) continue;
 
-            $outputTitle = trim((string) ($entry->ipcrItem?->output_title ?? ''));
+            $outputTitle = trim((string) ($entry->ipcrItem?->output_title
+                ?? $entry->ipcrItem?->indicator?->uwpMfo?->title
+                ?? ''));
             if ($outputTitle === '') $outputTitle = 'Unassigned Output';
 
             $qualityPoints = $quantity * (float) $monitoring->quality_rating;
@@ -166,7 +170,9 @@ class PerformanceRatingService
             $totalsByOutput[$outputTitle]['q_points'] += $qualityPoints;
             $totalsByOutput[$outputTitle]['t_points'] += $timelinessPoints;
 
-            $indicatorText = trim((string) ($entry->ipcrItem?->indicator_text ?? ''));
+            $indicatorText = trim((string) ($entry->ipcrItem?->indicator_text
+                ?? $entry->ipcrItem?->indicator?->indicator_text
+                ?? ''));
             if ($indicatorText !== '') {
                 $lookupKey = $outputTitle . '||' . $indicatorText;
                 if (!isset($totalsByIndicator[$lookupKey])) {
@@ -232,34 +238,35 @@ class PerformanceRatingService
 
     private function buildTargetQuantityByOutput(Ipcr $ipcr): array
     {
-        $ipcr->loadMissing('unitWorkPlan.uwpFunctions.mfos');
+        $ipcr->loadMissing('items.indicator.uwpMfo');
         $targets = [];
-        foreach ($ipcr->unitWorkPlan?->uwpFunctions ?? [] as $function) {
-            foreach ($function->mfos ?? [] as $mfo) {
-                $title = trim((string) ($mfo->title ?? ''));
-                if ($title !== '') {
-                    $targets[$title] = is_numeric($mfo->target_quantity) ? (float) $mfo->target_quantity : 0.0;
-                }
-            }
+        foreach ($ipcr->items as $item) {
+            $indicator = $item->indicator;
+            $mfo = $indicator?->uwpMfo;
+            if (!$mfo) continue;
+            $title = trim((string) $mfo->title);
+            if ($title === '') continue;
+            // Sum indicator targets per MFO output
+            $qty = is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : 0.0;
+            $targets[$title] = ($targets[$title] ?? 0.0) + $qty;
         }
         return $targets;
     }
 
     private function buildTargetPayloadByIndicatorLookup(Ipcr $ipcr): array
     {
-        $ipcr->loadMissing('unitWorkPlan.uwpFunctions.mfos.successIndicators');
+        $ipcr->loadMissing('items.indicator.uwpMfo');
         $targets = [];
-        foreach ($ipcr->unitWorkPlan?->uwpFunctions ?? [] as $function) {
-            foreach ($function->mfos ?? [] as $mfo) {
-                $outputTitle = trim((string) ($mfo->title ?? ''));
-                foreach ($mfo->successIndicators ?? [] as $indicator) {
-                    $text = trim((string) ($indicator->indicator_text ?? ''));
-                    if ($outputTitle !== '' && $text !== '') {
-                        $targets[$outputTitle . '||' . $text] = [
-                            'target_quantity' => is_numeric($indicator->target_quantity ?? $mfo->target_quantity) ? (float) ($indicator->target_quantity ?? $mfo->target_quantity) : 0.0
-                        ];
-                    }
-                }
+        foreach ($ipcr->items as $item) {
+            $indicator = $item->indicator;
+            $mfo = $indicator?->uwpMfo;
+            if (!$mfo || !$indicator) continue;
+            $outputTitle = trim((string) $mfo->title);
+            $text = trim((string) ($indicator->indicator_text ?? ''));
+            if ($outputTitle !== '' && $text !== '') {
+                $targets[$outputTitle . '||' . $text] = [
+                    'target_quantity' => is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : 0.0,
+                ];
             }
         }
         return $targets;
