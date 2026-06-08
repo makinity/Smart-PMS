@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentSubmission;
 use App\Models\Ipcr;
 use App\Models\OrsEntry;
+use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
 use App\Services\PerformanceRatingService;
 use Carbon\Carbon;
@@ -79,7 +80,8 @@ class AccomplishmentReviewController extends Controller
         ]);
 
         $this->notifyEmployee($accomplishment, 'released_by_pmt',
-            "Your accomplishment has been officially released by PMT. Final rating: {$adjectival} ({$score}).");
+            "Your final rating has been approved and released by PMT: {$adjectival} ({$score}).");
+        $this->notifyDeptHead($accomplishment, "{$adjectival} ({$score})");
 
         return back()->with('success', 'Accomplishment released.');
     }
@@ -104,7 +106,8 @@ class AccomplishmentReviewController extends Controller
         ]);
 
         $this->notifyEmployee($accomplishment, 'released_by_pmt',
-            "Your accomplishment has been calibrated and released by PMT. Final rating: {$data['final_adjectival_rating']} ({$data['final_rating']}).");
+            "PMT adjusted your score. Your final rating is now {$data['final_adjectival_rating']} ({$data['final_rating']}).");
+        $this->notifyDeptHead($accomplishment, "{$data['final_adjectival_rating']} ({$data['final_rating']})");
 
         return back()->with('success', 'Accomplishment calibrated and released.');
     }
@@ -174,6 +177,25 @@ class AccomplishmentReviewController extends Controller
             event: "accomplishment.{$event}",
             message: $message,
             url: '/employee/accomplishment',
+        ));
+    }
+
+    private function notifyDeptHead(AccomplishmentSubmission $s, string $rating): void
+    {
+        if (! $s->dept_head_id) {
+            return;
+        }
+
+        $deptHead = User::find($s->dept_head_id);
+        if (! $deptHead || ! $deptHead->is_active) {
+            return;
+        }
+
+        $deptHead->notify(new WorkflowEventNotification(
+            type: 'info',
+            event: 'opcra.employee_rated',
+            message: "{$s->employee?->name}'s final rating ({$rating}) has been released by PMT and will be included in your OPCR Accomplishment.",
+            url: '/dept-head/opcr-accomplishment',
         ));
     }
 

@@ -28,6 +28,7 @@ const ACTION_ICON = {
     approved:           'bi bi-check-circle-fill',
     pmt_approved:       'bi bi-check-circle-fill',
     ready_for_commitment:'bi bi-check-circle-fill',
+    final_score_ready:  'bi bi-award-fill',
     returned:           'bi bi-arrow-counterclockwise',
     returned_to_employee:'bi bi-arrow-counterclockwise',
     returned_by_dept_head:'bi bi-arrow-counterclockwise',

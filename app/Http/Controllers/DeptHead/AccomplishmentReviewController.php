@@ -89,14 +89,13 @@ class AccomplishmentReviewController extends Controller
 
         // Notify PMT members
         User::where('role', 'pmt')
-            ->where('office_id', $deptHead->office_id)
             ->each(function (User $pmt) use ($accomplishment, $deptHead) {
                 $flag = $accomplishment->dept_head_flagged_for_calibration ? ' (Flagged for Calibration)' : '';
                 $pmt->notify(new WorkflowEventNotification(
                     type: 'info',
                     event: 'accomplishment.dept_head_endorsed',
                     message: "{$accomplishment->employee->name}'s accomplishment has been endorsed by {$deptHead->name}{$flag}.",
-                    url: '/pmt/accomplishment-review',
+                    url: route('pmt.accomplishment-review.show', $accomplishment),
                 ));
             });
 

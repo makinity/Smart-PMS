@@ -292,7 +292,7 @@ class MporController extends Controller
                 type: 'info',
                 event: 'mpor.submitted_to_supervisor',
                 message: $user->name.' submitted their MPOR for '.$month,
-                url: route('supervisor.mpor.index'),
+                url: route('supervisor.mpor.show', $mpor),
             ));
         }
 

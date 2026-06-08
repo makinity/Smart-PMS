@@ -80,7 +80,7 @@ class AccomplishmentController extends Controller
             type: 'info',
             event: 'accomplishment.supervisor_endorsed',
             message: "{$accomplishment->employee->name}'s accomplishment has been endorsed by {$supervisor->name} and is ready for your review.",
-            url: '/dept-head/accomplishment-review',
+            url: route('dept-head.accomplishment-review.show', $accomplishment),
         ));
 
         return back()->with('success', 'Accomplishment endorsed.');
