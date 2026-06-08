@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
 const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
@@ -173,9 +174,8 @@ export default function Index() {
                                         onMouseLeave={e => e.currentTarget.style.background=''}>
                                         <td style={{ padding:'0.6rem 1rem' }}>
                                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                                <div style={{ width:28, height:28, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.62rem', fontWeight:700, flexShrink:0 }}>
-                                                    {emp.name?.slice(0,2).toUpperCase()}
-                                                </div>
+                                                <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
+                                                    style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
                                                 <span style={{ fontWeight:600, fontSize:'0.85rem', color:'var(--admin-text-primary)' }}>{emp.name}</span>
                                             </div>
                                         </td>
@@ -313,11 +313,8 @@ export default function Index() {
 
                         {/* Profile */}
                         <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginBottom:'1.5rem' }}>
-                            {selectedEmp.avatar
-                                ? <img src={selectedEmp.avatar} alt={selectedEmp.name} style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                                : <div style={{ width:64, height:64, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem', fontWeight:800, flexShrink:0 }}>
-                                    {selectedEmp.name?.slice(0,2).toUpperCase()}
-                                  </div>}
+                            <img src={avatarSrc(selectedEmp.avatar)} alt={selectedEmp.name} onError={onAvatarError}
+                                style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
                             <div>
                                 <div style={{ fontWeight:800, fontSize:'1rem', color:'var(--admin-text-primary)' }}>{selectedEmp.name}</div>
                                 <div style={{ fontSize:'0.78rem', color:'var(--admin-text-muted)', marginTop:2 }}>{selectedEmp.position}</div>

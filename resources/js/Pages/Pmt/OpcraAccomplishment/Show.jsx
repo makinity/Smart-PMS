@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
 const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
@@ -299,9 +300,8 @@ export default function Show() {
                                     <tr key={emp.id} style={{ borderBottom:'1px solid var(--admin-border)' }}>
                                         <td style={{ padding:'0.6rem 1rem' }}>
                                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                                <div style={{ width:28, height:28, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.62rem', fontWeight:700, flexShrink:0 }}>
-                                                    {emp.name?.slice(0,2).toUpperCase()}
-                                                </div>
+                                                <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
+                                                    style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
                                                 <span style={{ fontWeight:600, fontSize:'0.85rem', color:'var(--admin-text-primary)' }}>{emp.name}</span>
                                             </div>
                                         </td>
