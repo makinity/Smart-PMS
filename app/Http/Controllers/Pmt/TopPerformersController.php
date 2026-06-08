@@ -18,7 +18,7 @@ class TopPerformersController extends Controller
 
         $allowed = ['Outstanding', 'Very Satisfactory', 'Satisfactory'];
 
-        $query = Ipcr::with(['employee:id,name,position,office_id,profile_photo_url', 'employee.office:id,name'])
+        $query = Ipcr::with(['employee:id,name,position,office_id,profile_photo_path', 'employee.office:id,name'])
             ->whereIn('adjectival_rating', $allowed)
             ->whereNotNull('final_score')
             ->where('final_score', '>', 0);
