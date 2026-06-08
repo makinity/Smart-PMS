@@ -10,13 +10,14 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class MporController extends Controller
 {
     public function index(Request $request)
     {
-        $user  = Auth::user();
+        $user = Auth::user();
         $month = $request->get('month', now()->format('Y-m'));
 
         // Validate month format
@@ -24,8 +25,8 @@ class MporController extends Controller
             $month = now()->format('Y-m');
         }
 
-        $start = Carbon::parse($month . '-01')->startOfMonth();
-        $end   = $start->copy()->endOfMonth();
+        $start = Carbon::parse($month.'-01')->startOfMonth();
+        $end = $start->copy()->endOfMonth();
 
         // Check committed IPCR
         $ipcr = Ipcr::where('employee_id', $user->id)
@@ -45,6 +46,7 @@ class MporController extends Controller
             ->get()
             ->filter(function ($entry) {
                 $m = $entry->monitoring->first();
+
                 return $m && $m->quality_rating !== null && $m->timeliness_rating !== null;
             });
 
@@ -58,11 +60,11 @@ class MporController extends Controller
         $excludedCount = $allRatedCount - $includedCount;
 
         // Week helper
-        $weekOf = fn($date) => match (true) {
-            $date->day <= 7  => 1,
+        $weekOf = fn ($date) => match (true) {
+            $date->day <= 7 => 1,
             $date->day <= 14 => 2,
             $date->day <= 21 => 3,
-            default          => 4,
+            default => 4,
         };
 
         // Build rows grouped by indicator text + function section
@@ -72,19 +74,21 @@ class MporController extends Controller
         if ($ipcr) {
             $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
             foreach ($ipcr->items as $item) {
-                $fn  = $item->indicator?->uwpMfo?->uwpFunction;
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
                 $mfo = $item->indicator?->uwpMfo;
-                if (! $fn || ! $mfo) continue;
-                $key    = $fn->function_type;
+                if (! $fn || ! $mfo) {
+                    continue;
+                }
+                $key = $fn->function_type;
                 $rowKey = strtolower(trim($mfo->title));
                 if (! isset($sections[$key])) {
                     $sections[$key] = ['key' => $key, 'label' => $fn->name, 'weight' => $fn->weight_percent, 'rows' => []];
                 }
                 if (! isset($sections[$key]['rows'][$rowKey])) {
                     $sections[$key]['rows'][$rowKey] = [
-                        'title'      => $mfo->title,
-                        'qty'        => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
-                        'quality'    => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                        'title' => $mfo->title,
+                        'qty' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                        'quality' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                         'timeliness' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                     ];
                 }
@@ -93,43 +97,45 @@ class MporController extends Controller
 
         foreach ($entries as $entry) {
             $indicator = $entry->ipcrItem?->indicator;
-            if (! $indicator) continue;
+            if (! $indicator) {
+                continue;
+            }
 
-            $mfo      = $indicator->uwpMfo;
+            $mfo = $indicator->uwpMfo;
             $function = $mfo?->uwpFunction;
-            $fnType   = $function?->function_type ?? 'core';
-            $fnName   = $function?->name ?? ($fnType === 'core' ? 'Core Functions' : 'Support Functions');
+            $fnType = $function?->function_type ?? 'core';
+            $fnName = $function?->name ?? ($fnType === 'core' ? 'Core Functions' : 'Support Functions');
             $fnWeight = $function?->weight_percent ?? ($fnType === 'core' ? 80 : 20);
             $sectionKey = $fnType;
 
-            $rowKey  = strtolower(trim($mfo?->title ?? 'Unknown'));
-            $week    = $weekOf(Carbon::parse($entry->work_date));
-            $mon     = $entry->monitoring->first();
+            $rowKey = strtolower(trim($mfo?->title ?? 'Unknown'));
+            $week = $weekOf(Carbon::parse($entry->work_date));
+            $mon = $entry->monitoring->first();
 
-            $qty  = (int) $entry->quantity;
+            $qty = (int) $entry->quantity;
             $qual = $qty * ($mon->quality_rating ?? 0);
             $time = $qty * ($mon->timeliness_rating ?? 0);
 
             if (! isset($sections[$sectionKey])) {
                 $sections[$sectionKey] = [
-                    'key'     => $sectionKey,
-                    'label'   => $fnName,
-                    'weight'  => $fnWeight,
-                    'rows'    => [],
+                    'key' => $sectionKey,
+                    'label' => $fnName,
+                    'weight' => $fnWeight,
+                    'rows' => [],
                 ];
             }
 
             if (! isset($sections[$sectionKey]['rows'][$rowKey])) {
                 $sections[$sectionKey]['rows'][$rowKey] = [
-                    'title'    => $mfo?->title ?? 'Unknown',
-                    'qty'      => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
-                    'quality'  => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                    'title' => $mfo?->title ?? 'Unknown',
+                    'qty' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                    'quality' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                     'timeliness' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                 ];
             }
 
-            $sections[$sectionKey]['rows'][$rowKey]['qty'][$week]        += $qty;
-            $sections[$sectionKey]['rows'][$rowKey]['quality'][$week]    += $qual;
+            $sections[$sectionKey]['rows'][$rowKey]['qty'][$week] += $qty;
+            $sections[$sectionKey]['rows'][$rowKey]['quality'][$week] += $qual;
             $sections[$sectionKey]['rows'][$rowKey]['timeliness'][$week] += $time;
         }
 
@@ -138,44 +144,44 @@ class MporController extends Controller
 
         // Flatten rows + compute totals/averages
         $result = [];
-        $grandQty       = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
-        $grandQuality   = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
-        $grandTimeliness= [1 => 0, 2 => 0, 3 => 0, 4 => 0];
-        $grandQtyCount  = 0;
-        $grandQualSum   = 0;
-        $grandTimeSum   = 0;
+        $grandQty = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+        $grandQuality = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+        $grandTimeliness = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+        $grandQtyCount = 0;
+        $grandQualSum = 0;
+        $grandTimeSum = 0;
 
         foreach ($sections as $section) {
             $rows = [];
             foreach ($section['rows'] as $row) {
-                $qtyTotal  = array_sum($row['qty']);
+                $qtyTotal = array_sum($row['qty']);
                 $qualTotal = $qtyTotal > 0 ? round(array_sum($row['quality']) / $qtyTotal, 2) : 0;
                 $timeTotal = $qtyTotal > 0 ? round(array_sum($row['timeliness']) / $qtyTotal, 2) : 0;
 
                 for ($w = 1; $w <= 4; $w++) {
-                    $grandQty[$w]        += $row['qty'][$w];
-                    $grandQuality[$w]    += $row['quality'][$w];
+                    $grandQty[$w] += $row['qty'][$w];
+                    $grandQuality[$w] += $row['quality'][$w];
                     $grandTimeliness[$w] += $row['timeliness'][$w];
                 }
                 $grandQtyCount += $qtyTotal;
-                $grandQualSum  += array_sum($row['quality']);
-                $grandTimeSum  += array_sum($row['timeliness']);
+                $grandQualSum += array_sum($row['quality']);
+                $grandTimeSum += array_sum($row['timeliness']);
 
                 $rows[] = [
-                    'title'      => $row['title'],
-                    'qty'        => $row['qty'],
-                    'qty_total'  => $qtyTotal,
-                    'quality'    => array_map(fn($v) => round($v, 1), $row['quality']),
-                    'qual_avg'   => $qualTotal,
-                    'timeliness' => array_map(fn($v) => round($v, 1), $row['timeliness']),
-                    'time_avg'   => $timeTotal,
+                    'title' => $row['title'],
+                    'qty' => $row['qty'],
+                    'qty_total' => $qtyTotal,
+                    'quality' => array_map(fn ($v) => round($v, 1), $row['quality']),
+                    'qual_avg' => $qualTotal,
+                    'timeliness' => array_map(fn ($v) => round($v, 1), $row['timeliness']),
+                    'time_avg' => $timeTotal,
                 ];
             }
             $result[] = [
-                'key'    => $section['key'],
-                'label'  => $section['label'],
+                'key' => $section['key'],
+                'label' => $section['label'],
                 'weight' => $section['weight'],
-                'rows'   => $rows,
+                'rows' => $rows,
             ];
         }
 
@@ -189,11 +195,11 @@ class MporController extends Controller
         $lastActivity = null;
         if ($mpor) {
             if ($mpor->status === 'returned' && $mpor->returnedBy) {
-                $lastActivity = ['label' => 'Returned by ' . $mpor->returnedBy->name, 'at' => $mpor->returned_at?->format('M j, Y · h:i A')];
+                $lastActivity = ['label' => 'Returned by '.$mpor->returnedBy->name, 'at' => $mpor->returned_at?->format('M j, Y · h:i A')];
             } elseif ($mpor->status === 'approved' && $mpor->approvedBy) {
-                $lastActivity = ['label' => 'Approved by ' . $mpor->approvedBy->name, 'at' => $mpor->approved_at?->format('M j, Y · h:i A')];
+                $lastActivity = ['label' => 'Approved by '.$mpor->approvedBy->name, 'at' => $mpor->approved_at?->format('M j, Y · h:i A')];
             } elseif ($mpor->status === 'submitted') {
-                $lastActivity = ['label' => 'Submitted by ' . $user->name, 'at' => $mpor->submitted_at?->format('M j, Y · h:i A')];
+                $lastActivity = ['label' => 'Submitted by '.$user->name, 'at' => $mpor->submitted_at?->format('M j, Y · h:i A')];
             }
         }
 
@@ -203,25 +209,25 @@ class MporController extends Controller
             ->first();
 
         return Inertia::render('Employee/Mpor/Index', [
-            'month'          => $month,
-            'sections'       => $result,
-            'grandQty'       => $grandQty,
-            'grandQualAvg'   => $grandQualAvg,
-            'grandTimeAvg'   => $grandTimeAvg,
-            'grandQtyTotal'  => $grandQtyCount,
-            'includedCount'  => $includedCount,
-            'excludedCount'  => $excludedCount,
-            'hasIpcr'        => (bool) $ipcr,
-            'mpor'           => $mpor ? [
-                'id'             => $mpor->id,
-                'status'         => $mpor->status,
-                'submitted_at'   => $mpor->submitted_at?->format('M j, Y · h:i A'),
+            'month' => $month,
+            'sections' => $result,
+            'grandQty' => $grandQty,
+            'grandQualAvg' => $grandQualAvg,
+            'grandTimeAvg' => $grandTimeAvg,
+            'grandQtyTotal' => $grandQtyCount,
+            'includedCount' => $includedCount,
+            'excludedCount' => $excludedCount,
+            'hasIpcr' => (bool) $ipcr,
+            'mpor' => $mpor ? [
+                'id' => $mpor->id,
+                'status' => $mpor->status,
+                'submitted_at' => $mpor->submitted_at?->format('M j, Y · h:i A'),
                 'return_remarks' => $mpor->return_remarks,
-                'returned_by'    => $mpor->returnedBy?->name,
+                'returned_by' => $mpor->returnedBy?->name,
             ] : null,
-            'lastActivity'   => $lastActivity,
-            'employee'       => ['name' => $user->name, 'position' => $user->position],
-            'supervisor'     => $supervisor ? ['name' => $supervisor->name, 'position' => $supervisor->position] : null,
+            'lastActivity' => $lastActivity,
+            'employee' => ['name' => $user->name, 'position' => $user->position, 'avatar' => $user->profile_photo_url],
+            'supervisor' => $supervisor ? ['name' => $supervisor->name, 'position' => $supervisor->position, 'avatar' => $supervisor->profile_photo_url] : null,
         ]);
     }
 
@@ -229,10 +235,10 @@ class MporController extends Controller
     {
         $request->validate(['month' => ['required', 'regex:/^\d{4}-\d{2}$/']]);
 
-        $user  = Auth::user();
+        $user = Auth::user();
         $month = $request->month;
-        $start = Carbon::parse($month . '-01')->startOfMonth();
-        $end   = $start->copy()->endOfMonth();
+        $start = Carbon::parse($month.'-01')->startOfMonth();
+        $end = $start->copy()->endOfMonth();
 
         // Must have committed IPCR
         $ipcr = Ipcr::where('employee_id', $user->id)
@@ -247,7 +253,7 @@ class MporController extends Controller
             ->where('quantity', '>', 0)
             ->whereBetween('work_date', [$start, $end])
             ->get()
-            ->filter(fn($e) => $e->monitoring->first()?->quality_rating !== null
+            ->filter(fn ($e) => $e->monitoring->first()?->quality_rating !== null
                 && $e->monitoring->first()?->timeliness_rating !== null)
             ->isNotEmpty();
 
@@ -258,17 +264,17 @@ class MporController extends Controller
         abort_if(
             in_array($mpor->status, ['submitted', 'approved']),
             422,
-            'MPOR is already ' . $mpor->status . '.'
+            'MPOR is already '.$mpor->status.'.'
         );
 
         $mpor->fill([
-            'office_id'    => $user->office_id,
-            'status'       => 'submitted',
+            'office_id' => $user->office_id,
+            'status' => 'submitted',
             'submitted_at' => now(),
             'generated_at' => $mpor->generated_at ?? now(),
-            'created_by'   => $mpor->created_by   ?? $user->id,
-            'approved_by'  => null, 'approved_at'  => null,
-            'returned_by'  => null, 'returned_at'  => null, 'return_remarks' => null,
+            'created_by' => $mpor->created_by ?? $user->id,
+            'approved_by' => null, 'approved_at' => null,
+            'returned_by' => null, 'returned_at' => null, 'return_remarks' => null,
         ])->save();
 
         // Notify supervisors in same office
@@ -278,13 +284,13 @@ class MporController extends Controller
 
         foreach ($supervisors as $sup) {
             $sup->notifications()->create([
-                'id'   => \Illuminate\Support\Str::uuid(),
+                'id' => Str::uuid(),
                 'type' => 'App\Notifications\WorkflowEventNotification',
                 'data' => json_encode([
-                    'event'   => 'mpor.submitted_to_supervisor',
-                    'type'    => 'info',
-                    'message' => $user->name . ' submitted their MPOR for ' . $month,
-                    'link'    => '/supervisor/mpor',
+                    'event' => 'mpor.submitted_to_supervisor',
+                    'type' => 'info',
+                    'message' => $user->name.' submitted their MPOR for '.$month,
+                    'link' => '/supervisor/mpor',
                 ]),
             ]);
         }

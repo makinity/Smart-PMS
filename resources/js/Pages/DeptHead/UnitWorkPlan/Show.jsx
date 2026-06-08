@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -291,11 +292,8 @@ function IndicatorCard({ si, index }) {
                         <span style={s.metaDot} />
                         <div style={{ display: 'flex' }}>
                             {assignees.slice(0, 3).map((a, i) => (
-                                <div key={i} style={{ ...s.avatar, background: colorFor(a.employee?.name), zIndex: 10 - i }}>
-                                    {a.employee?.profile_photo
-                                        ? <img src={a.employee.profile_photo} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                                        : initials(a.employee?.name)}
-                                </div>
+                                <img key={i} src={avatarSrc(a.employee?.avatar)} onError={onAvatarError} alt={a.employee?.name}
+                                    style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
                             ))}
                             {assignees.length > 3 && (
                                 <div style={{ ...s.avatar, background: 'var(--admin-border-strong)', color: 'var(--admin-text-muted)', fontSize: '0.6rem' }}>

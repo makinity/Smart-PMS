@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 
 function useBreakpoint() {
@@ -178,8 +179,6 @@ export default function Index() {
         });
     }
 
-    const initials = (name) => (name ?? '').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
-
     return (
         <AppLayout title="MPOR">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -288,7 +287,7 @@ export default function Index() {
                         <div style={card}>
                             <p style={{ ...statLabel, marginBottom: '0.75rem' }}>Submitted By</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <div style={{ ...avatarBox, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)' }}>{initials(employee?.name)}</div>
+                                <img src={avatarSrc(employee?.avatar)} alt={employee?.name} onError={onAvatarError} style={{ ...avatarBox, objectFit: 'cover' }} />
                                 <div>
                                     <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{employee?.name}</div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{employee?.position}</div>
@@ -300,7 +299,7 @@ export default function Index() {
                             <p style={{ ...statLabel, marginBottom: '0.75rem' }}>Reviewer</p>
                             {supervisor ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                    <div style={{ ...avatarBox, background: 'rgba(74,222,128,0.12)', color: '#22c55e' }}>{initials(supervisor?.name)}</div>
+                                    <img src={avatarSrc(supervisor?.avatar)} alt={supervisor?.name} onError={onAvatarError} style={{ ...avatarBox, objectFit: 'cover' }} />
                                     <div>
                                         <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{supervisor.name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{supervisor.position ?? 'Supervisor'}</div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const RATING_CFG = {
     'Unsatisfactory': { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', icon: '⚠️' },
@@ -29,13 +30,7 @@ function ScoreRing({ score, rating, size = 56 }) {
 }
 
 function Avatar({ name, avatar, size = 48 }) {
-    return avatar
-        ? <img src={avatar} alt={name} style={{ width:size, height:size, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-        : <div style={{ width:size, height:size, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff',
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize: size > 40 ? '1rem' : '0.75rem',
-            fontWeight:800, flexShrink:0 }}>
-            {name?.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase()}
-          </div>;
+    return <img src={resolveAvatar(avatar)} alt={name} onError={onAvatarError} style={{ width:size, height:size, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />;
 }
 
 export default function Index() {

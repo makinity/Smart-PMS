@@ -1,6 +1,7 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_STYLES = {
     active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -32,17 +33,6 @@ function formatStatus(user) {
     if (user.is_disabled) return 'disabled';
     if (user.is_active) return 'active';
     return 'inactive';
-}
-
-function initialsFor(user) {
-    const source = String(user.name || user.employee_id || 'User').trim();
-    const parts = source.split(/\s+/).filter(Boolean);
-    if (!parts.length) return 'U';
-
-    return parts
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() || 'U')
-        .join('');
 }
 
 function firstErrorMessage(errors) {
@@ -353,9 +343,8 @@ function UserCard({ user, activeMenuId, onMenu, onEdit, onSendCode, onToggleActi
     return (
         <article style={{ borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', padding: '1.1rem', boxShadow: 'var(--admin-shadow)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <div style={{ ...iconBox, width: 42, height: 42, borderRadius: 12, flexShrink: 0, fontSize: '0.82rem', fontWeight: 700 }}>
-                    {initialsFor(user)}
-                </div>
+                <img src={avatarSrc(user.avatar)} alt={user.name || 'User'} onError={onAvatarError}
+                    style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, objectFit: 'cover' }} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
                         <div style={{ minWidth: 0 }}>
@@ -414,7 +403,8 @@ function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleAc
                                 <tr key={user.id} style={{ borderBottom: '1px solid var(--admin-border)', verticalAlign: 'top' }}>
                                     <td style={{ padding: '0.85rem 1.25rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                                            <div style={{ ...iconBox, width: 38, height: 38, borderRadius: 10, flexShrink: 0, fontSize: '0.75rem', fontWeight: 700 }}>{initialsFor(user)}</div>
+                                            <img src={avatarSrc(user.avatar)} alt={user.name || 'User'} onError={onAvatarError}
+                                                style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, objectFit: 'cover' }} />
                                             <div>
                                                 <div style={{ fontWeight: 600, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>{user.name || 'Unnamed'}</div>
                                                 <div style={{ marginTop: '0.15rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.employee_id || 'No ID'}</div>

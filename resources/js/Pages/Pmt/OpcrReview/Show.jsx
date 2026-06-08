@@ -3,6 +3,7 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 import { useToast } from '@/Components/Snackbar';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -313,9 +314,8 @@ function SiCard({ si, index }) {
                         <span style={s.metaDot} />
                         <div style={{ display: 'flex' }}>
                             {assignees.slice(0, 3).map((a, i) => (
-                                <div key={i} style={{ ...s.avatar, background: colorFor(a.employee?.name), zIndex: 10 - i }}>
-                                    {initials(a.employee?.name)}
-                                </div>
+                                <img key={i} src={avatarSrc(a.employee?.avatar)} onError={onAvatarError} alt={a.employee?.name}
+                                    style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
                             ))}
                             {assignees.length > 3 && (
                                 <div style={{ ...s.avatar, background: 'var(--admin-border-strong)', color: 'var(--admin-text-muted)', fontSize: '0.6rem' }}>+{assignees.length - 3}</div>

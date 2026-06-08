@@ -52,6 +52,7 @@ class UsersController extends Controller
                 'id' => $user->id,
                 'employee_id' => $user->employee_id,
                 'name' => $user->name,
+                'avatar' => $user->profile_photo_url,
                 'email' => $user->email,
                 'role' => $user->role,
                 'role_label' => $this->roleLabel($user->role),

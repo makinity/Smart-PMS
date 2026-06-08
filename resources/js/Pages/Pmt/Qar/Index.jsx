@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -19,9 +20,7 @@ function StatusBadge({ status }) {
 }
 
 function Avatar({ name, src, size = 40 }) {
-    const initials = (name ?? '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
-    if (src) return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border)' }} />;
-    return <div style={{ width: size, height: size, borderRadius: '50%', background: 'rgba(59,130,246,0.15)', color: 'var(--admin-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: size * 0.34, flexShrink: 0 }}>{initials}</div>;
+    return <img src={resolveAvatar(src)} alt={name} onError={onAvatarError} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border)' }} />;
 }
 
 export default function Index({ qars, offices, search: iS, officeId: iO, status: iSt }) {

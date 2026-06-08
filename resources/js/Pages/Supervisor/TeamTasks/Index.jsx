@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskDetailsModal from '@/Pages/Employee/MyTask/TaskDetailsModal';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
     draft:     { label: 'Draft',     c: '#94a3b8', bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.25)' },
@@ -19,10 +20,6 @@ const FILTERS = [
     { key: 'submitted' },
     { key: 'rated' },
 ];
-
-const COLORS = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4'];
-const colorFor = name => COLORS[(name ?? '').charCodeAt(0) % COLORS.length];
-const initials = name => name ? name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : '?';
 
 function fmtSeconds(s) {
     if (!s) return null;
@@ -48,11 +45,8 @@ function TaskCard({ entry, onClick }) {
             {/* Employee + status */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                        background: colorFor(entry.employee_name), display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#fff' }}>
-                        {initials(entry.employee_name)}
-                    </div>
+                    <img src={avatarSrc(entry.employee_avatar)} alt={entry.employee_name} onError={onAvatarError}
+                        style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                     <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-primary)',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {entry.employee_name}

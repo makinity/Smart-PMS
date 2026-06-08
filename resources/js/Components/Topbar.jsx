@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 export default function Topbar({ title, description, darkMode, onToggleDarkMode, onMobileMenuToggle }) {
     const { auth } = usePage().props;
@@ -13,7 +14,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?';
+    const userAvatar = avatarSrc(user?.avatar, user?.profile_photo_url);
 
     return (
         <header className="tb-root">
@@ -37,10 +38,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
             <div className="tb-user" ref={ref}>
                 <button className="tb-pill" onClick={() => setOpen(v => !v)}>
                     <div className="tb-avatar">
-                        {user?.avatar
-                            ? <img src={user.avatar} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--admin-accent)' }}>{initials}</span>
-                        }
+                        <img src={userAvatar} alt={user?.name ?? 'User'} onError={onAvatarError} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div className="tb-info">
                         <span className="tb-name">{user?.name ?? 'Guest'}</span>

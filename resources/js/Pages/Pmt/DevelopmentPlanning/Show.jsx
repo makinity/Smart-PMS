@@ -2,16 +2,13 @@ import { useState, useMemo } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { SmporTable, IpcrSections, MporList, scoreColor } from '@/Pages/Pmt/_shared/PerformanceForms';
+import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
 const sectionLabel = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
 
 function Avatar({ name, avatar, size = 56 }) {
-    return avatar
-        ? <img src={avatar} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-        : <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--admin-accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 800, flexShrink: 0 }}>
-            {name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
-          </div>;
+    return <img src={resolveAvatar(avatar)} alt={name} onError={onAvatarError} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
 }
 
 function ScoreCircle({ score, rating, label = 'Performance Score' }) {

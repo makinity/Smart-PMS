@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
     supervisor_endorsed:  { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
@@ -102,7 +103,7 @@ export default function Index() {
                 ) : filtered.map(s => {
                     const sc = STATUS_CFG[s.status] ?? { label: s.status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
                     const pending = s.status === 'supervisor_endorsed';
-                    const initials = s.employee_name?.slice(0, 2).toUpperCase();
+                    const avatar = avatarSrc(s.employee_avatar);
 
                     if (isMobile) {
                         // ── Card layout for mobile ──
@@ -113,11 +114,8 @@ export default function Index() {
                                     borderLeft: `3px solid ${pending ? '#f59e0b' : sc.c}` }}>
                                 {/* Top row: avatar + name + chevron */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-                                    <div style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                                        background: 'var(--admin-accent)', display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', fontSize: '0.68rem', fontWeight: 700, color: '#fff' }}>
-                                        {initials}
-                                    </div>
+                                    <img src={avatar} alt={s.employee_name} onError={onAvatarError}
+                                        style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {s.employee_name}
@@ -158,11 +156,8 @@ export default function Index() {
                                 transition: 'background 0.1s' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.05)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                                background: 'var(--admin-accent)', display: 'flex', alignItems: 'center',
-                                justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff' }}>
-                                {initials}
-                            </div>
+                            <img src={avatar} alt={s.employee_name} onError={onAvatarError}
+                                style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {s.employee_name}

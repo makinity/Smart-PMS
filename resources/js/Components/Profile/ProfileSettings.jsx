@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
+import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const pageCard = {
     background: 'var(--admin-card)',
@@ -172,7 +173,7 @@ export default function ProfileSettings({ description }) {
         return () => URL.revokeObjectURL(objectUrl);
     }, [profileForm.data.profile_photo]);
 
-    const avatarSrc = photoPreview || user.profile_photo_url;
+    const avatarSrc = resolveAvatar(photoPreview, user.profile_photo_url);
 
     const submitProfile = (e) => {
         e.preventDefault();
@@ -216,19 +217,7 @@ export default function ProfileSettings({ description }) {
                             justifyContent: 'center',
                             flexShrink: 0,
                         }}>
-                            {avatarSrc ? (
-                                <img src={avatarSrc} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--admin-accent)' }}>
-                                    {(displayName || '?')
-                                        .split(' ')
-                                        .map((part) => part[0])
-                                        .filter(Boolean)
-                                        .slice(0, 2)
-                                        .join('')
-                                        .toUpperCase() || '?'}
-                                </span>
-                            )}
+                            <img src={avatarSrc} alt={displayName} onError={onAvatarError} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
 
                         <div style={{ minWidth: 0 }}>
@@ -356,11 +345,7 @@ export default function ProfileSettings({ description }) {
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                         }}>
-                                            {avatarSrc ? (
-                                                <img src={avatarSrc} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            ) : (
-                                                <span style={{ color: 'var(--admin-accent)', fontWeight: 800 }}>{(displayName || '?').slice(0, 2).toUpperCase()}</span>
-                                            )}
+                                            <img src={avatarSrc} alt={displayName} onError={onAvatarError} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', marginBottom: '0.2rem' }}>{displayName}</div>
