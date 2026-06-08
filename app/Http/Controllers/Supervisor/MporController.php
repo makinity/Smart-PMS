@@ -155,9 +155,9 @@ class MporController extends Controller
                     'title'      => $row['title'],
                     'qty'        => $row['qty'],
                     'qty_total'  => $qtyTotal,
-                    'quality'    => array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['quality'], $row['qty']),
+                    'quality'    => array_map(fn($v) => round($v, 1), $row['quality']),
                     'qual_avg'   => $qualTotal,
-                    'timeliness' => array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['timeliness'], $row['qty']),
+                    'timeliness' => array_map(fn($v) => round($v, 1), $row['timeliness']),
                     'time_avg'   => $timeTotal,
                 ];
             }

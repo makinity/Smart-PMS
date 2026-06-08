@@ -66,11 +66,16 @@ class MporExcelExportController extends Controller
         if ($ipcr) {
             $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
             foreach ($ipcr->items as $item) {
-                $fn = $item->indicator?->uwpMfo?->uwpFunction;
-                if (! $fn) continue;
-                $key = $fn->function_type;
+                $fn  = $item->indicator?->uwpMfo?->uwpFunction;
+                $mfo = $item->indicator?->uwpMfo;
+                if (! $fn || ! $mfo) continue;
+                $key    = $fn->function_type;
+                $rowKey = strtolower(trim($mfo->title));
                 if (! isset($sections[$key])) {
                     $sections[$key] = ['label' => $fn->name, 'weight' => $fn->weight_percent, 'rows' => []];
+                }
+                if (! isset($sections[$key]['rows'][$rowKey])) {
+                    $sections[$key]['rows'][$rowKey] = ['title' => $mfo->title, 'qty' => [1=>0,2=>0,3=>0,4=>0], 'quality' => [1=>0,2=>0,3=>0,4=>0], 'timeliness' => [1=>0,2=>0,3=>0,4=>0]];
                 }
             }
         }
@@ -106,8 +111,8 @@ class MporExcelExportController extends Controller
                 $row['qty_total']  = $qtyTotal;
                 $row['qual_avg']   = $qtyTotal > 0 ? round(array_sum($row['quality'])    / $qtyTotal, 2) : 0;
                 $row['time_avg']   = $qtyTotal > 0 ? round(array_sum($row['timeliness']) / $qtyTotal, 2) : 0;
-                $row['qual_w']     = array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['quality'],    $row['qty']);
-                $row['time_w']     = array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['timeliness'], $row['qty']);
+                $row['qual_w']     = array_map(fn($v) => round($v, 1), $row['quality']);
+                $row['time_w']     = array_map(fn($v) => round($v, 1), $row['timeliness']);
             }
             unset($row);
         }
@@ -429,16 +434,16 @@ class MporExcelExportController extends Controller
         $ws->setCellValue("E{$r}", $row['qty'][4] ?: 0);
         $ws->setCellValue("F{$r}", $row['qty_total'] ?: 0);
         // Quality W1-4 (per-week avg) + Total avg
-        $ws->setCellValue("G{$r}", $row['qual_w'][0] ?: 0);
-        $ws->setCellValue("H{$r}", $row['qual_w'][1] ?: 0);
-        $ws->setCellValue("I{$r}", $row['qual_w'][2] ?: 0);
-        $ws->setCellValue("J{$r}", $row['qual_w'][3] ?: 0);
+        $ws->setCellValue("G{$r}", $row['qual_w'][1] ?: 0);
+        $ws->setCellValue("H{$r}", $row['qual_w'][2] ?: 0);
+        $ws->setCellValue("I{$r}", $row['qual_w'][3] ?: 0);
+        $ws->setCellValue("J{$r}", $row['qual_w'][4] ?: 0);
         $ws->setCellValue("K{$r}", $row['qual_avg'] ?: 0);
         // Timeliness W1-4 + Total avg
-        $ws->setCellValue("L{$r}", $row['time_w'][0] ?: 0);
-        $ws->setCellValue("M{$r}", $row['time_w'][1] ?: 0);
-        $ws->setCellValue("N{$r}", $row['time_w'][2] ?: 0);
-        $ws->setCellValue("O{$r}", $row['time_w'][3] ?: 0);
+        $ws->setCellValue("L{$r}", $row['time_w'][1] ?: 0);
+        $ws->setCellValue("M{$r}", $row['time_w'][2] ?: 0);
+        $ws->setCellValue("N{$r}", $row['time_w'][3] ?: 0);
+        $ws->setCellValue("O{$r}", $row['time_w'][4] ?: 0);
         $ws->setCellValue("P{$r}", $row['time_avg'] ?: 0);
 
         $ws->getStyle("A{$r}:P{$r}")->applyFromArray([

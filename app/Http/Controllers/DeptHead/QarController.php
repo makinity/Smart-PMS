@@ -321,9 +321,9 @@ class QarController extends Controller
                     'title'      => $row['title'],
                     'qty'        => $row['qty'],
                     'qty_total'  => $qtyTotal,
-                    'quality'    => array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['quality'], $row['qty']),
+                    'quality'    => array_map(fn($v) => round($v, 1), $row['quality']),
                     'qual_avg'   => $qtyTotal > 0 ? round(array_sum($row['quality']) / $qtyTotal, 2) : 0,
-                    'timeliness' => array_map(fn($v, $q) => $q > 0 ? round($v / $q, 1) : 0, $row['timeliness'], $row['qty']),
+                    'timeliness' => array_map(fn($v) => round($v, 1), $row['timeliness']),
                     'time_avg'   => $qtyTotal > 0 ? round(array_sum($row['timeliness']) / $qtyTotal, 2) : 0,
                 ];
             }
