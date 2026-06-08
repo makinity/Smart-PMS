@@ -35,6 +35,7 @@ export default function Index() {
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
     const [saving, setSaving]     = useState(false);
+    const [selectedEmp, setSelectedEmp] = useState(null);
 
     const status   = submission?.status ?? 'draft';
     const sc       = STATUS_CFG[status] ?? STATUS_CFG.draft;
@@ -166,7 +167,10 @@ export default function Index() {
                             </thead>
                             <tbody>
                                 {employees.map(emp => (
-                                    <tr key={emp.id} style={{ borderBottom:'1px solid var(--admin-border)' }}>
+                                    <tr key={emp.id} onClick={() => setSelectedEmp(emp)}
+                                        style={{ borderBottom:'1px solid var(--admin-border)', cursor:'pointer', transition:'background 0.15s' }}
+                                        onMouseEnter={e => e.currentTarget.style.background='var(--admin-bg-secondary)'}
+                                        onMouseLeave={e => e.currentTarget.style.background=''}>
                                         <td style={{ padding:'0.6rem 1rem' }}>
                                             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                                                 <div style={{ width:28, height:28, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.62rem', fontWeight:700, flexShrink:0 }}>
@@ -191,7 +195,8 @@ export default function Index() {
                     {/* Mobile cards */}
                     <div className="mob-list">
                         {employees.map(emp => (
-                            <div key={emp.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.7rem 1rem', borderBottom:'1px solid var(--admin-border)' }}>
+                            <div key={emp.id} onClick={() => setSelectedEmp(emp)}
+                                style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.7rem 1rem', borderBottom:'1px solid var(--admin-border)', cursor:'pointer' }}>
                                 <div>
                                     <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>{emp.name}</div>
                                     <div style={{ fontSize:'0.72rem', marginTop:2, color: emp.released ? adjColor(emp.final_rating) : 'var(--admin-text-muted)' }}>
@@ -292,6 +297,61 @@ export default function Index() {
                                 {saving ? 'Submitting…' : 'Confirm Submit'}
                             </button>
                         </div>
+                    </div>
+                </>
+            )}
+
+            {/* Employee Detail Modal */}
+            {selectedEmp && (
+                <>
+                    <div onClick={() => setSelectedEmp(null)} style={{ position:'fixed', inset:0, zIndex:1200, background:'rgba(0,0,0,0.55)' }} />
+                    <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', zIndex:1201,
+                        background:'var(--admin-card)', borderRadius:'var(--admin-radius)', border:'1px solid var(--admin-border-strong)',
+                        boxShadow:'var(--admin-shadow)', width:'90%', maxWidth:420, padding:'1.75rem' }}>
+                        {/* Close */}
+                        <button onClick={() => setSelectedEmp(null)} style={{ position:'absolute', top:12, right:14, background:'none', border:'none', fontSize:'1.2rem', cursor:'pointer', color:'var(--admin-text-muted)' }}>×</button>
+
+                        {/* Profile */}
+                        <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginBottom:'1.5rem' }}>
+                            {selectedEmp.avatar
+                                ? <img src={selectedEmp.avatar} alt={selectedEmp.name} style={{ width:64, height:64, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                                : <div style={{ width:64, height:64, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.3rem', fontWeight:800, flexShrink:0 }}>
+                                    {selectedEmp.name?.slice(0,2).toUpperCase()}
+                                  </div>}
+                            <div>
+                                <div style={{ fontWeight:800, fontSize:'1rem', color:'var(--admin-text-primary)' }}>{selectedEmp.name}</div>
+                                <div style={{ fontSize:'0.78rem', color:'var(--admin-text-muted)', marginTop:2 }}>{selectedEmp.position}</div>
+                                <div style={{ marginTop:5 }}>
+                                    {selectedEmp.released
+                                        ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(74,222,128,0.12)', color:'#4ade80' }}>✓ Released</span>
+                                        : <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(245,158,11,0.12)', color:'#f59e0b' }}>⏳ Pending</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scores */}
+                        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
+                            {/* System Score */}
+                            <div style={{ padding:'1rem', borderRadius:10, background:'var(--admin-bg-secondary)', border:'1px solid var(--admin-border)', textAlign:'center' }}>
+                                <div style={{ fontSize:'0.6rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-text-muted)', marginBottom:8 }}>System Score</div>
+                                <ScoreRing score={selectedEmp.system_score ?? 0} size={72} />
+                                <div style={{ marginTop:6, fontSize:'0.75rem', fontWeight:600, color:adjColor(selectedEmp.system_score) }}>{adjLabel(selectedEmp.system_score)}</div>
+                            </div>
+                            {/* PMT Final Rating */}
+                            <div style={{ padding:'1rem', borderRadius:10, background:'var(--admin-bg-secondary)', border:'1px solid var(--admin-border)', textAlign:'center' }}>
+                                <div style={{ fontSize:'0.6rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-text-muted)', marginBottom:8 }}>PMT Final Rating</div>
+                                <ScoreRing score={selectedEmp.final_rating ?? 0} size={72} />
+                                <div style={{ marginTop:6, fontSize:'0.75rem', fontWeight:600, color:adjColor(selectedEmp.final_rating) }}>{selectedEmp.adjectival ?? (selectedEmp.released ? '—' : 'Not yet released')}</div>
+                            </div>
+                        </div>
+
+                        {/* PMT Remarks */}
+                        {selectedEmp.pmt_remarks && (
+                            <div style={{ marginTop:'0.75rem', padding:'0.75rem', borderRadius:8, background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.2)', borderLeft:'3px solid var(--admin-accent)' }}>
+                                <div style={{ fontSize:'0.6rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-accent)', marginBottom:4 }}>PMT Remarks</div>
+                                <div style={{ fontSize:'0.82rem', color:'var(--admin-text-primary)', lineHeight:1.5, fontStyle:'italic' }}>"{selectedEmp.pmt_remarks}"</div>
+                            </div>
+                        )}
                     </div>
                 </>
             )}

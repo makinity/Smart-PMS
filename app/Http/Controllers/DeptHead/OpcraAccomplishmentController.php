@@ -32,12 +32,19 @@ class OpcraAccomplishmentController extends Controller
             ->where('performance_period_id', $period->id)
             ->get()->keyBy('employee_id');
 
+        $ipcrMap = \App\Models\Ipcr::where('performance_period_id', $period->id)
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->get()->keyBy('employee_id');
+
         $employeeData = $employees->map(fn($emp) => [
             'id'           => $emp->id,
             'name'         => $emp->name,
             'position'     => $emp->position ?? '—',
+            'avatar'       => $emp->profile_photo_url,
+            'system_score' => $ipcrMap->get($emp->id)?->final_score ? (float) $ipcrMap->get($emp->id)->final_score : null,
             'final_rating' => $subMap->get($emp->id)?->final_rating,
             'adjectival'   => $subMap->get($emp->id)?->final_adjectival_rating,
+            'pmt_remarks'  => $subMap->get($emp->id)?->pmt_remarks,
             'status'       => $subMap->get($emp->id)?->status ?? 'not_submitted',
             'released'     => $subMap->get($emp->id)?->status === 'released_by_pmt',
         ])->values();

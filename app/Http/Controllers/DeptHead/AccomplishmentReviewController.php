@@ -130,36 +130,18 @@ class AccomplishmentReviewController extends Controller
     {
         $ipcr = Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)
-            ->with('items.indicator')
             ->first();
 
-        if (!$ipcr || $ipcr->items->isEmpty()) return 0.0;
+        if (!$ipcr) return 0.0;
 
-        $period  = $accomplishment->period;
-        $totalA  = 0;
-        $count   = 0;
+        // Use the system-computed final score saved on the IPCR
+        $score = (float) ($ipcr->final_score ?? 0);
 
-        foreach ($ipcr->items as $item) {
-            $entries = OrsEntry::where('ipcr_item_id', $item->id)
-                ->where('status', 'rated')->where('quantity', '>', 0)
-                ->whereBetween('work_date', [$period->start_date, $period->end_date])
-                ->with('monitoring')->get();
-
-            if ($entries->isEmpty()) continue;
-
-            $totalQty = $entries->sum('quantity');
-            $qualPts  = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->quality_rating ?? 0));
-            $timePts  = $entries->sum(fn($e) => $e->quantity * ($e->monitoring->first()?->timeliness_rating ?? 0));
-            $Q = $totalQty > 0 ? $qualPts / $totalQty : 0;
-            $T = $totalQty > 0 ? $timePts / $totalQty : 0;
-            $target = is_numeric($item->indicator?->target_quantity) ? (float) $item->indicator->target_quantity : null;
-            $E = ($target && $target > 0) ? min(5.0, ($totalQty / $target) * 5) : $Q;
-
-            $totalA += ($Q + $E + $T) / 3;
-            $count++;
+        if ($score <= 0) {
+            $score = app(\App\Services\PerformanceRatingService::class)->calculateComputedScore($ipcr);
         }
 
-        return $count > 0 ? round($totalA / $count, 2) : 0.0;
+        return round($score, 2);
     }
 
     private function toAdjectival(float $score): string
