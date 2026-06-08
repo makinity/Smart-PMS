@@ -95,7 +95,9 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::get('/employee-calibration', [\App\Http\Controllers\Pmt\EmployeeCalibrationController::class, 'index'])->name('employee-calibration.index');
     Route::get('/employee-calibration/{id}', fn () => \Inertia\Inertia::render('Pmt/EmployeeCalibration/Show'))->name('employee-calibration.show');
     Route::get('/development-planning', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'index'])->name('development-planning.index');
-    Route::get('/development-planning/{id}', fn () => \Inertia\Inertia::render('Pmt/DevelopmentPlanning/Show'))->name('development-planning.show');
+    Route::get('/development-planning/{ipcr}', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'show'])->name('development-planning.show');
+    Route::post('/development-planning/{ipcr}', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'storeOrUpdate'])->name('development-planning.save');
+    Route::post('/development-planning/{plan}/submit-to-ld', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'submitToLd'])->name('development-planning.submit-to-ld');
     Route::get('/top-performers', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'index'])->name('top-performers.index');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Pmt/Profile'))->name('profile');
 });

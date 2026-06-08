@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
 const RATING_CFG = {
@@ -115,6 +115,7 @@ export default function Index() {
                             const cfg = RATING_CFG[p.rating] ?? { color:'#ef4444', bg:'rgba(239,68,68,0.08)' };
                             return (
                                 <div key={p.ipcr_id}
+                                    onClick={() => router.visit(`/pmt/development-planning/${p.ipcr_id}`)}
                                     style={{ ...card, padding:'1.1rem', borderLeft:`4px solid ${cfg.color}`, cursor:'pointer',
                                         transition:'box-shadow 0.15s, transform 0.15s', position:'relative' }}
                                     onMouseEnter={e => { e.currentTarget.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'; e.currentTarget.style.transform='translateY(-2px)'; }}
@@ -143,13 +144,20 @@ export default function Index() {
                                     <div style={{ display:'flex', alignItems:'center', gap:'0.75rem',
                                         paddingTop:'0.75rem', borderTop:'1px solid var(--admin-border)' }}>
                                         <ScoreRing score={p.score} rating={p.rating} size={52} />
-                                        <div>
+                                        <div style={{ flex:1, minWidth:0 }}>
                                             <div style={{ fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase',
                                                 letterSpacing:'0.06em', color:'var(--admin-text-muted)' }}>Performance Score</div>
                                             <div style={{ fontWeight:800, fontSize:'0.88rem', color:cfg.color, marginTop:2 }}>
                                                 {cfg.icon} {p.rating}
                                             </div>
                                         </div>
+                                        {p.plan_status && (
+                                            <span style={{ fontSize:'0.6rem', fontWeight:700, padding:'2px 8px', borderRadius:99, flexShrink:0,
+                                                background: p.plan_status === 'submitted_to_ld' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                                                color: p.plan_status === 'submitted_to_ld' ? '#10b981' : '#f59e0b' }}>
+                                                {p.plan_status_label}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             );

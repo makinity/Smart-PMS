@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
-function getAiData(employee) {
-    const load = employee._simulatedLoad ?? (employee.id * 17 % 80 + 15);
-    const successProb = Math.max(10, 100 - load);
-    const risk = successProb >= 75 ? 'Low' : successProb >= 50 ? 'Medium' : 'High';
+
+// Map the backend AI prediction (App\Services\AssignmentAi) to the shape the UI uses.
+// The numbers are computed server-side — see SimulatedAssignmentPredictor (prototype)
+// or MlAssignmentPredictor (real model) in Laravel.
+function toAiData(employee) {
+    const p = employee.ai_prediction ?? {};
     return {
-        load,
-        successProb,
-        risk,
-        status: load >= 90 ? 'Critical' : load >= 65 ? 'Busy' : 'Available',
-        warning: successProb < 50,
+        load: p.load ?? 0,
+        successProb: p.success_prob ?? 0,
+        risk: p.risk ?? 'High',
+        status: p.status ?? 'Available',
+        warning: p.warning ?? false,
     };
 }
 
@@ -24,10 +26,10 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
     const [search, setSearch]     = useState('');
     const [warning, setWarning]   = useState(null); // { employee } — pending high-load selection
 
-    // Attach simulated AI load to each employee (stable per modal open)
+    // Map the backend AI prediction onto each employee for rendering
     const enriched = useMemo(() => employees.map(e => ({
         ...e,
-        _ai: getAiData(e),
+        _ai: toAiData(e),
     })), [employees]);
 
     const filtered = enriched.filter(e =>

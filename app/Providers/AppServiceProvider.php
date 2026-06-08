@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Services\AssignmentAi\AssignmentPredictorInterface;
+use App\Services\AssignmentAi\SimulatedAssignmentPredictor;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Assignment suitability predictor. Swap SimulatedAssignmentPredictor for
+        // MlAssignmentPredictor once the model and datasets are ready.
+        $this->app->bind(AssignmentPredictorInterface::class, SimulatedAssignmentPredictor::class);
     }
 
     /**

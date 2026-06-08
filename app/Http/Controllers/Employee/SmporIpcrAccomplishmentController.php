@@ -66,11 +66,16 @@ class SmporIpcrAccomplishmentController extends Controller
 
         $mpors = $this->resolveMpors($user, $period, $submission);
 
+        $ipcr = Ipcr::where('employee_id', $user->id)
+            ->where('performance_period_id', $period->id)
+            ->with('items.indicator.uwpMfo.uwpFunction')
+            ->first();
+
         return Inertia::render('Employee/Accomplishment/SmporPreview', [
             'period'     => ['id' => $period->id, 'name' => $period->name],
             'employee'   => ['name' => $user->name, 'office' => $user->office?->name],
             'source'     => $submission?->dataset_source ?? $mpors['source'],
-            'table'      => $this->buildSmporTable($mpors['ids'], $period),
+            'table'      => $this->buildSmporTable($mpors['ids'], $period, $ipcr),
         ]);
     }
 
@@ -236,9 +241,9 @@ class SmporIpcrAccomplishmentController extends Controller
         ];
     }
 
-    private function buildSmporTable(array $mporIds, $period): array
+    private function buildSmporTable(array $mporIds, $period, ?Ipcr $ipcr = null): array
     {
-        if (empty($mporIds)) return ['months' => [], 'sections' => []];
+        if (empty($mporIds) && !$ipcr) return ['months' => [], 'sections' => []];
 
         // Get period months
         $start  = $period->start_date->copy()->startOfMonth();
@@ -249,7 +254,7 @@ class SmporIpcrAccomplishmentController extends Controller
         }
 
         // All rated ORS entries for these MPORs' employees in this period
-        $entries = OrsEntry::whereIn('ipcr_item_id', function ($q) use ($mporIds) {
+        $entries = empty($mporIds) ? collect() : OrsEntry::whereIn('ipcr_item_id', function ($q) use ($mporIds) {
                 $q->select('ipcr_items.id')->from('ipcr_items')
                   ->join('ipcrs', 'ipcrs.id', '=', 'ipcr_items.ipcr_id')
                   ->join('mpors', 'mpors.employee_id', '=', 'ipcrs.employee_id')
@@ -261,8 +266,25 @@ class SmporIpcrAccomplishmentController extends Controller
             ->with(['ipcrItem.indicator.uwpMfo.uwpFunction', 'monitoring' => fn($q) => $q->latest()])
             ->get();
 
-        // Group by function_type → output_title → month
+        // Pre-seed all assigned MFOs from IPCR with zero data
         $sections = [];
+        if ($ipcr) {
+            foreach ($ipcr->items as $item) {
+                $fn  = $item->indicator?->uwpMfo?->uwpFunction;
+                $mfo = $item->indicator?->uwpMfo;
+                if (!$fn || !$mfo) continue;
+                $fnType      = strtolower($fn->name);
+                $outputTitle = $mfo->title;
+                if (!isset($sections[$fnType])) {
+                    $sections[$fnType] = [];
+                }
+                if (!isset($sections[$fnType][$outputTitle])) {
+                    $sections[$fnType][$outputTitle] = [];
+                }
+            }
+        }
+
+        // Group by function_type → output_title → month
         foreach ($entries as $entry) {
             $indicator  = $entry->ipcrItem?->indicator;
             $mfo        = $indicator?->uwpMfo;

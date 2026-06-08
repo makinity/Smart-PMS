@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'lnd' => [
+        'base_url' => env('LND_API_BASE_URL', ''),
+        'token' => env('LND_API_TOKEN', ''),
+        'timeout' => env('LND_API_TIMEOUT', 20),
+    ],
+
 ];

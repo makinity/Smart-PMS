@@ -56,7 +56,7 @@ class AccomplishmentController extends Controller
 
         return Inertia::render('Supervisor/Accomplishment/Show', [
             'submission' => $this->formatSubmission($accomplishment),
-            'smporTable' => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period) : null,
+            'smporTable' => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period, $ipcr) : null,
             'ipcrSections' => $ipcr && $period ? $this->buildIpcrSections($ipcr, $period) : [],
             'ipcrMeta'   => $ipcr ? $this->buildIpcrMeta($ipcr) : null,
         ]);
@@ -135,9 +135,9 @@ class AccomplishmentController extends Controller
         ];
     }
 
-    private function buildSmporTable(array $mporIds, $period): array
+    private function buildSmporTable(array $mporIds, $period, ?\App\Models\Ipcr $ipcr = null): array
     {
-        if (empty($mporIds)) return ['months' => [], 'sections' => []];
+        if (empty($mporIds) && !$ipcr) return ['months' => [], 'sections' => []];
 
         $start  = $period->start_date->copy()->startOfMonth();
         $end    = $period->end_date->copy()->endOfMonth();
@@ -146,7 +146,7 @@ class AccomplishmentController extends Controller
             $months[] = $m->format('M');
         }
 
-        $entries = OrsEntry::whereIn('ipcr_item_id', function ($q) use ($mporIds) {
+        $entries = empty($mporIds) ? collect() : OrsEntry::whereIn('ipcr_item_id', function ($q) use ($mporIds) {
                 $q->select('ipcr_items.id')->from('ipcr_items')
                   ->join('ipcrs', 'ipcrs.id', '=', 'ipcr_items.ipcr_id')
                   ->join('mpors', 'mpors.employee_id', '=', 'ipcrs.employee_id')
@@ -158,6 +158,18 @@ class AccomplishmentController extends Controller
             ->get();
 
         $sections = [];
+        if ($ipcr) {
+            $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
+            foreach ($ipcr->items as $item) {
+                $fn  = $item->indicator?->uwpMfo?->uwpFunction;
+                $mfo = $item->indicator?->uwpMfo;
+                if (!$fn || !$mfo) continue;
+                $fnType = strtolower($fn->name);
+                if (!isset($sections[$fnType][$mfo->title])) {
+                    $sections[$fnType][$mfo->title] = [];
+                }
+            }
+        }
         foreach ($entries as $entry) {
             $mfo        = $entry->ipcrItem?->indicator?->uwpMfo;
             $fn         = $mfo?->uwpFunction;
