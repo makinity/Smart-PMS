@@ -72,15 +72,20 @@ class MporController extends Controller
         if ($ipcr) {
             $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
             foreach ($ipcr->items as $item) {
-                $fn = $item->indicator?->uwpMfo?->uwpFunction;
-                if (! $fn) continue;
-                $key = $fn->function_type;
+                $fn  = $item->indicator?->uwpMfo?->uwpFunction;
+                $mfo = $item->indicator?->uwpMfo;
+                if (! $fn || ! $mfo) continue;
+                $key    = $fn->function_type;
+                $rowKey = strtolower(trim($mfo->title));
                 if (! isset($sections[$key])) {
-                    $sections[$key] = [
-                        'key'    => $key,
-                        'label'  => $fn->name,
-                        'weight' => $fn->weight_percent,
-                        'rows'   => [],
+                    $sections[$key] = ['key' => $key, 'label' => $fn->name, 'weight' => $fn->weight_percent, 'rows' => []];
+                }
+                if (! isset($sections[$key]['rows'][$rowKey])) {
+                    $sections[$key]['rows'][$rowKey] = [
+                        'title'      => $mfo->title,
+                        'qty'        => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                        'quality'    => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+                        'timeliness' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
                     ];
                 }
             }
