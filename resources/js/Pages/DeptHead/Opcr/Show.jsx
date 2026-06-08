@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 import { useToast } from '@/Components/Snackbar';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import AssigneesModal from '@/Components/AssigneesModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -31,10 +32,6 @@ function StatusBadge({ status }) {
         </span>
     );
 }
-
-const COLORS   = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4'];
-const colorFor = name => COLORS[(name ?? '').charCodeAt(0) % COLORS.length];
-const initials = name => name ? name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : '?';
 
 export default function Show() {
     const { opcr, uwps = [], functions: fns = [] } = usePage().props;
@@ -200,7 +197,7 @@ export default function Show() {
                                     <button key={u.id}
                                         style={{ ...s.uwpItem, ...(activeUwpId === u.id ? s.uwpItemActive : {}) }}
                                         onClick={() => setActiveUwpId(activeUwpId === u.id ? null : u.id)}>
-                                        <div style={{ ...s.uwpAvatar, background: colorFor(u.supervisor) }}>{initials(u.supervisor)}</div>
+                                        <img src={avatarSrc(u.supervisor_avatar)} onError={onAvatarError} alt={u.supervisor} style={{ ...s.uwpAvatar, objectFit: 'cover' }} />
                                         <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                                             <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.supervisor}</div>
                                             {u.mfo_labels && <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.mfo_labels}</div>}
@@ -289,7 +286,7 @@ export default function Show() {
                                 <button key={u.id}
                                     style={{ ...sm.uwpRow, ...(activeUwpId === u.id ? sm.uwpRowActive : {}) }}
                                     onClick={() => { setActiveUwpId(activeUwpId === u.id ? null : u.id); setContribOpen(false); }}>
-                                    <div style={{ ...sm.avatar, background: colorFor(u.supervisor) }}>{initials(u.supervisor)}</div>
+                                    <img src={avatarSrc(u.supervisor_avatar)} onError={onAvatarError} alt={u.supervisor} style={{ ...sm.avatar, objectFit: 'cover' }} />
                                     <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                                         <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{u.supervisor}</div>
                                         {u.mfo_labels && <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.mfo_labels}</div>}
@@ -314,6 +311,7 @@ export default function Show() {
 
 function SiCard({ si, index }) {
     const [qetOpen, setQetOpen] = useState(false);
+    const [assigneesOpen, setAssigneesOpen] = useState(false);
     const budget    = si.allotted_budget ? parseFloat(si.allotted_budget) : 0;
     const assignees = si.assignments ?? [];
     const hasQet    = si.qetStandards?.length > 0;
@@ -330,7 +328,7 @@ function SiCard({ si, index }) {
                 {assignees.length > 0 && (
                     <>
                         <span style={s.metaDot} />
-                        <div style={{ display: 'flex' }}>
+                        <button type="button" onClick={() => setAssigneesOpen(true)} style={s.assigneeStack} title="View assigned employees">
                             {assignees.slice(0, 3).map((a, i) => (
                                 <img key={i} src={avatarSrc(a.employee?.avatar)} onError={onAvatarError} alt={a.employee?.name}
                                     style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
@@ -340,7 +338,7 @@ function SiCard({ si, index }) {
                                     +{assignees.length - 3}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     </>
                 )}
             </div>
@@ -365,6 +363,14 @@ function SiCard({ si, index }) {
                         </div>
                     )}
                 </div>
+            )}
+
+            {assigneesOpen && (
+                <AssigneesModal
+                    assignees={assignees}
+                    subtitle={si.indicator_text}
+                    onClose={() => setAssigneesOpen(false)}
+                />
             )}
         </div>
     );
@@ -419,6 +425,7 @@ const s = {
     siMeta:       { display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' },
     siBudget:     { display: 'flex', alignItems: 'center', fontSize: '0.82rem', color: 'var(--admin-text-muted)', fontFamily: 'monospace' },
     metaDot:      { width: 4, height: 4, borderRadius: '50%', background: 'var(--admin-border-strong)', flexShrink: 0 },
+    assigneeStack:{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: '0.15rem 0.25rem 0.15rem 0.4rem', margin: 0, cursor: 'pointer', borderRadius: 999 },
     avatar:       { width: 26, height: 26, borderRadius: '50%', color: '#fff', fontSize: '0.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--admin-card)', marginLeft: -6, flexShrink: 0, overflow: 'hidden' },
 
     qetToggle:    { display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: '1px solid var(--admin-border)', borderRadius: 6, padding: '0.35rem 0.75rem', color: '#4ade80', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer', width: '100%' },

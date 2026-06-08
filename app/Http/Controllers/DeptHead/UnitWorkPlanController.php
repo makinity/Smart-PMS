@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers\DeptHead;
 
+use App\Http\Controllers\Concerns\FormatsAssignedEmployees;
 use App\Http\Controllers\Controller;
 use App\Models\Opcr;
 use App\Models\PerformancePeriod;
 use App\Models\UnitWorkPlan;
+use App\Services\AssignmentAi\AssignmentPredictorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class UnitWorkPlanController extends Controller
 {
+    use FormatsAssignedEmployees;
+
+    public function __construct(private readonly AssignmentPredictorInterface $assignmentPredictor) {}
+
     public function index()
     {
         $user = Auth::user();
@@ -78,7 +84,7 @@ class UnitWorkPlanController extends Controller
                             'standard_text' => $q->standard_text,
                         ]),
                         'assignments' => $si->assignments->map(fn ($a) => [
-                            'employee' => ['id' => $a->employee?->id, 'name' => $a->employee?->name, 'avatar' => $a->employee?->profile_photo_url],
+                            'employee' => $this->formatAssignedEmployee($a->employee, $si->id),
                         ]),
                     ]),
                 ]),

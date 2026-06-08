@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Pmt;
 
+use App\Http\Controllers\Concerns\FormatsAssignedEmployees;
 use App\Http\Controllers\Controller;
 use App\Models\Ipcr;
 use App\Models\Opcr;
+use App\Services\AssignmentAi\AssignmentPredictorInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class OpcrController extends Controller
 {
+    use FormatsAssignedEmployees;
+
+    public function __construct(private readonly AssignmentPredictorInterface $assignmentPredictor) {}
+
     public function index()
     {
         $opcrs = Opcr::with(['office', 'period', 'uwps'])
@@ -58,7 +64,7 @@ class OpcrController extends Controller
                             'target_timeline' => $si->target_timeline,
                             'supervisor' => $uwp->creator?->name,
                             'assignments' => $si->assignments->map(fn ($a) => [
-                                'employee' => ['id' => $a->employee?->id, 'name' => $a->employee?->name, 'avatar' => $a->employee?->profile_photo_url],
+                                'employee' => $this->formatAssignedEmployee($a->employee, $si->id),
                             ])->values(),
                             'qetStandards' => $si->qetStandards->map(fn ($q) => [
                                 'id' => $q->id, 'dimension' => $q->dimension, 'rating' => $q->rating, 'standard_text' => $q->standard_text,
@@ -85,6 +91,7 @@ class OpcrController extends Controller
             'uwps' => $opcr->uwps->map(fn ($u) => [
                 'id' => $u->id,
                 'supervisor' => $u->creator?->name ?? '—',
+                'supervisor_avatar' => $u->creator?->profile_photo_url,
                 'status' => $u->status,
                 'mfo_labels' => $u->uwpFunctions->flatMap(fn ($f) => $f->mfos->pluck('title'))->take(3)->implode(' · '),
             ]),

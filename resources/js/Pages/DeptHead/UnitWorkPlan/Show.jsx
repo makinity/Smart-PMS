@@ -3,6 +3,7 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import AssigneesModal from '@/Components/AssigneesModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -267,16 +268,10 @@ export default function Show() {
 
 function IndicatorCard({ si, index }) {
     const [qetOpen, setQetOpen] = useState(false);
+    const [assigneesOpen, setAssigneesOpen] = useState(false);
     const hasQet    = si.qetStandards?.length > 0;
     const assignees = si.assignments ?? [];
     const budget    = si.allotted_budget ? parseFloat(si.allotted_budget) : 0;
-
-    const COLORS   = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4'];
-    const colorFor = name => COLORS[(name ?? '').charCodeAt(0) % COLORS.length];
-    function initials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    }
 
     return (
         <div style={s.siCard} className="si-card">
@@ -290,7 +285,7 @@ function IndicatorCard({ si, index }) {
                 {assignees.length > 0 && (
                     <>
                         <span style={s.metaDot} />
-                        <div style={{ display: 'flex' }}>
+                        <button type="button" onClick={() => setAssigneesOpen(true)} style={s.assigneeStack} title="View assigned employees">
                             {assignees.slice(0, 3).map((a, i) => (
                                 <img key={i} src={avatarSrc(a.employee?.avatar)} onError={onAvatarError} alt={a.employee?.name}
                                     style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
@@ -300,7 +295,7 @@ function IndicatorCard({ si, index }) {
                                     +{assignees.length - 3}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     </>
                 )}
             </div>
@@ -325,6 +320,14 @@ function IndicatorCard({ si, index }) {
                         </div>
                     )}
                 </div>
+            )}
+
+            {assigneesOpen && (
+                <AssigneesModal
+                    assignees={assignees}
+                    subtitle={si.indicator_text}
+                    onClose={() => setAssigneesOpen(false)}
+                />
             )}
         </div>
     );
@@ -369,6 +372,7 @@ const s = {
     siMeta:         { display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' },
     siBudget:       { display: 'flex', alignItems: 'center', fontSize: '0.82rem', color: 'var(--admin-text-muted)', fontFamily: 'monospace' },
     metaDot:        { width: 4, height: 4, borderRadius: '50%', background: 'var(--admin-border-strong)', flexShrink: 0 },
+    assigneeStack:  { display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: '0.15rem 0.25rem 0.15rem 0.4rem', margin: 0, cursor: 'pointer', borderRadius: 999 },
     avatar:         { width: 26, height: 26, borderRadius: '50%', color: '#fff', fontSize: '0.6rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--admin-card)', marginLeft: -6, flexShrink: 0, overflow: 'hidden' },
 
     qetToggle:      { display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: '1px solid var(--admin-border)', borderRadius: 6, padding: '0.35rem 0.75rem', color: '#4ade80', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer', width: '100%' },
