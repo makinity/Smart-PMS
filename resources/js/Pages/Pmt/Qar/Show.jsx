@@ -99,10 +99,98 @@ function AnnexCards({ rows }) {
     );
 }
 
+// ── Return Modal ──────────────────────────────────────────────────────────────
+function ReturnModal({ onClose, onConfirm, loading }) {
+    const [remarks, setRemarks] = useState('');
+    return (
+        <>
+            {/* Backdrop */}
+            <div onClick={onClose} style={{
+                position: 'fixed', inset: 0, zIndex: 1100,
+                background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+            }} />
+            {/* Panel */}
+            <div style={{
+                position: 'fixed', top: '50%', left: '50%',
+                transform: 'translate(-50%,-50%)', zIndex: 1101,
+                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)',
+                border: '1px solid var(--admin-border-strong)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+                width: '90%', maxWidth: 480,
+            }}>
+                {/* Header */}
+                <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                            background: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.5">
+                                <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>
+                                Return to Dept Head
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: 1 }}>
+                                The Department Head will be notified to revise and resubmit the QAR.
+                            </div>
+                        </div>
+                        <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none',
+                            cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem', padding: '0.2rem', lineHeight: 1 }}>
+                            <i className="bi bi-x-lg" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '1rem 1.25rem' }}>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-muted)',
+                        display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        Remarks <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                    </label>
+                    <textarea
+                        value={remarks}
+                        onChange={e => setRemarks(e.target.value)}
+                        placeholder="Provide a reason for returning this QAR..."
+                        maxLength={2000}
+                        rows={4}
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.85rem',
+                            borderRadius: 10, border: '1px solid var(--admin-border-strong)',
+                            background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)',
+                            fontSize: '0.85rem', resize: 'vertical', outline: 'none',
+                            fontFamily: 'inherit', lineHeight: 1.55, transition: 'border-color 0.15s' }}
+                        onFocus={e => e.target.style.borderColor = '#f87171'}
+                        onBlur={e => e.target.style.borderColor = 'var(--admin-border-strong)'}
+                    />
+                    <div style={{ textAlign: 'right', fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>
+                        {remarks.length}/2000
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '0.75rem 1.25rem 1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
+                    <button onClick={onClose} style={{ ...btnSecondary }}>
+                        Cancel
+                    </button>
+                    <button onClick={() => onConfirm(remarks)} disabled={!!loading}
+                        style={{ ...btnDanger, opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                        {loading === 'return' ? (
+                            <><i className="bi bi-hourglass-split" /> Returning…</>
+                        ) : (
+                            <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                            </svg> Confirm Return</>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
 function ActionPanel({ qar }) {
-    const [remarks, setRemarks]     = useState('');
-    const [showReturn, setShowReturn] = useState(false);
-    const [loading, setLoading]     = useState(null);
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [loading, setLoading]                = useState(null);
     const toast   = useToast();
     const confirm = useConfirm();
 
@@ -110,16 +198,18 @@ function ActionPanel({ qar }) {
         setLoading(action);
         router.post(`/pmt/qar/${qar.id}/${action}`, data, {
             preserveScroll: true,
-            onSuccess: () => toast(action === 'approve' ? 'QAR approved.' : 'QAR returned to Dept Head.', action === 'return' ? 'error' : 'submitted'),
-            onError:   () => toast('Action failed.', 'error'),
-            onFinish:  () => setLoading(null),
+            onSuccess: () => {
+                toast(action === 'approve' ? 'QAR approved.' : 'QAR returned to Dept Head.', action === 'return' ? 'error' : 'submitted');
+                if (action === 'return') setShowReturnModal(false);
+            },
+            onError:  () => toast('Action failed.', 'error'),
+            onFinish: () => setLoading(null),
         });
     }
 
     if (qar.status === 'pmt_approved') {
         return (
             <div style={{ ...actionCard, borderLeft: '3px solid #22c55e' }}>
-                <p style={panelLabel}>Status</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <StatusBadge status="pmt_approved" />
                     {qar.validated_at && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>Validated by {qar.validated_by} · {qar.validated_at}</span>}
@@ -131,7 +221,6 @@ function ActionPanel({ qar }) {
     if (qar.status === 'returned') {
         return (
             <div style={{ ...actionCard, borderLeft: '3px solid #ef4444' }}>
-                <p style={panelLabel}>Status</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <StatusBadge status="returned" />
                     {qar.return_remarks && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>"{qar.return_remarks}"</span>}
@@ -140,33 +229,36 @@ function ActionPanel({ qar }) {
         );
     }
 
+    // submitted — right-aligned actions
     return (
-        <div style={{ ...actionCard, borderLeft: '3px solid var(--admin-accent)' }}>
-            <p style={panelLabel}>Actions</p>
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: showReturn ? '1rem' : 0 }}>
-                <button onClick={async () => { if (await confirm('Approve this QAR?')) post('approve'); }} disabled={!!loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    {loading === 'approve' ? 'Approving…' : 'Approve QAR'}
-                </button>
-                <button onClick={() => setShowReturn(v => !v)} disabled={!!loading} style={btnDanger}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-                    Return to Dept Head
-                </button>
-            </div>
-            {showReturn && (
-                <div style={{ marginTop: '0.75rem' }}>
-                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-muted)', display: 'block', marginBottom: '0.4rem' }}>Return Remarks (optional)</label>
-                    <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Reason for returning…" maxLength={2000} rows={3}
-                        style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }} />
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
-                        <button onClick={() => setShowReturn(false)} style={btnSecondary}>Cancel</button>
-                        <button onClick={async () => { if (await confirm('Return this QAR to the Department Head?')) post('return', { return_remarks: remarks }); }} disabled={!!loading} style={{ ...btnDanger, opacity: loading ? 0.7 : 1 }}>
-                            {loading === 'return' ? 'Returning…' : 'Confirm Return'}
-                        </button>
-                    </div>
+        <>
+            <div style={{ ...actionCard, borderLeft: '3px solid var(--admin-accent)' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => setShowReturnModal(true)} disabled={!!loading}
+                        style={{ ...btnDanger, opacity: loading ? 0.7 : 1 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+                        </svg>
+                        Return to Dept Head
+                    </button>
+                    <button onClick={async () => { if (await confirm('Approve this QAR?')) post('approve'); }}
+                        disabled={!!loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {loading === 'approve' ? 'Approving…' : 'Approve QAR'}
+                    </button>
                 </div>
+            </div>
+
+            {showReturnModal && (
+                <ReturnModal
+                    onClose={() => !loading && setShowReturnModal(false)}
+                    onConfirm={(remarks) => post('return', { return_remarks: remarks })}
+                    loading={loading}
+                />
             )}
-        </div>
+        </>
     );
 }
 

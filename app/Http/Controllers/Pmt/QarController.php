@@ -9,6 +9,7 @@ use App\Models\Office;
 use App\Models\OrsEntry;
 use App\Models\QarHeader;
 use App\Models\User;
+use App\Services\PerformanceRatingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -112,6 +113,23 @@ class QarController extends Controller
             'pmt_validated_at' => now(),
             'pmt_validated_by' => Auth::id(),
         ]);
+
+        // Calculate and save performance scores for all employees linked to this QAR
+        $ratingService = app(PerformanceRatingService::class);
+        $qar->load('mporLinks.mpor');
+        $employeeIds = $qar->mporLinks
+            ->map(fn($link) => $link->mpor?->employee_id)
+            ->filter()
+            ->unique();
+
+        foreach ($employeeIds as $employeeId) {
+            $ipcr = Ipcr::where('employee_id', $employeeId)
+                ->where('performance_period_id', $qar->performance_period_id)
+                ->first();
+            if ($ipcr) {
+                $ratingService->calculateAndSaveFinalScore($ipcr);
+            }
+        }
 
         // Notify dept head
         $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
