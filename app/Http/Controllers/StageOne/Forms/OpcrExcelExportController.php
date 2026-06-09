@@ -240,13 +240,17 @@ class OpcrExcelExportController extends Controller
         $r = $h3 + 1;
 
         // ── Build merged output data from OPCR UWPs ────────────────────────────
-        $byType = ['core' => [], 'support' => []];
+        $byType      = ['core' => [], 'support' => []];
+        $typeWeights = [];
 
         foreach ($opcr->uwps as $uwp) {
             $accountable = $uwp->creator?->name ?? '';
             foreach ($uwp->uwpFunctions as $fn) {
                 $type   = strtolower($fn->function_type ?? 'core');
                 $mfoKey = $fn->name;
+                if (!isset($typeWeights[$type])) {
+                    $typeWeights[$type] = (int) round((float) $fn->weight_percent);
+                }
                 if (!isset($byType[$type][$mfoKey])) {
                     $byType[$type][$mfoKey] = [];
                 }
@@ -340,8 +344,8 @@ class OpcrExcelExportController extends Controller
 
         // ── Footer summary rows ────────────────────────────────────────────────
         foreach ([
-            'Weighted Average Rating for Core Functions (80%)',
-            'Weighted Average Rating for Support Functions (20%)',
+            'Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)',
+            'Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)',
             'OVERALL RATING',
             'ADJECTIVAL RATING',
         ] as $label) {
