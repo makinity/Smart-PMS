@@ -112,7 +112,7 @@ export default function NotificationPanel() {
         <div className="np-wrap" ref={panelRef}>
             {/* ── Bell button ── */}
             <button
-                className="tb-notif-btn np-bell"
+                className="np-bell"
                 onClick={() => setOpen(v => !v)}
                 title="Notifications"
                 aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ''}`}
@@ -193,22 +193,38 @@ export default function NotificationPanel() {
                 /* ── wrapper ── */
                 .np-wrap { position: relative; }
 
-                /* ── bell: extends existing .tb-notif-btn ── */
-                .np-bell { position: relative; }
+                /* ── bell: self-contained button ── */
+                .np-bell {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background: var(--admin-card);
+                    border: 1px solid var(--admin-border);
+                    cursor: pointer;
+                    color: var(--admin-text-secondary);
+                    font-size: 0.85rem;
+                    transition: background 0.15s, color 0.15s;
+                    flex-shrink: 0;
+                }
+                .np-bell:hover { background: rgba(59,130,246,0.08); color: var(--admin-accent); }
 
                 .np-badge {
                     position: absolute;
-                    top: 4px;
-                    right: 4px;
-                    min-width: 16px;
-                    height: 16px;
+                    top: -2px;
+                    right: -2px;
+                    min-width: 15px;
+                    height: 15px;
                     padding: 0 3px;
                     border-radius: 8px;
                     background: #f43f5e;
                     color: #fff;
-                    font-size: 0.6rem;
+                    font-size: 0.58rem;
                     font-weight: 700;
-                    line-height: 16px;
+                    line-height: 15px;
                     text-align: center;
                     pointer-events: none;
                     border: 2px solid var(--admin-bg-primary);
