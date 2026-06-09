@@ -96,11 +96,34 @@ class SmporIpcrAccomplishmentController extends Controller
 
         abort_unless($ipcr, 404, 'No IPCR found.');
 
+        $sections = $this->buildIpcrSections($ipcr, $period);
+
+        // Compute per-function-type weighted average scores
+        $typeAratings = [];
+        foreach ($sections as $fn) {
+            $type = strtolower($fn['function_type'] ?? 'core');
+            $weight = (float) ($fn['weight'] ?? 0);
+            $aRatings = [];
+            foreach ($fn['mfos'] as $mfo) {
+                foreach ($mfo['indicators'] as $ind) {
+                    if ($ind['ratings']['A'] !== null) $aRatings[] = (float) $ind['ratings']['A'];
+                }
+            }
+            if (!empty($aRatings)) {
+                $avg = array_sum($aRatings) / count($aRatings);
+                $typeAratings[] = [
+                    'label' => $fn['name'],
+                    'weight' => $weight,
+                    'weighted_score' => round($avg * ($weight / 100), 2),
+                ];
+            }
+        }
+
         return Inertia::render('Employee/Accomplishment/IpcrPreview', [
-            'period' => ['id' => $period->id, 'name' => $period->name],
+            'period'   => ['id' => $period->id, 'name' => $period->name],
             'employee' => ['name' => $user->name, 'office' => $user->office?->name],
-            'sections' => $this->buildIpcrSections($ipcr, $period),
-            'meta' => $this->buildIpcrMeta($ipcr),
+            'sections' => $sections,
+            'meta'     => array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeAratings]),
         ]);
     }
 
@@ -346,7 +369,7 @@ class SmporIpcrAccomplishmentController extends Controller
 
             $fnKey = $fn->id;
             if (! isset($fnMap[$fnKey])) {
-                $fnMap[$fnKey] = ['id' => $fn->id, 'name' => $fn->name, 'weight' => $fn->weight_percent ?? null, 'mfos' => []];
+                $fnMap[$fnKey] = ['id' => $fn->id, 'name' => $fn->name, 'function_type' => $fn->function_type, 'weight' => $fn->weight_percent ?? null, 'mfos' => []];
             }
 
             $mfoKey = $mfo->id;

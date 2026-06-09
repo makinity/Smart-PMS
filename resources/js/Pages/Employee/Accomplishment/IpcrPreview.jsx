@@ -244,8 +244,9 @@ function MfoAccordion({ mfo, bp, sidebarLeft }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function IpcrPreview() {
     const { period, employee, sections, meta } = usePage().props;
-    const score  = meta?.score ?? 0;
-    const rating = meta?.rating ?? null;
+    const score      = meta?.score ?? 0;
+    const rating     = meta?.rating ?? null;
+    const typeScores = meta?.type_scores ?? [];
     const scoreColor = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
     const bp          = useBreakpoint();
     const sidebarLeft = useSidebarLeft();
@@ -318,6 +319,36 @@ export default function IpcrPreview() {
                         </div>
                     </div>
                 ))}
+
+                {/* Weighted Average Summary */}
+                {typeScores.length > 0 && (
+                    <div style={{ ...card, padding: '1rem 1.25rem' }}>
+                        <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>
+                            Performance Summary
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {typeScores.map((ts, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                                    padding: '0.6rem 0.85rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', fontSize: '0.82rem' }}>
+                                    <span style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>
+                                        Weighted Average Rating for {ts.label} ({ts.weight}%)
+                                    </span>
+                                    <span style={{ fontWeight: 800, fontSize: '1rem', color: ts.weighted_score >= 4.5 ? '#10b981' : ts.weighted_score >= 3.5 ? '#3b82f6' : ts.weighted_score >= 2.5 ? '#f59e0b' : '#ef4444' }}>
+                                        {ts.weighted_score.toFixed(2)}
+                                    </span>
+                                </div>
+                            ))}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                                padding: '0.6rem 0.85rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', fontSize: '0.82rem' }}>
+                                <span style={{ fontWeight: 700, color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontWeight: 800, fontSize: '1.1rem', color: scoreColor, lineHeight: 1 }}>{score > 0 ? score.toFixed(2) : '—'}</div>
+                                    {rating && <div style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', marginTop: 1 }}>{rating}</div>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

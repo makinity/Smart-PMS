@@ -353,13 +353,30 @@ class IpcrExcelExportController extends Controller
         }
 
         // ── Footer rows ────────────────────────────────────────────────────────
-        $overallScore     = $ipcr->pmt_adjusted_score ?? $ipcr->final_score;
+        // ── Compute per-type weighted averages on-the-fly ──────────────────────
+        $typeScores = [];
+        foreach ($ipcr->items as $item) {
+            $fn   = $item->indicator?->uwpMfo?->uwpFunction;
+            $type = strtolower($fn->function_type ?? 'core');
+            $A    = $ratingsMap[$item->id]['A'] ?? null;
+            if ($A !== null) {
+                $typeScores[$type][] = (float) $A;
+            }
+        }
+        $typeWeightedScores = [];
+        foreach ($typeScores as $type => $aRatings) {
+            $avg    = array_sum($aRatings) / count($aRatings);
+            $weight = ($typeWeights[$type] ?? 0) / 100;
+            $typeWeightedScores[$type] = round($avg * $weight, 2);
+        }
+
+        $overallScore      = $ipcr->pmt_adjusted_score ?? $ipcr->final_score;
         $overallAdjectival = $ipcr->pmt_adjusted_rating ?? $ipcr->adjectival_rating;
 
         $footLabels = [];
-        if (!empty($byType['core']))      $footLabels[] = ['Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)', ''];
-        if (!empty($byType['strategic'])) $footLabels[] = ['Weighted Average Rating for Strategic Objectives (' . ($typeWeights['strategic'] ?? 0) . '%)', ''];
-        if (!empty($byType['support']))   $footLabels[] = ['Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)', ''];
+        if (!empty($byType['core']))      $footLabels[] = ['Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)', isset($typeWeightedScores['core']) ? number_format($typeWeightedScores['core'], 2) : ''];
+        if (!empty($byType['strategic'])) $footLabels[] = ['Weighted Average Rating for Strategic Objectives (' . ($typeWeights['strategic'] ?? 0) . '%)', isset($typeWeightedScores['strategic']) ? number_format($typeWeightedScores['strategic'], 2) : ''];
+        if (!empty($byType['support']))   $footLabels[] = ['Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)', isset($typeWeightedScores['support']) ? number_format($typeWeightedScores['support'], 2) : ''];
         $footLabels[] = ['OVERALL RATING',    $overallScore     !== null ? number_format((float) $overallScore, 2) : ''];
         $footLabels[] = ['ADJECTIVAL RATING', $overallAdjectival ?? ''];
 
