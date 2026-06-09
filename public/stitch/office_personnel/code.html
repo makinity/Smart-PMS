@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Smart PMS - People Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#002e6a",
+                        "surface-variant": "#303541",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container-high": "#252a36",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-surface": "#dee2f2",
+                        "on-background": "#dee2f2",
+                        "error": "#ffb4ab",
+                        "on-error-container": "#ffdad6",
+                        "background": "#0e131e",
+                        "outline": "#8c909f",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#6ffbbe",
+                        "tertiary-container": "#ca8100",
+                        "primary-container": "#4d8eff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-dim": "#0e131e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-container-low": "#171b27",
+                        "on-secondary-container": "#00311f",
+                        "surface-container-lowest": "#090e19",
+                        "on-primary-fixed-variant": "#004395",
+                        "primary-fixed-dim": "#adc6ff",
+                        "inverse-on-surface": "#2b303c",
+                        "on-primary-fixed": "#001a42",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface": "#0e131e",
+                        "outline-variant": "#424754",
+                        "on-tertiary": "#472a00",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed-variant": "#005236",
+                        "inverse-primary": "#005ac2",
+                        "surface-tint": "#adc6ff",
+                        "primary": "#adc6ff",
+                        "inverse-surface": "#dee2f2",
+                        "secondary": "#4edea3",
+                        "surface-container-highest": "#303541",
+                        "surface-container": "#1b1f2b",
+                        "on-secondary-fixed": "#002113",
+                        "surface-bright": "#343946",
+                        "secondary-container": "#00a572",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#00285d",
+                        "on-secondary": "#003824",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#ffb95f",
+                        "on-tertiary-container": "#3e2400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "container-margin": "24px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "headline-sm": ["20px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-mono": ["13px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0e131e;
+            color: #dee2f2;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0e131e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #424754;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8c909f;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] hidden lg:flex flex-col bg-surface-container-low border-r border-outline-variant z-50">
+<div class="flex flex-col h-full py-lg px-md">
+<!-- Header/Logo -->
+<div class="flex items-center gap-3 px-md mb-xl">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface">Smart PMS</h1>
+<p class="text-caption font-caption text-on-surface-variant">Philippine LGU Admin</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-body-md font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-container/10 border-l-4 border-primary font-bold transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="text-body-md font-body-md">Offices</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-body-md font-body-md">Personnel</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-body-md font-body-md">Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-body-md font-body-md">Budget</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-body-md font-body-md">Settings</span>
+</a>
+</nav>
+<button class="mt-lg w-full bg-primary text-on-primary font-bold py-3 px-4 rounded-xl active:scale-[0.98] transition-transform duration-150">
+                Generate Report
+            </button>
+<!-- Footer Tabs -->
+<div class="mt-auto pt-lg border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="text-body-md font-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-body-md font-body-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="lg:pl-[260px] min-h-screen pb-24 lg:pb-0">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 w-full bg-surface/90 backdrop-blur-md border-b border-outline-variant px-lg py-sm flex justify-between items-center h-16">
+<div class="flex items-center gap-lg flex-1">
+<h2 class="text-headline-sm font-headline-sm font-bold text-on-surface hidden sm:block">Office Management</h2>
+<div class="relative flex-1 max-w-md ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 text-body-md focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="Search files, tasks, or staff..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpfu8rmUVDnUsA0CM2uHs_4rJLNuSv8gmLzGnk0eyIGVoxL6a6Dr36SFU2xeV5K2erL2-sA1SeTZWztTguO6Hy-fQ2SF5ZxK4mQxhafICPHu0ZU5uVib-CmXHW-dQPB543yRnvZkJxprE_xRN3oSpD_HfWqIr4ro6Iom6TefXQNOnGl-7frwK7KZqXnWAPNZ-wyOjCxZfRJ-9zrKfs1IixfP-x9CZt-QFH_1A4DB8fQIv2eeRDZ2xgfTzvmXi6XCax8iWNik4vGo0"/>
+</div>
+</div>
+</header>
+<!-- Sub-Navigation (Tabs) -->
+<div class="bg-surface-container-low px-lg pt-4 border-b border-outline-variant">
+<div class="flex gap-lg">
+<a class="text-on-surface-variant hover:text-on-surface pb-3 text-body-md transition-colors" href="#">Overview</a>
+<a class="text-primary border-b-2 border-primary font-bold pb-3 text-body-md" href="#">People</a>
+<a class="text-on-surface-variant hover:text-on-surface pb-3 text-body-md transition-colors" href="#">Performance</a>
+<a class="text-on-surface-variant hover:text-on-surface pb-3 text-body-md transition-colors" href="#">Settings</a>
+</div>
+</div>
+<!-- Scrollable Content Canvas -->
+<div class="p-lg max-w-7xl mx-auto space-y-xl">
+<!-- Section: Department Head -->
+<section>
+<h3 class="text-label-mono font-label-mono text-outline uppercase mb-md tracking-wider">Department Head</h3>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-md flex items-center gap-lg relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-primary-container shrink-0">
+<img alt="Juan Dela Cruz" class="w-full h-full object-cover" data-alt="A professional studio portrait of a middle-aged Filipino architect in a sharp charcoal suit. The background is a sophisticated, blurred corporate office with warm timber accents and soft geometric lighting. The lighting is crisp and formal, emphasizing authority and professional expertise in a modern government setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-x8rEQB7XB7yjuo-UsRQdCVdf1MzGQ39qksFyUUqUfXiCINCcQImXfxMJ7BCZPs1P2geOJVVitLrV0UbVvyb845301mV0Lt2ibHsSmnHoMJVzExOKQMcdrNSK9SRJBTRHtp6Z7y1KHExT9FQDGwXrl1TqkeRL7K4q6CyJ1yR8IRNZBujtRDVZvL_cDUVmKtjWWqsEWYSxzawM2rzo0Qjpt1TczOe5CE1HzhgaeMMW8o90FNvXsdMISXCeSZUr0BpI7fCJ930ByUw"/>
+</div>
+<div class="flex-1">
+<h4 class="text-headline-sm font-headline-sm text-on-surface">Arch. Juan Dela Cruz</h4>
+<p class="text-body-md text-primary font-medium">City Planning &amp; Development Coordinator</p>
+<div class="flex gap-md mt-2">
+<span class="flex items-center gap-1 text-caption text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+                                j.delacruz@lgu.gov.ph
+                            </span>
+<span class="flex items-center gap-1 text-caption text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">call</span>
+                                +63 917 123 4567
+                            </span>
+</div>
+</div>
+<button class="hidden sm:flex items-center gap-2 px-md py-2 bg-surface-container-high border border-outline-variant rounded-lg hover:border-primary transition-colors text-body-md">
+<span class="material-symbols-outlined">description</span>
+                        View Profile
+                    </button>
+</div>
+</section>
+<!-- Section: Supervisors -->
+<section>
+<div class="flex justify-between items-end mb-md">
+<h3 class="text-label-mono font-label-mono text-outline uppercase tracking-wider">Supervisors</h3>
+<span class="text-caption text-on-surface-variant">4 Records Found</span>
+</div>
+<!-- Desktop Table / Mobile Scrollable Cards -->
+<div class="overflow-x-auto lg:overflow-visible">
+<div class="min-w-[700px] lg:min-w-full">
+<table class="w-full border-collapse">
+<thead>
+<tr class="text-left border-b border-outline-variant">
+<th class="pb-3 text-label-mono text-outline font-label-mono uppercase px-2">Name</th>
+<th class="pb-3 text-label-mono text-outline font-label-mono uppercase px-2">Position</th>
+<th class="pb-3 text-label-mono text-outline font-label-mono uppercase px-2">Manages</th>
+<th class="pb-3 text-label-mono text-outline font-label-mono uppercase px-2 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Supervisor 1 -->
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="py-4 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center overflow-hidden">
+<img alt="Maria Rivera" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqegyBv_pjmIgEikP67HaJ84hgajiuijkD7am6CbNS7BOiQ4hwCkgk2m9l7b06CfPHCtRPJoOq3lNKmfzu4nBgsjmBLYoRFSm8P8SL2A2iFs2BVP2XmD7F4B4dD8cZb-rS9zZb-xXyp5YYkiLHwltyQLcA8oYW4cbmUxhdTGrKRrvxxSN9NLVnt5s4O65RyI6auBdGyR92IHcwoYRbFUpDxXkrwWQTIE4snmASOK6Npv6dO39OLfDv46pLHRVd2TkErFPNcanRpfo"/>
+</div>
+<div>
+<p class="text-body-md font-bold text-on-surface">Maria Rivera</p>
+<p class="text-caption text-on-surface-variant">Division Chief</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-body-md text-on-surface-variant">Zoning &amp; Land Use</td>
+<td class="py-4 px-2">
+<span class="px-3 py-1 bg-surface-container-highest rounded-full text-caption font-label-mono">8 Employees</span>
+</td>
+<td class="py-4 px-2 text-right">
+<button class="text-on-surface-variant hover:text-primary p-2 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Supervisor 2 -->
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="py-4 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 flex items-center justify-center overflow-hidden">
+<img alt="Ricardo Santos" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9hvD-76_xrk34LK6qCDSZw6u1K_Jedm9ZdvHbr8ik7WkDOJO5lnSgWV4Yk4K-ldbKzR2qC1AYYp7U03qGIDUL5-e-YMpCDFEvu6Adv-A-jVAMGkOkxxLjdpxQ-pT1bZ80hAfxjxVtTx6tJRlDzB4CTsxpNF5yMMAXnTuSSim8dl-_lJ2eUcT2I-vW_QOx48QhD0q5oafhEPzinEnnjwb1SUCiYrHSpqhIMYtYJN6f5ty9JDqJ5r9SD6yaw-JsThxHK3dkM_EGXnU"/>
+</div>
+<div>
+<p class="text-body-md font-bold text-on-surface">Ricardo Santos</p>
+<p class="text-caption text-on-surface-variant">Project Lead</p>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-body-md text-on-surface-variant">Infra Monitoring</td>
+<td class="py-4 px-2">
+<span class="px-3 py-1 bg-surface-container-highest rounded-full text-caption font-label-mono">12 Employees</span>
+</td>
+<td class="py-4 px-2 text-right">
+<button class="text-on-surface-variant hover:text-primary p-2 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Section: Employees -->
+<section>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-md mb-lg">
+<div>
+<h3 class="text-label-mono font-label-mono text-outline uppercase tracking-wider">All Employees</h3>
+<p class="text-caption text-on-surface-variant">Managing 42 staff members in this department</p>
+</div>
+<div class="relative w-full md:w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">filter_list</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-1 focus:ring-primary focus:outline-none transition-all" placeholder="Filter by name or score..." type="text"/>
+</div>
+</div>
+<!-- Desktop Table -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead class="bg-surface-container-high/50">
+<tr class="text-left border-b border-outline-variant">
+<th class="py-4 px-4 text-label-mono text-outline font-label-mono uppercase">Employee</th>
+<th class="py-4 px-4 text-label-mono text-outline font-label-mono uppercase">Position</th>
+<th class="py-4 px-4 text-label-mono text-outline font-label-mono uppercase text-center">IPCR Score</th>
+<th class="py-4 px-4 text-label-mono text-outline font-label-mono uppercase">Rating</th>
+<th class="py-4 px-4 text-label-mono text-outline font-label-mono uppercase">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/50">
+<img alt="Elena Cruz" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqydMKozMkl55V7XdPvXwhvzd6UUZ7S8hYa0CuxxumfdLCckt3jNOk-Al6r3NbDhrQPsBznLYSd5kQP-lajLV4jFUz--ZVlt8u9_CrmZPpyW4r3BzqLXpBRPxK1iQdA6HXygr6EVekyQWPqOa_dC6GkgF3DQiQMUqn_GM9lh8DJGyEy0UzYVndUDbNRP5J0lNxrM5-ZSXp4y2Jwi-yeKh8vuYV7Gl1e3UMyA8h0d3-wkD4-rcMjtTnirxPeVmW0WR6pYcffFoZTFc"/>
+</div>
+<span class="text-body-md font-semibold text-on-surface">Elena Cruz</span>
+</div>
+</td>
+<td class="py-4 px-4 text-body-md text-on-surface-variant">Planning Officer III</td>
+<td class="py-4 px-4 text-center">
+<span class="text-body-md font-label-mono text-secondary">4.90</span>
+</td>
+<td class="py-4 px-4">
+<span class="px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full text-caption font-bold">Outstanding</span>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-caption text-on-surface">Active</span>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/50">
+<img alt="Anton Miguel" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAx_xAqfae61ynpCGjcVK60xQKY3YFZOAHxqSklbIc4ulxejI5Wk2pO-S6vzNi9SzPtWcIfjbwhtK_R2j61NwwTuLWO1JPl1JMqqOq8JAO8yfx_6EjBaL1MAWo8WEXefPGXj6eQ45BcbABhubUku_AbBGs2Ibd44h6dGm1x-zNozWmffyEFK_2puDMXVlDj-A8l16tu7sGx_ezeYQYIgVXDq8i21esj3b7i5zDo9o8tgUxl1iRelf6Dr_GC3seAby7kwER4Xq1cE-E"/>
+</div>
+<span class="text-body-md font-semibold text-on-surface">Anton Miguel</span>
+</div>
+</td>
+<td class="py-4 px-4 text-body-md text-on-surface-variant">Draftsman II</td>
+<td class="py-4 px-4 text-center">
+<span class="text-body-md font-label-mono text-secondary">4.75</span>
+</td>
+<td class="py-4 px-4">
+<span class="px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full text-caption font-bold">Outstanding</span>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-caption text-on-surface">Active</span>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-4 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/50">
+<img alt="Sarah Perez" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMoJEq5_J2nEKplfZYDyNGfIDDXvXXV1kcXAdlh5Ppr9RuEaDmKBfS8xMMchQ42qOuQy9OqxkB7hjxRnAhmiz25UexKJeTbtld37cySYWIj71qVVfLMDoG3ErTj21LzZ2AhabQKMrfD_0gAl7OLbhyxJw_1LSYPl-Hbu9xHJxk12SG_XBvOmgV0EvgZvYtI4eKA24T2JvSC8bbMyiKHZ5ZU80v8l4DYytByauI6yfRTMH_knHSClQzeWTUeexGFmgy-eqyTKKjIqk"/>
+</div>
+<span class="text-body-md font-semibold text-on-surface">Sarah Perez</span>
+</div>
+</td>
+<td class="py-4 px-4 text-body-md text-on-surface-variant">Admin Aide VI</td>
+<td class="py-4 px-4 text-center">
+<span class="text-body-md font-label-mono text-tertiary">4.25</span>
+</td>
+<td class="py-4 px-4">
+<span class="px-3 py-1 bg-tertiary/10 text-tertiary border border-tertiary/20 rounded-full text-caption font-bold">Very Satisfactory</span>
+</td>
+<td class="py-4 px-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-caption text-on-surface">Active</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-lg py-md border-t border-outline-variant flex items-center justify-between">
+<p class="text-caption text-on-surface-variant">Showing 1 to 3 of 42 employees</p>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 lg:hidden rounded-t-xl bg-surface-container-highest shadow-[0_-4px_10px_rgba(0,0,0,0.3)] h-16 flex justify-around items-center px-base">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-caption font-caption">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl px-4 py-1 active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="text-caption font-caption">Offices</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-caption font-caption">Data</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-caption font-caption">Account</span>
+</a>
+</nav>
+<script>
+        // Simple interactive handling for row highlights or other micro-interactions
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Potential detail drawer logic could go here
+                console.log('Row clicked');
+            });
+        });
+    </script>
+</body></html>

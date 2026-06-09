@@ -2,18 +2,38 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Office extends Model
 {
-    protected $fillable = ['name', 'code', 'head_id'];
+    protected $fillable = ['name', 'code', 'head_id', 'is_active', 'hris_id', 'hris_synced_at'];
 
-    // Add these relationships
+    protected $casts = [
+        'is_active' => 'boolean',
+        'hris_synced_at' => 'datetime',
+    ];
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
     public function unitWorkPlans(): HasMany
     {
         return $this->hasMany(UnitWorkPlan::class);
+    }
+
+    public function opcrs(): HasMany
+    {
+        return $this->hasMany(Opcr::class);
+    }
+
+    public function opcrAccomplishments(): HasMany
+    {
+        return $this->hasMany(OpcraAccomplishmentSubmission::class);
     }
 
     public function head(): BelongsTo

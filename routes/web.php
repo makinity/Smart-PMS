@@ -56,7 +56,9 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::patch('/users/{user}/deactivate', [\App\Http\Controllers\Admin\UsersController::class, 'deactivate'])->name('users.deactivate');
     Route::patch('/users/{user}/disable', [\App\Http\Controllers\Admin\UsersController::class, 'disable'])->name('users.disable');
     Route::patch('/users/{user}/enable', [\App\Http\Controllers\Admin\UsersController::class, 'enable'])->name('users.enable');
-    Route::get('/offices', [\App\Http\Controllers\Admin\OfficeController::class, 'index'])->name('offices.index');
+    Route::resource('offices', \App\Http\Controllers\Admin\OfficeController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::post('offices/{office}/toggle-status', [\App\Http\Controllers\Admin\OfficeController::class, 'toggleStatus'])->name('offices.toggle-status');
+    Route::get('offices/{office}/export-history', [\App\Http\Controllers\Admin\OfficeController::class, 'exportHistory'])->name('offices.export-history');
     Route::get('/performance-periods', [\App\Http\Controllers\Admin\PerformancePeriodsController::class, 'index'])->name('performance-periods.index');
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogsController::class, 'index'])->name('audit-logs.index');
     Route::get('/database', [\App\Http\Controllers\Admin\DatabaseController::class, 'index'])->name('database.index');
