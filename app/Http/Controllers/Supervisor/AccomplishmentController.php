@@ -56,11 +56,27 @@ class AccomplishmentController extends Controller
 
         $period = $accomplishment->period;
 
+        $ipcrSections = $ipcr && $period ? $this->buildIpcrSections($ipcr, $period) : [];
+        $typeScores = [];
+        foreach ($ipcrSections as $fn) {
+            $aRatings = [];
+            foreach ($fn['mfos'] as $mfo) {
+                foreach ($mfo['indicators'] as $ind) {
+                    if ($ind['ratings']['A'] !== null) $aRatings[] = (float) $ind['ratings']['A'];
+                }
+            }
+            if (!empty($aRatings)) {
+                $avg = array_sum($aRatings) / count($aRatings);
+                $weight = (float) ($fn['weight'] ?? 0);
+                $typeScores[] = ['label' => $fn['name'], 'weight' => $weight, 'weighted_score' => round($avg * ($weight / 100), 2)];
+            }
+        }
+
         return Inertia::render('Supervisor/Accomplishment/Show', [
-            'submission' => $this->formatSubmission($accomplishment),
-            'smporTable' => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period, $ipcr) : null,
-            'ipcrSections' => $ipcr && $period ? $this->buildIpcrSections($ipcr, $period) : [],
-            'ipcrMeta' => $ipcr ? $this->buildIpcrMeta($ipcr) : null,
+            'submission'   => $this->formatSubmission($accomplishment),
+            'smporTable'   => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period, $ipcr) : null,
+            'ipcrSections' => $ipcrSections,
+            'ipcrMeta'     => $ipcr ? array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeScores]) : null,
         ]);
     }
 
@@ -222,7 +238,7 @@ class AccomplishmentController extends Controller
                 continue;
             }
 
-            $fnMap[$fn->id] ??= ['id' => $fn->id, 'name' => $fn->name, 'weight' => $fn->weight_percent ?? null, 'mfos' => []];
+            $fnMap[$fn->id] ??= ['id' => $fn->id, 'name' => $fn->name, 'function_type' => $fn->function_type, 'weight' => $fn->weight_percent ?? null, 'mfos' => []];
             $fnMap[$fn->id]['mfos'][$mfo->id] ??= ['id' => $mfo->id, 'title' => $mfo->title, 'indicators' => []];
 
             $ratings = $this->computeRatings($item->id, $period);

@@ -163,36 +163,63 @@ function RatingBadge({ label, value }) {
     );
 }
 
-function IpcrSections({ sections }) {
+function IpcrSections({ sections, ipcrMeta }) {
+    const typeScores = ipcrMeta?.type_scores ?? [];
+    const score  = ipcrMeta?.score ?? 0;
+    const rating = ipcrMeta?.rating ?? null;
+    const sColor = s => s >= 4.5 ? '#10b981' : s >= 3.5 ? '#3b82f6' : s >= 2.5 ? '#f59e0b' : '#ef4444';
+
     if (!sections?.length) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>No IPCR data available.</div>;
-    return sections.map(fn => (
-        <div key={fn.id} style={{ marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderRadius: '8px 8px 0 0', border: '1px solid var(--admin-border)' }}>
-                <i className="bi bi-house-door" style={{ color: 'var(--admin-accent)' }} />
-                <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', flex: 1 }}>{fn.name}</span>
-                {fn.weight && <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(59,130,246,0.10)', color: 'var(--admin-accent)' }}>{fn.weight}%</span>}
-            </div>
-            {fn.mfos.map(mfo => (
-                <div key={mfo.id} style={{ border: '1px solid var(--admin-border)', borderTop: 'none' }}>
-                    <div style={{ padding: '0.55rem 0.85rem', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{mfo.title}</div>
-                    {mfo.indicators.map((ind, i) => (
-                        <div key={ind.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', flexWrap: 'wrap' }}>
-                            <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', fontSize: '0.62rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
-                            <div style={{ flex: 1, minWidth: 160 }}>
-                                <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--admin-text-primary)', lineHeight: 1.45 }}>{ind.indicator_text}</div>
-                                {ind.target_timeline && <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 2 }}><i className="bi bi-clock" style={{ marginRight: 3 }} />{ind.target_timeline}</div>}
-                            </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                                {[['Q', ind.ratings?.Q], ['E', ind.ratings?.E], ['T', ind.ratings?.T], ['A', ind.ratings?.A]].map(([l, v]) => (
-                                    <RatingBadge key={l} label={l} value={v} />
-                                ))}
-                            </div>
+    return (
+        <>
+            {sections.map(fn => (
+                <div key={fn.id} style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderRadius: '8px 8px 0 0', border: '1px solid var(--admin-border)' }}>
+                        <i className="bi bi-house-door" style={{ color: 'var(--admin-accent)' }} />
+                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', flex: 1 }}>{fn.name}</span>
+                        {fn.weight && <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(59,130,246,0.10)', color: 'var(--admin-accent)' }}>{fn.weight}%</span>}
+                    </div>
+                    {fn.mfos.map(mfo => (
+                        <div key={mfo.id} style={{ border: '1px solid var(--admin-border)', borderTop: 'none' }}>
+                            <div style={{ padding: '0.55rem 0.85rem', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{mfo.title}</div>
+                            {mfo.indicators.map((ind, i) => (
+                                <div key={ind.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', flexWrap: 'wrap' }}>
+                                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', fontSize: '0.62rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
+                                    <div style={{ flex: 1, minWidth: 160 }}>
+                                        <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--admin-text-primary)', lineHeight: 1.45 }}>{ind.indicator_text}</div>
+                                        {ind.target_timeline && <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 2 }}><i className="bi bi-clock" style={{ marginRight: 3 }} />{ind.target_timeline}</div>}
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                                        {[['Q', ind.ratings?.Q], ['E', ind.ratings?.E], ['T', ind.ratings?.T], ['A', ind.ratings?.A]].map(([l, v]) => (
+                                            <RatingBadge key={l} label={l} value={v} />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ))}
                 </div>
             ))}
-        </div>
-    ));
+            {typeScores.length > 0 && (
+                <div style={{ marginTop: '0.5rem', padding: '0.85rem', background: 'var(--admin-bg-secondary)', borderRadius: 8, border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>Performance Summary</div>
+                    {typeScores.map((ts, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4, fontSize: '0.8rem' }}>
+                            <span style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average Rating for {ts.label} ({ts.weight}%)</span>
+                            <span style={{ fontWeight: 800, color: sColor(ts.weighted_score) }}>{ts.weighted_score.toFixed(2)}</span>
+                        </div>
+                    ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4, paddingTop: '0.45rem', borderTop: '1px solid var(--admin-border)', fontSize: '0.82rem' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
+                        <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontWeight: 800, fontSize: '1rem', color: sColor(score) }}>{score > 0 ? score.toFixed(2) : '—'}</span>
+                            {rating && <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', marginLeft: 6 }}>{rating}</span>}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }
 
 // ── Calibrate & Release Modal ─────────────────────────────────────────────────
@@ -507,7 +534,7 @@ export default function Show() {
                             </button>
                         ))}
                     </div>
-                    {activeTab === 'smpor' ? <SmporTable table={smporTable} /> : <IpcrSections sections={ipcrSections} />}
+                    {activeTab === 'smpor' ? <SmporTable table={smporTable} /> : <IpcrSections sections={ipcrSections} ipcrMeta={ipcrMeta} />}
                 </div>
 
                 {/* Supporting docs */}
