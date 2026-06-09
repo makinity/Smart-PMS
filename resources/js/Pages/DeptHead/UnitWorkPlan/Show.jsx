@@ -124,7 +124,7 @@ export default function Show() {
                             {fns?.map(fn => (
                                 <button key={fn.id} style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
                                     onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
-                                    {fn.name}
+                                    {fn.name}{fn.weight_percent != null ? ` (${fn.weight_percent}%)` : ''}
                                 </button>
                             ))}
                         </div>
@@ -146,7 +146,7 @@ export default function Show() {
                             {fns?.map(fn => (
                                 <button key={fn.id} style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
                                     onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
-                                    {fn.name}
+                                    {fn.name}{fn.weight_percent != null ? ` (${fn.weight_percent}%)` : ''}
                                 </button>
                             ))}
                         </div>
@@ -175,6 +175,11 @@ export default function Show() {
                                             onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                             <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
+                                            {fn.weight_percent != null && (
+                                                <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '1px 6px', borderRadius: 99, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', flexShrink: 0 }}>
+                                                    {fn.weight_percent}%
+                                                </span>
+                                            )}
                                         </button>
                                         {activeFnId === fn.id && fn.mfos?.map(mfo => (
                                             <button key={mfo.id} style={{ ...s.mfoItem, ...(activeMfoId === mfo.id ? s.mfoItemActive : {}) }}

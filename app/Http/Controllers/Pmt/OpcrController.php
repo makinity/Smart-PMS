@@ -51,7 +51,7 @@ class OpcrController extends Controller
             foreach ($uwp->uwpFunctions as $fn) {
                 $key = $fn->function_type.'::'.$fn->name;
                 if (! isset($functions[$key])) {
-                    $functions[$key] = ['id' => $fn->id, 'name' => $fn->name, 'function_type' => $fn->function_type, 'mfos' => []];
+                    $functions[$key] = ['id' => $fn->id, 'name' => $fn->name, 'function_type' => $fn->function_type, 'weight_percent' => $fn->weight_percent, 'mfos' => []];
                 }
                 foreach ($fn->mfos as $mfo) {
                     if (! isset($functions[$key]['mfos'][$mfo->title])) {

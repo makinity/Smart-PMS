@@ -69,6 +69,7 @@ class UnitWorkPlanController extends Controller
                 'id' => $fn->id,
                 'name' => $fn->name,
                 'function_type' => $fn->function_type,
+                'weight_percent' => $fn->weight_percent,
                 'mfos' => $fn->mfos->map(fn ($mfo) => [
                     'id' => $mfo->id,
                     'title' => $mfo->title,
