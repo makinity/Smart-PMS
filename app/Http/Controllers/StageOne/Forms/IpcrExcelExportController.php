@@ -244,7 +244,8 @@ class IpcrExcelExportController extends Controller
         $r = $h2 + 1;
 
         // ── Build grouped data ─────────────────────────────────────────────────
-        $byType = [];
+        $byType   = [];
+        $typeWeights = [];
         foreach ($ipcr->items as $item) {
             $si  = $item->indicator;
             $mfo = $si->uwpMfo;
@@ -253,6 +254,10 @@ class IpcrExcelExportController extends Controller
             $type    = strtolower($fn->function_type ?? 'core');
             $fnName  = $fn->name;
             $mfoName = $mfo->title;
+
+            if (!isset($typeWeights[$type])) {
+                $typeWeights[$type] = (int) round((float) $fn->weight_percent);
+            }
 
             $std = [5 => '', 4 => '', 3 => '', 2 => '', 1 => ''];
             foreach ($si->qetStandards as $q) {
@@ -348,17 +353,25 @@ class IpcrExcelExportController extends Controller
         }
 
         // ── Footer rows ────────────────────────────────────────────────────────
-        $footLabels = [];
-        if (!empty($byType['core']))      $footLabels[] = 'Weighted Average Rating for Core Functions (45%)';
-        if (!empty($byType['strategic'])) $footLabels[] = 'Weighted Average Rating for Strategic Objectives (35%)';
-        if (!empty($byType['support']))   $footLabels[] = 'Weighted Average Rating for Support Functions (20%)';
-        $footLabels[] = 'OVERALL RATING';
-        $footLabels[] = 'ADJECTIVAL RATING';
+        $overallScore     = $ipcr->pmt_adjusted_score ?? $ipcr->final_score;
+        $overallAdjectival = $ipcr->pmt_adjusted_rating ?? $ipcr->adjectival_rating;
 
-        foreach ($footLabels as $label) {
+        $footLabels = [];
+        if (!empty($byType['core']))      $footLabels[] = ['Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)', ''];
+        if (!empty($byType['strategic'])) $footLabels[] = ['Weighted Average Rating for Strategic Objectives (' . ($typeWeights['strategic'] ?? 0) . '%)', ''];
+        if (!empty($byType['support']))   $footLabels[] = ['Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)', ''];
+        $footLabels[] = ['OVERALL RATING',    $overallScore     !== null ? number_format((float) $overallScore, 2) : ''];
+        $footLabels[] = ['ADJECTIVAL RATING', $overallAdjectival ?? ''];
+
+        foreach ($footLabels as [$label, $value]) {
             $ws->mergeCells("A{$r}:C{$r}");
             $ws->mergeCells("D{$r}:{$lastCol}{$r}");
             $ws->setCellValue("A{$r}", $label);
+            $ws->setCellValue("D{$r}", $value);
+            $ws->getStyle("D{$r}:{$lastCol}{$r}")->applyFromArray([
+                'font'      => ['bold' => true, 'size' => 9],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            ]);
             $ws->getStyle("A{$r}:C{$r}")->applyFromArray([
                 'font'      => ['size' => 8, 'italic' => true],
                 'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::BG_FOOT]],
