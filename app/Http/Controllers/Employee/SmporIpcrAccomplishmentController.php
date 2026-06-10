@@ -106,10 +106,12 @@ class SmporIpcrAccomplishmentController extends Controller
             $aRatings = [];
             foreach ($fn['mfos'] as $mfo) {
                 foreach ($mfo['indicators'] as $ind) {
-                    if ($ind['ratings']['A'] !== null) $aRatings[] = (float) $ind['ratings']['A'];
+                    if ($ind['ratings']['A'] !== null) {
+                        $aRatings[] = (float) $ind['ratings']['A'];
+                    }
                 }
             }
-            if (!empty($aRatings)) {
+            if (! empty($aRatings)) {
                 $avg = array_sum($aRatings) / count($aRatings);
                 $typeAratings[] = [
                     'label' => $fn['name'],
@@ -120,10 +122,10 @@ class SmporIpcrAccomplishmentController extends Controller
         }
 
         return Inertia::render('Employee/Accomplishment/IpcrPreview', [
-            'period'   => ['id' => $period->id, 'name' => $period->name],
+            'period' => ['id' => $period->id, 'name' => $period->name],
             'employee' => ['name' => $user->name, 'office' => $user->office?->name],
             'sections' => $sections,
-            'meta'     => array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeAratings]),
+            'meta' => array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeAratings]),
         ]);
     }
 
@@ -256,8 +258,23 @@ class SmporIpcrAccomplishmentController extends Controller
 
     private function buildIpcrMeta(Ipcr $ipcr): array
     {
-        $score = (float) ($ipcr->final_score ?? $ipcr->pmt_adjusted_score ?? 0);
-        $rating = $ipcr->adjectival_rating ?? $ipcr->pmt_adjusted_rating ?? null;
+        // Prefer the PMT-released official rating (adjusted if calibrated, else the
+        // system score the PMT released), falling back to the IPCR's system-computed
+        // score when not yet released.
+        $submission = AccomplishmentSubmission::where('employee_id', $ipcr->employee_id)
+            ->where('performance_period_id', $ipcr->performance_period_id)
+            ->where('status', 'released_by_pmt')
+            ->latest()
+            ->first();
+
+        $score = (float) ($submission?->final_rating
+            ?? $ipcr->pmt_adjusted_score
+            ?? $ipcr->final_score
+            ?? 0);
+        $rating = $submission?->final_adjectival_rating
+            ?? $ipcr->pmt_adjusted_rating
+            ?? $ipcr->adjectival_rating
+            ?? null;
 
         return [
             'score' => round($score, 2),

@@ -101,6 +101,7 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::post('/development-planning/{ipcr}', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'storeOrUpdate'])->name('development-planning.save');
     Route::post('/development-planning/{plan}/submit-to-ld', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'submitToLd'])->name('development-planning.submit-to-ld');
     Route::get('/top-performers', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'index'])->name('top-performers.index');
+    Route::get('/top-performers/{user}', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'show'])->name('top-performers.show');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Pmt/Profile'))->name('profile');
 });
 

@@ -270,7 +270,8 @@ export default function IpcrPreview() {
                                 {employee?.name} · {employee?.office} · {period?.name}
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center',
+                            ...(bp === 'compact' ? { width: '100%', justifyContent: 'space-between' } : {}) }}>
                             {score > 0 && (
                                 <div style={{ textAlign: 'center' }}>
                                     <div style={{ fontSize: '1.3rem', fontWeight: 800, color: scoreColor, lineHeight: 1 }}>{score.toFixed(2)}</div>

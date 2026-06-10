@@ -466,6 +466,7 @@ export default function Editor() {
                 <AssignModal
                     indicator={assignModal.indicator}
                     employees={employees ?? []}
+                    allIndicators={functions.flatMap(f => f.mfos?.flatMap(m => (m.successIndicators ?? []).map(si => ({ ...si, mfo_title: m.title, function_name: f.name, function_type: f.function_type }))) ?? [])}
                     onSave={handleSaveAssign}
                     onClose={() => setAssignModal(null)}
                 />

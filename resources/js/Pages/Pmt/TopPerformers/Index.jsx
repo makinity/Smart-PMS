@@ -117,6 +117,7 @@ export default function Index() {
                                 <div key={p.ipcr_id}
                                     style={{ ...card, padding:'1.1rem', borderLeft:`4px solid ${cfg.color}`, cursor:'pointer',
                                         transition:'box-shadow 0.15s, transform 0.15s', position:'relative' }}
+                                    onClick={() => router.visit(`/pmt/top-performers/${p.user_id}`)}
                                     onMouseEnter={e => { e.currentTarget.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'; e.currentTarget.style.transform='translateY(-2px)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.boxShadow='var(--admin-shadow)'; e.currentTarget.style.transform=''; }}>
 

@@ -1,8 +1,5 @@
 import { useState, useMemo } from 'react';
 
-// Map the backend AI prediction (App\Services\AssignmentAi) to the shape the UI uses.
-// The numbers are computed server-side — see SimulatedAssignmentPredictor (prototype)
-// or MlAssignmentPredictor (real model) in Laravel.
 function toAiData(employee) {
     const p = employee.ai_prediction ?? {};
     return {
@@ -14,39 +11,49 @@ function toAiData(employee) {
     };
 }
 
-const statusColor = {
-    Available: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80', border: 'rgba(74,222,128,0.3)' },
-    Busy:      { bg: 'rgba(234,179,8,0.15)',  color: '#facc15', border: 'rgba(234,179,8,0.3)' },
-    Critical:  { bg: 'rgba(239,68,68,0.15)',  color: '#f87171', border: 'rgba(239,68,68,0.3)' },
-};
+// Prototype: rank all UWP indicators for this employee based on simulated past performance
+// In real integration: replaced by FastAPI /suggest-indicators response
+function suggestIndicators(employee, allIndicators) {
+    const seed = employee.name.charCodeAt(0);
+    return allIndicators.map(si => {
+        const base = 2.5 + ((seed * (si.id ?? 1) * 7) % 25) / 10;
+        const fit  = Math.min(base, 5.0);
+        return {
+            id:            si.id,
+            indicator_text: si.indicator_text,
+            mfo_title:     si.mfo_title,
+            function_name: si.function_name,
+            fitScore:      Math.round((fit / 5) * 100),
+            fitLabel:      fit >= 4.0 ? 'Strong fit' : fit >= 3.0 ? 'Moderate fit' : 'Weak fit',
+            fitColor:      fit >= 4.0 ? '#4ade80'   : fit >= 3.0 ? '#facc15'       : '#f87171',
+        };
+    }).sort((a, b) => b.fitScore - a.fitScore);
+}
 
-export default function AssignModal({ indicator, employees, onSave, onClose }) {
+export default function AssignModal({ indicator, employees, allIndicators = [], onSave, onClose }) {
     const initialIds = new Set((indicator.assignments ?? []).map(a => a.employee_id));
-    const [selected, setSelected] = useState(initialIds);
-    const [search, setSearch]     = useState('');
-    const [warning, setWarning]   = useState(null); // { employee } — pending high-load selection
+    const [selected, setSelected]       = useState(initialIds);
+    const [search, setSearch]           = useState('');
+    const [warning, setWarning]         = useState(null);
+    const [expandedEmp, setExpandedEmp] = useState(null);
 
-    // Map the backend AI prediction onto each employee for rendering
     const enriched = useMemo(() => employees.map(e => ({
         ...e,
-        _ai: toAiData(e),
-    })), [employees]);
+        _ai:          toAiData(e),
+        _suggestions: suggestIndicators(e, allIndicators),
+    })), [employees, allIndicators]);
 
     const filtered = enriched.filter(e =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         (e.position ?? '').toLowerCase().includes(search.toLowerCase())
     );
 
-    // Find the recommended employee (lowest load, available)
     const recommended = [...enriched]
         .filter(e => !selected.has(e.id))
         .sort((a, b) => a._ai.load - b._ai.load)[0];
 
     function toggle(emp) {
-        if (!selected.has(emp.id) && emp._ai.warning) {
-            setWarning(emp); // show AI warning before adding
-            return;
-        }
+        if (!selected.has(emp.id) && emp._ai.warning) { setWarning(emp); return; }
         commit(emp.id);
     }
 
@@ -59,24 +66,28 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
         onSave(indicator.id, employees.filter(e => selected.has(e.id)));
     }
 
-    // ── AI Warning state ──
+    const riskColors = {
+        Low:    { bg: 'rgba(74,222,128,0.15)',  color: '#4ade80', border: 'rgba(74,222,128,0.3)' },
+        Medium: { bg: 'rgba(234,179,8,0.15)',   color: '#facc15', border: 'rgba(234,179,8,0.3)' },
+        High:   { bg: 'rgba(239,68,68,0.15)',   color: '#f87171', border: 'rgba(239,68,68,0.3)' },
+    };
+
+    // AI Warning screen
     if (warning) {
-        const ai = warning._ai;
         return (
             <div style={s.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
                 <div style={s.modal}>
                     <div style={s.header}>
                         <div>
                             <div style={s.title}>Assign Employees</div>
-                            <div style={s.sub}>KPI: {indicator.indicator_text?.slice(0, 50)}…</div>
+                            <div style={s.sub}>KPI: {indicator.indicator_text?.slice(0, 50)}...</div>
                         </div>
-                        <button style={s.closeBtn} onClick={onClose}>✕</button>
+                        <button style={s.closeBtn} onClick={onClose}>x</button>
                     </div>
 
-                    {/* Warning banner */}
                     <div style={s.warnBanner}>
                         <div style={s.warnHeader}>
-                            <span style={s.warnIcon}>⚠</span>
+                            <span style={s.warnIcon}>(!)</span>
                             <span style={s.warnLabel}>AI RISK WARNING</span>
                         </div>
                         <p style={s.warnText}>
@@ -85,7 +96,7 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
                         <div style={s.warnStats}>
                             <div style={s.warnStat}>
                                 <div style={s.warnStatLabel}>Risk Level</div>
-                                <div style={{ ...s.warnStatVal, color: '#f87171' }}>{warning._ai.risk} ●</div>
+                                <div style={{ ...s.warnStatVal, color: '#f87171' }}>{warning._ai.risk} &bull;</div>
                             </div>
                             <div style={s.warnStat}>
                                 <div style={s.warnStatLabel}>Success Probability</div>
@@ -94,7 +105,6 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
                         </div>
                     </div>
 
-                    {/* Employee rows */}
                     <div style={s.list}>
                         <div style={s.listHeader}>SELECT TEAM MEMBERS</div>
                         {filtered.map(emp => (
@@ -103,9 +113,9 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
                                 <div style={s.avatar}>{emp.name.charAt(0)}</div>
                                 <div style={s.empInfo}>
                                     <div style={{ ...s.empName, ...(emp.id === warning.id ? { color: '#f97316' } : {}) }}>{emp.name}</div>
-                                    <div style={s.empPos}>{emp.position} • Load: {emp._ai.load}%</div>
+                                    <div style={s.empPos}>{emp.position} &bull; Load: {emp._ai.load}%</div>
                                 </div>
-                                {emp.id === warning.id && <span style={{ color: '#f97316', fontSize: '1rem' }}>⚠</span>}
+                                {emp.id === warning.id && <span style={{ color: '#f97316', fontSize: '1rem' }}>(!)</span>}
                             </label>
                         ))}
                     </div>
@@ -119,7 +129,7 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
         );
     }
 
-    // ── Normal / AI-safe state ──
+    // Normal screen
     const safeRec = recommended && recommended._ai.load < 50;
 
     return (
@@ -128,16 +138,15 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
                 <div style={s.header}>
                     <div>
                         <div style={s.title}>Assign Employees</div>
-                        <div style={s.sub}>Indicator: {indicator.indicator_text?.slice(0, 60)}…</div>
+                        <div style={s.sub}>Indicator: {indicator.indicator_text?.slice(0, 60)}...</div>
                     </div>
-                    <button style={s.closeBtn} onClick={onClose}>✕</button>
+                    <button style={s.closeBtn} onClick={onClose}>&#x2715;</button>
                 </div>
 
-                {/* AI Safe recommendation */}
                 {safeRec && (
                     <div style={s.safeBanner}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                            <span style={s.safeLabel}>✦ SAFE TO ASSIGN</span>
+                            <span style={s.safeLabel}>* SAFE TO ASSIGN</span>
                             <span style={s.safeConf}>Success Probability: {recommended._ai.successProb}%</span>
                         </div>
                         <p style={s.safeText}>
@@ -146,50 +155,88 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
                     </div>
                 )}
 
-                {/* Search */}
                 <div style={s.searchWrap}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, color: 'var(--admin-text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input style={s.search} placeholder="Search by name, role, or skill..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
                 </div>
 
-                {/* Table header */}
                 <div style={s.tableHead}>
                     <span style={{ flex: 2 }}>EMPLOYEE</span>
                     <span style={{ flex: 1, textAlign: 'center' }}>SUCCESS PROB.</span>
                     <span style={{ flex: 1, textAlign: 'center' }}>RISK</span>
-                    <span style={{ flex: 0.5, textAlign: 'center' }}>ACTION</span>
+                    <span style={{ flex: 0.5, textAlign: 'center' }}>FIT</span>
                 </div>
 
-                {/* Employee rows */}
                 <div style={s.list}>
                     {filtered.map(emp => {
-                        const ai = emp._ai;
-                        const riskColor = { Low: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80', border: 'rgba(74,222,128,0.3)' }, Medium: { bg: 'rgba(234,179,8,0.15)', color: '#facc15', border: 'rgba(234,179,8,0.3)' }, High: { bg: 'rgba(239,68,68,0.15)', color: '#f87171', border: 'rgba(239,68,68,0.3)' } }[ai.risk];
-                        const checked = selected.has(emp.id);
+                        const ai   = emp._ai;
+                        const sugg = emp._suggestions;
+                        const top  = sugg[0]; // best suggested indicator
+                        const rc   = riskColors[ai.risk] ?? riskColors.High;
+                        const checked    = selected.has(emp.id);
+                        const isExpanded = expandedEmp === emp.id;
                         return (
-                            <div key={emp.id} style={{ ...s.empRow, ...(checked ? s.empRowChecked : {}), cursor: 'pointer' }} onClick={() => toggle(emp)}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2 }}>
-                                    <input type="checkbox" checked={checked} onChange={() => {}} style={s.checkbox} />
-                                    <div style={s.avatar}>{emp.name.charAt(0)}</div>
-                                    <div>
-                                        <div style={s.empName}>{emp.name}</div>
-                                        <div style={s.empPos}>{emp.position}</div>
+                            <div key={emp.id}>
+                                <div style={{ ...s.empRow, ...(checked ? s.empRowChecked : {}), cursor: 'pointer' }}
+                                    onClick={() => toggle(emp)}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2 }}>
+                                        <input type="checkbox" checked={checked} onChange={() => {}} style={s.checkbox} />
+                                        <div style={s.avatar}>{emp.name.charAt(0)}</div>
+                                        <div>
+                                            <div style={s.empName}>{emp.name}</div>
+                                            <div style={s.empPos}>{emp.position} &bull; Load: {ai.load}%</div>
+                                        </div>
+                                    </div>
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
+                                        <div style={{ height: 6, borderRadius: 3, background: 'var(--admin-border)', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${ai.successProb}%`, borderRadius: 3, background: ai.successProb >= 75 ? '#4ade80' : ai.successProb >= 50 ? '#facc15' : '#f87171', transition: 'width 0.3s' }} />
+                                        </div>
+                                        <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{ai.successProb}%</span>
+                                    </div>
+                                    <div style={{ flex: 1, textAlign: 'center' }}>
+                                        <span style={{ padding: '0.15rem 0.6rem', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, background: rc.bg, color: rc.color, border: `1px solid ${rc.border}` }}>{ai.risk}</span>
+                                    </div>
+                                    <div style={{ flex: 0.5, textAlign: 'center' }}>
+                                        <button
+                                            style={{ ...s.infoBtn, background: isExpanded ? 'rgba(59,130,246,0.12)' : 'none', borderColor: isExpanded ? 'var(--admin-accent)' : 'var(--admin-border)', color: top?.fitColor ?? 'var(--admin-text-muted)' }}
+                                            onClick={e => { e.stopPropagation(); setExpandedEmp(isExpanded ? null : emp.id); }}
+                                            title="View suggested indicators">
+                                            &#9733;
+                                        </button>
                                     </div>
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
-                                    <div style={{ height: 6, borderRadius: 3, background: 'var(--admin-border)', overflow: 'hidden' }}>
-                                        <div style={{ height: '100%', width: `${ai.successProb}%`, borderRadius: 3, background: ai.successProb >= 75 ? '#4ade80' : ai.successProb >= 50 ? '#facc15' : '#f87171', transition: 'width 0.3s' }} />
+
+                                {/* Suggested Success Indicators Panel */}
+                                {isExpanded && (
+                                    <div style={{ background: 'rgba(59,130,246,0.04)', borderBottom: '1px solid var(--admin-border)', borderLeft: `3px solid ${top?.fitColor ?? 'var(--admin-accent)'}`, padding: '0.85rem 1.25rem' }}>
+                                        <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.6rem' }}>
+                                            Suggested Success Indicators &mdash; {emp.name}
+                                        </div>
+                                        {sugg.length === 0 && (
+                                            <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>No indicators available in this UWP.</div>
+                                        )}
+                                        {sugg.map((s2, idx) => (
+                                            <div key={s2.id ?? idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.5rem',
+                                                padding: '0.5rem 0.65rem', borderRadius: 6,
+                                                background: s2.id === indicator.id ? 'rgba(59,130,246,0.08)' : 'var(--admin-card)',
+                                                border: `1px solid ${s2.id === indicator.id ? 'rgba(59,130,246,0.3)' : 'var(--admin-border)'}` }}>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: s2.fitColor, minWidth: 36 }}>{s2.fitScore}%</div>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-primary)', lineHeight: 1.3 }}>
+                                                        {s2.indicator_text?.slice(0, 80)}{s2.indicator_text?.length > 80 ? '...' : ''}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
+                                                        {s2.mfo_title} &bull; {s2.fitLabel}
+                                                        {s2.id === indicator.id && <span style={{ marginLeft: 6, color: 'var(--admin-accent)', fontWeight: 700 }}>(current)</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>
+                                            * Prototype ranking. FastAPI /suggest-indicators will use real IPCR history.
+                                        </div>
                                     </div>
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{ai.successProb}%</span>
-                                </div>
-                                <div style={{ flex: 1, textAlign: 'center' }}>
-                                    <span style={{ padding: '0.15rem 0.6rem', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, background: riskColor.bg, color: riskColor.color, border: `1px solid ${riskColor.border}` }}>{ai.risk}</span>
-                                </div>
-                                <div style={{ flex: 0.5, textAlign: 'center' }}>
-                                    <button style={s.infoBtn} onClick={e => e.stopPropagation()} title="View employee info">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                                    </button>
-                                </div>
+                                )}
                             </div>
                         );
                     })}
@@ -198,7 +245,7 @@ export default function AssignModal({ indicator, employees, onSave, onClose }) {
 
                 <div style={s.footer}>
                     <div style={s.aiActive}>
-                        <span style={{ color: 'var(--admin-accent)', fontSize: '0.72rem' }}>✦</span>
+                        <span style={{ color: 'var(--admin-accent)', fontSize: '0.72rem' }}>*</span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>AI OPTIMIZATION ACTIVE</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -221,24 +268,19 @@ const s = {
     title:         { fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: '0.2rem' },
     sub:           { fontSize: '0.75rem', color: 'var(--admin-text-muted)' },
     closeBtn:      { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' },
-
-    // AI Safe banner
     safeBanner:    { margin: '0.75rem 1.5rem 0', padding: '0.85rem 1rem', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 10 },
     safeLabel:     { fontSize: '0.68rem', fontWeight: 700, color: '#4ade80', letterSpacing: '0.07em' },
     safeConf:      { fontSize: '0.68rem', fontWeight: 700, color: '#4ade80' },
     safeText:      { fontSize: '0.8rem', color: 'var(--admin-text-secondary)', margin: 0, lineHeight: 1.5 },
-
-    // AI Warning banner
     warnBanner:    { margin: '0.75rem 1.5rem 0', padding: '0.85rem 1rem', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 10, borderLeft: '3px solid #f97316' },
     warnHeader:    { display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' },
-    warnIcon:      { color: '#f97316', fontSize: '0.9rem' },
+    warnIcon:      { color: '#f97316', fontSize: '0.9rem', fontWeight: 700 },
     warnLabel:     { fontSize: '0.68rem', fontWeight: 700, color: '#f97316', letterSpacing: '0.07em' },
     warnText:      { fontSize: '0.82rem', color: 'var(--admin-text-secondary)', margin: '0 0 0.75rem' },
     warnStats:     { display: 'flex', gap: '0.75rem' },
     warnStat:      { flex: 1, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, padding: '0.5rem 0.75rem' },
     warnStatLabel: { fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginBottom: '0.2rem' },
     warnStatVal:   { fontSize: '0.95rem', fontWeight: 700 },
-
     searchWrap:    { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
     search:        { flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--admin-text-primary)', fontSize: '0.85rem', fontFamily: 'inherit' },
     tableHead:     { display: 'flex', padding: '0.5rem 1.5rem', fontSize: '0.62rem', fontWeight: 700, color: 'var(--admin-text-muted)', letterSpacing: '0.07em', borderBottom: '1px solid var(--admin-border)' },
@@ -252,8 +294,7 @@ const s = {
     empInfo:       { flex: 1, minWidth: 0 },
     empName:       { fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-primary)' },
     empPos:        { fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem' },
-    infoBtn:       { background: 'none', border: '1px solid var(--admin-border)', borderRadius: '50%', width: 24, height: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--admin-text-muted)' },
-
+    infoBtn:       { background: 'none', border: '1px solid var(--admin-border)', borderRadius: '50%', width: 24, height: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '0.75rem' },
     footer:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1.5rem', borderTop: '1px solid var(--admin-border)' },
     aiActive:      { display: 'flex', alignItems: 'center', gap: '0.4rem' },
     btnOutline:    { padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 },
