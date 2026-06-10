@@ -174,6 +174,107 @@ function EvidenceCard({ ev }) {
     );
 }
 
+// ── QetStandardsModal ─────────────────────────────────────────────────────────
+const DIM_LABELS = { quality: 'Quality (Q)', efficiency: 'Efficiency (E)', timeliness: 'Timeliness (T)' };
+const DIM_COLORS = { quality: '#3b82f6', efficiency: '#8b5cf6', timeliness: '#10b981' };
+const DIM_ICONS  = { quality: 'bi-award', efficiency: 'bi-lightning-charge', timeliness: 'bi-clock' };
+const RATING_LABELS_QET = { 5: 'Outstanding', 4: 'Very Satisfactory', 3: 'Satisfactory', 2: 'Unsatisfactory', 1: 'Poor' };
+
+function QetStandardsModal({ standards, indicatorText, onClose }) {
+    const dims_grouped = {};
+    (standards ?? []).forEach(s => {
+        if (!dims_grouped[s.dimension]) dims_grouped[s.dimension] = [];
+        dims_grouped[s.dimension].push(s);
+    });
+
+    const dims = ['quality', 'efficiency', 'timeliness'].filter(d => dims_grouped[d]?.length);
+
+    return (
+        <>
+            <div onClick={onClose} style={{
+                position: 'fixed', inset: 0, zIndex: 1100,
+                background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)',
+            }} />
+            <div style={{
+                position: 'fixed', top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1101, width: 'min(580px, calc(100vw - 32px))',
+                maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+                background: 'var(--admin-card)', borderRadius: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+                border: '1px solid var(--admin-border-strong)',
+            }}>
+                {/* Header */}
+                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)',
+                    flexShrink: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                            <i className="bi bi-clipboard-check" style={{ color: 'var(--admin-accent)', fontSize: '1rem' }} />
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>
+                                QET Standards
+                            </span>
+                        </div>
+                        {indicatorText && indicatorText !== '—' && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', lineHeight: 1.4 }}>
+                                {indicatorText}
+                            </div>
+                        )}
+                    </div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'var(--admin-text-muted)', fontSize: '1.1rem', padding: '2px 4px', flexShrink: 0 }}>
+                        <i className="bi bi-x-lg" />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem' }}>
+                    {dims.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
+                            <i className="bi bi-clipboard-x" style={{ fontSize: '1.8rem', display: 'block', marginBottom: 8 }} />
+                            No QET standards defined for this indicator.
+                        </div>
+                    ) : dims.map(dim => (
+                        <div key={dim} style={{ marginBottom: '1.1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                                <span style={{ width: 28, height: 28, borderRadius: 8, background: `${DIM_COLORS[dim]}20`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <i className={`bi ${DIM_ICONS[dim]}`} style={{ color: DIM_COLORS[dim], fontSize: '0.85rem' }} />
+                                </span>
+                                <span style={{ fontWeight: 700, fontSize: '0.78rem', color: DIM_COLORS[dim],
+                                    textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                    {DIM_LABELS[dim] ?? dim}
+                                </span>
+                            </div>
+                            {[...dims_grouped[dim]].sort((a, b) => b.rating - a.rating).map((s, i) => (
+                                <div key={i} style={{ display: 'flex', gap: 10, padding: '0.6rem 0.75rem',
+                                    marginBottom: 5, borderRadius: 8,
+                                    background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
+                                    alignItems: 'flex-start' }}>
+                                    <span style={{ flexShrink: 0, minWidth: 60, padding: '2px 7px', borderRadius: 99,
+                                        fontSize: '0.62rem', fontWeight: 700, textAlign: 'center',
+                                        background: `${DIM_COLORS[dim]}18`, color: DIM_COLORS[dim],
+                                        marginTop: 1 }}>
+                                        {s.rating}/5
+                                    </span>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: '0.67rem', fontWeight: 700, color: 'var(--admin-text-muted)',
+                                            textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>
+                                            {RATING_LABELS_QET[s.rating] ?? `Rating ${s.rating}`}
+                                        </div>
+                                        <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-primary)', lineHeight: 1.5 }}>
+                                            {s.standard_text}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+}
+
 // ── RatingPanelContent ────────────────────────────────────────────────────────
 function RatingPanelContent({ entry, onSaved, isMobile }) {
     const isRated = entry.status === 'rated' && entry.rating !== null;
@@ -183,6 +284,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
     const [remarks,    setRemarks]    = useState(entry.rating?.remarks           ?? '');
     const [saving,     setSaving]     = useState(false);
     const [errs,       setErrs]       = useState({});
+    const [showQet,    setShowQet]    = useState(false);
 
     useEffect(() => {
         const rated = entry.status === 'rated' && entry.rating !== null;
@@ -191,6 +293,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
         setTimeliness(entry.rating?.timeliness_rating ?? 0);
         setRemarks(entry.rating?.remarks           ?? '');
         setErrs({});
+        setShowQet(false);
     }, [entry.id]);
 
     function discard() {
@@ -225,6 +328,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
 
     // On mobile, action row is sticky — wrap edit content in scrollable div
     return (
+    <>
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
             {/* Scrollable body */}
@@ -253,7 +357,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
                             </span>
                         )}
                     </div>
-                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                         {[
                             { icon: 'bi-calendar3', text: entry.work_date },
                             { icon: 'bi-stopwatch',  text: formatDuration(entry.total_seconds) },
@@ -264,6 +368,18 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
                                 <i className={`bi ${m.icon}`} />{m.text}
                             </span>
                         ))}
+                        {(entry.qet_standards?.length > 0) && (
+                            <button onClick={() => setShowQet(true)} style={{
+                                display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto',
+                                padding: '3px 10px', borderRadius: 7, border: '1px solid var(--admin-border-strong)',
+                                background: 'transparent', color: 'var(--admin-text-muted)',
+                                cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600,
+                                whiteSpace: 'nowrap',
+                            }}>
+                                <i className="bi bi-clipboard-check" />
+                                QET Standards
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -411,10 +527,16 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
                 </div>
             )}
         </div>
+        {showQet && (
+            <QetStandardsModal
+                standards={entry.qet_standards}
+                indicatorText={entry.indicator_text}
+                onClose={() => setShowQet(false)}
+            />
+        )}
+    </>
     );
 }
-
-// ── BottomSheet ───────────────────────────────────────────────────────────────
 function useSidebarLeft() {
     const getLeft = () => {
         if (window.innerWidth < 768) return 0;

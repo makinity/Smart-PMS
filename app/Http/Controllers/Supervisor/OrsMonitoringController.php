@@ -18,7 +18,7 @@ class OrsMonitoringController extends Controller
 
         $entries = OrsEntry::where('supervisor_id', $supervisor->id)
             ->whereIn('status', ['submitted', 'rated'])
-            ->with(['employee.office', 'ipcrItem.indicator.uwpMfo', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
+            ->with(['employee.office', 'ipcrItem.indicator.uwpMfo', 'ipcrItem.indicator.qetStandards', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
             ->orderByRaw("FIELD(status, 'submitted', 'rated')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -63,6 +63,23 @@ class OrsMonitoringController extends Controller
     private function formatEntry(OrsEntry $e): array
     {
         $mon = $e->monitoring->first();
+
+        // QET standards from live DB; normalize single-letter dimensions (q/e/t → quality/efficiency/timeliness)
+        $qetStandards = [];
+        $dimNormalize = ['q' => 'quality', 'e' => 'efficiency', 't' => 'timeliness',
+                         'quality' => 'quality', 'efficiency' => 'efficiency', 'timeliness' => 'timeliness'];
+
+        if ($e->ipcrItem?->indicator) {
+            $e->ipcrItem->indicator->loadMissing('qetStandards');
+            foreach ($e->ipcrItem->indicator->qetStandards as $s) {
+                $qetStandards[] = [
+                    'dimension'     => $dimNormalize[strtolower($s->dimension)] ?? $s->dimension,
+                    'rating'        => (int) $s->rating,
+                    'standard_text' => $s->standard_text,
+                ];
+            }
+        }
+
         return [
             'id'               => $e->id,
             'work_date'        => $e->work_date->toDateString(),
@@ -83,6 +100,7 @@ class OrsMonitoringController extends Controller
                 'file_path' => Storage::url($ev->file_path),
                 'file_size' => $ev->file_size,
             ])->toArray(),
+            'qet_standards'    => $qetStandards,
             'rating' => $mon ? [
                 'quality_rating'    => $mon->quality_rating,
                 'timeliness_rating' => $mon->timeliness_rating,
