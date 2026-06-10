@@ -2,21 +2,29 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class UnitWorkPlan extends Model
 {
+    use RecordsActivity;
+
     // Status constants
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_CONSOLIDATED = 'consolidated';
+
     public const STATUS_ENDORSED = 'endorsed';
+
     public const STATUS_PMT_APPROVED = 'pmt_approved';
+
     public const STATUS_RETURNED = 'returned';
 
     protected $fillable = [
@@ -37,10 +45,10 @@ class UnitWorkPlan extends Model
 
     protected $casts = [
         'submitted_at' => 'datetime',
-        'endorsed_at'  => 'datetime',
-        'approved_at'  => 'datetime',
-        'returned_at'  => 'datetime',
-        'locked_at'    => 'datetime',
+        'endorsed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'returned_at' => 'datetime',
+        'locked_at' => 'datetime',
     ];
 
     public function office(): BelongsTo
@@ -110,7 +118,7 @@ class UnitWorkPlan extends Model
 
     public function isLocked(): bool
     {
-        return !is_null($this->locked_at);
+        return ! is_null($this->locked_at);
     }
 
     public function isDraft(): bool

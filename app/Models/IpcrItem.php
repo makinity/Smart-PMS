@@ -15,6 +15,13 @@ class IpcrItem extends Model
 
     protected $casts = ['standards_payload' => 'array'];
 
-    public function ipcr()      { return $this->belongsTo(Ipcr::class); }
-    public function indicator() { return $this->belongsTo(UwpSuccessIndicator::class, 'uwp_success_indicator_id'); }
+    public function ipcr()
+    {
+        return $this->belongsTo(Ipcr::class);
+    }
+
+    public function indicator()
+    {
+        return $this->belongsTo(UwpSuccessIndicator::class, 'uwp_success_indicator_id');
+    }
 }

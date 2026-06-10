@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Office extends Model
 {
+    use RecordsActivity;
+
     protected $fillable = ['name', 'code', 'head_id', 'is_active', 'hris_id', 'hris_synced_at'];
 
     protected $casts = [

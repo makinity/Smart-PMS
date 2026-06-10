@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DevelopmentPlan extends Model
 {
+    use RecordsActivity;
+
     public const STATUS_DRAFT = 'draft';
 
     public const STATUS_PENDING_DETAILS = 'pending_details';

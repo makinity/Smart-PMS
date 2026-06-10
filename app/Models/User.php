@@ -2,16 +2,30 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles;
+    use HasFactory, HasRoles, Notifiable, RecordsActivity, TwoFactorAuthenticatable;
+
+    protected array $activitylogAttributes = [
+        'employee_id',
+        'name',
+        'email',
+        'role',
+        'office_id',
+        'position',
+        'is_active',
+        'is_disabled',
+        'activated_at',
+    ];
 
     protected $fillable = [
         'employee_id',
@@ -66,8 +80,8 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         return $this->profile_photo_path
-            ? \Illuminate\Support\Facades\Storage::url($this->profile_photo_path)
-            : \Illuminate\Support\Facades\Storage::url('profiles/default.jpeg');
+            ? Storage::url($this->profile_photo_path)
+            : Storage::url('profiles/default.jpeg');
     }
 
     public function getInitialsAttribute()
@@ -77,6 +91,7 @@ class User extends Authenticatable
         foreach ($words as $w) {
             $initials .= mb_substr($w, 0, 1);
         }
+
         return mb_strtoupper(mb_substr($initials, 0, 2));
     }
 

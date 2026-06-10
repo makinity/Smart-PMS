@@ -11,6 +11,13 @@ class QarMporLink extends Model
         'qar_header_id', 'mpor_id', 'employee_name', 'month_label', 'status_label',
     ];
 
-    public function header(): BelongsTo { return $this->belongsTo(QarHeader::class, 'qar_header_id'); }
-    public function mpor(): BelongsTo   { return $this->belongsTo(Mpor::class); }
+    public function header(): BelongsTo
+    {
+        return $this->belongsTo(QarHeader::class, 'qar_header_id');
+    }
+
+    public function mpor(): BelongsTo
+    {
+        return $this->belongsTo(Mpor::class);
+    }
 }

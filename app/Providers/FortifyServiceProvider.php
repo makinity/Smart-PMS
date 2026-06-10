@@ -73,7 +73,7 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower(trim((string) $request->input('name'))).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            return Limit::perMinute(3)->by($throttleKey);
         });
 
         RateLimiter::for('activation-verify', function (Request $request) {

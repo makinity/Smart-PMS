@@ -2,6 +2,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import { useToast } from '@/Components/Snackbar';
 
 const STATUS_STYLES = {
     active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -221,7 +222,18 @@ function MenuItem({ icon, label, tone = 'default', onClick, disabled = false }) 
     );
 }
 
-function ActionMenu({ user, open, onClose, onEdit, onSendCode, onToggleActive, onToggleDisabled, protectedAccount }) {
+function Spinner({ size = 14 }) {
+    return (
+        <>
+            <style>{`@keyframes pms-spin { to { transform: rotate(360deg); } }`}</style>
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'pms-spin 0.7s linear infinite', flexShrink: 0 }}>
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+        </>
+    );
+}
+
+function ActionMenu({ user, open, onClose, onEdit, onSendCode, onToggleActive, onToggleDisabled, protectedAccount, sending }) {
     if (!open) return null;
     return (
         <div
@@ -229,7 +241,7 @@ function ActionMenu({ user, open, onClose, onEdit, onSendCode, onToggleActive, o
             style={{ position: 'absolute', right: 0, top: 48, zIndex: 20, width: 200, borderRadius: 12, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '0.25rem' }}
         >
             <MenuItem icon={<IconEdit className="h-4 w-4" />} label="Edit user" onClick={() => { onClose(); onEdit(); }} />
-            <MenuItem icon={<IconMail className="h-4 w-4" />} label="Send employee ID" disabled={!user.email} onClick={() => { onClose(); onSendCode(); }} />
+            <MenuItem icon={sending ? <Spinner /> : <IconMail className="h-4 w-4" />} label={sending ? 'Sending…' : 'Send employee ID'} disabled={!user.email || sending} onClick={() => { onClose(); onSendCode(); }} />
             <MenuItem icon={<IconShield className="h-4 w-4" />} label={user.is_active ? 'Deactivate' : 'Activate'} disabled={protectedAccount} onClick={() => { onClose(); onToggleActive(); }} />
             <MenuItem icon={<IconAlert className="h-4 w-4" />} tone={user.is_disabled ? 'warning' : 'danger'} label={user.is_disabled ? 'Enable access' : 'Disable access'} disabled={protectedAccount} onClick={() => { onClose(); onToggleDisabled(); }} />
         </div>
@@ -335,7 +347,7 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
     );
 }
 
-function UserCard({ user, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety }) {
+function UserCard({ user, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety, sending }) {
     const status = formatStatus(user);
     const role = String(user.role || user.roles?.[0] || 'user').toLowerCase();
     const protectedAccount = Boolean(safety?.protected_user_ids?.includes?.(user.id));
@@ -366,22 +378,22 @@ function UserCard({ user, activeMenuId, onMenu, onEdit, onSendCode, onToggleActi
                     <button type="button" onClick={onEdit} style={{ ...actionSecondary, padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: 34 }}>
                         <IconEdit className="h-4 w-4" /> Edit
                     </button>
-                    <button type="button" onClick={onSendCode} disabled={!user.email} style={{ ...actionSecondary, padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: 34, opacity: user.email ? 1 : 0.45 }}>
-                        <IconMail className="h-4 w-4" /> Send ID
+                    <button type="button" onClick={onSendCode} disabled={!user.email || sending} style={{ ...actionSecondary, padding: '0.4rem 0.85rem', fontSize: '0.8rem', minHeight: 34, opacity: user.email ? (sending ? 0.85 : 1) : 0.45, cursor: sending ? 'default' : 'pointer' }}>
+                        {sending ? <Spinner /> : <IconMail className="h-4 w-4" />} {sending ? 'Sending…' : 'Send ID'}
                     </button>
                 </div>
                 <div style={{ position: 'relative' }} data-user-actions>
                     <button type="button" onClick={() => onMenu(activeMenuId === user.id ? null : user.id)} style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                         <IconDots className="h-4 w-4" />
                     </button>
-                    <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={onEdit} onSendCode={onSendCode} onToggleActive={onToggleActive} onToggleDisabled={onToggleDisabled} protectedAccount={protectedAccount} />
+                    <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={onEdit} onSendCode={onSendCode} onToggleActive={onToggleActive} onToggleDisabled={onToggleDisabled} protectedAccount={protectedAccount} sending={sending} />
                 </div>
             </div>
         </article>
     );
 }
 
-function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety }) {
+function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleActive, onToggleDisabled, safety, sendingId }) {
     return (
         <div style={{ borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border)', overflow: 'hidden' }} className="lg-table-wrap">
             <style>{`.lg-table-wrap { display: none; } @media (min-width: 1024px) { .lg-table-wrap { display: block; } }`}</style>
@@ -399,6 +411,7 @@ function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleAc
                             const status = formatStatus(user);
                             const role = String(user.role || user.roles?.[0] || 'user').toLowerCase();
                             const protectedAccount = Boolean(safety?.protected_user_ids?.includes?.(user.id));
+                            const sending = sendingId === user.id;
                             return (
                                 <tr key={user.id} style={{ borderBottom: '1px solid var(--admin-border)', verticalAlign: 'top' }}>
                                     <td style={{ padding: '0.85rem 1.25rem' }}>
@@ -422,12 +435,12 @@ function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleAc
                                     <td style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>
                                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                                             <button type="button" onClick={() => onEdit(user)} style={{ ...actionSecondary, padding: '0.35rem 0.75rem', fontSize: '0.78rem', minHeight: 32 }}>Edit</button>
-                                            <button type="button" onClick={() => onSendCode(user)} disabled={!user.email} style={{ ...actionSecondary, padding: '0.35rem 0.75rem', fontSize: '0.78rem', minHeight: 32, opacity: user.email ? 1 : 0.45 }}>Send ID</button>
+                                            <button type="button" onClick={() => onSendCode(user)} disabled={!user.email || sending} style={{ ...actionSecondary, padding: '0.35rem 0.75rem', fontSize: '0.78rem', minHeight: 32, opacity: user.email ? (sending ? 0.85 : 1) : 0.45, cursor: sending ? 'default' : 'pointer' }}>{sending ? <><Spinner size={13} /> Sending…</> : 'Send ID'}</button>
                                             <div style={{ position: 'relative' }} data-user-actions>
                                                 <button type="button" onClick={() => onMenu(activeMenuId === user.id ? null : user.id)} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                                                     <IconDots className="h-4 w-4" />
                                                 </button>
-                                                <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={() => onEdit(user)} onSendCode={() => onSendCode(user)} onToggleActive={() => onToggleActive(user)} onToggleDisabled={() => onToggleDisabled(user)} protectedAccount={protectedAccount} />
+                                                <ActionMenu user={user} open={activeMenuId === user.id} onClose={() => onMenu(null)} onEdit={() => onEdit(user)} onSendCode={() => onSendCode(user)} onToggleActive={() => onToggleActive(user)} onToggleDisabled={() => onToggleDisabled(user)} protectedAccount={protectedAccount} sending={sending} />
                                             </div>
                                         </div>
                                     </td>
@@ -478,6 +491,8 @@ export default function Index({
     const [editor, setEditor] = useState(null);
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [sendingId, setSendingId] = useState(null);
+    const toast = useToast();
     const [notice, setNotice] = useState(flash.summary || flash.success || '');
 
     const roleOptions = useMemo(() => {
@@ -599,16 +614,18 @@ export default function Index({
 
     function handleSendCode(user) {
         if (!user?.email) {
-            setNotice('This user does not have an email address.');
+            toast('This user does not have an email address.', 'warning');
             return;
         }
 
+        setActiveMenuId(null);
+        setSendingId(user.id);
         router.post(`/administrator/users/${user.id}/send-code`, {}, {
             preserveScroll: true,
-            onSuccess: () => setNotice(`Employee ID sent to ${user.email}.`),
-            onError: (errors) => setNotice(firstErrorMessage(errors)),
+            onSuccess: () => toast(`Employee ID sent to ${user.email}.`, 'success'),
+            onError: (errors) => toast(firstErrorMessage(errors) || 'Failed to send employee ID.', 'error'),
+            onFinish: () => setSendingId(null),
         });
-        setActiveMenuId(null);
     }
 
     function handleToggleActive(user) {
@@ -765,6 +782,7 @@ export default function Index({
                                     onToggleActive={handleToggleActive}
                                     onToggleDisabled={handleToggleDisabled}
                                     safety={safety}
+                                    sendingId={sendingId}
                                 />
                                 <div className="mobile-cards" style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                     <style>{`@media (min-width: 1024px) { .mobile-cards { display: none !important; } }`}</style>
@@ -779,6 +797,7 @@ export default function Index({
                                             onToggleActive={() => handleToggleActive(user)}
                                             onToggleDisabled={() => handleToggleDisabled(user)}
                                             safety={safety}
+                                            sending={sendingId === user.id}
                                         />
                                     ))}
                                 </div>

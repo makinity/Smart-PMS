@@ -86,6 +86,8 @@ export default function Login() {
 
     return (
         <GuestLayout>
+            {/* Hide the browser's native password reveal control — redundant with our own eye toggle */}
+            <style>{`input::-ms-reveal, input::-ms-clear { display: none; }`}</style>
             {/* ── Dark mode toggle ── */}
             <button
                 onClick={() => setDarkMode(v => !v)}
@@ -253,6 +255,7 @@ export default function Login() {
                         </div>
 
                         <form onSubmit={submit}>
+                            {errors.throttle && <ThrottleBanner key={errors.throttle} message={errors.throttle} />}
                             {mode === 'login' && <>
                                 <Field label="Name" icon={icons.user} error={errors.name}>
                                     <input type="text" value={data.name} onChange={e => setData('name', e.target.value)}
@@ -401,6 +404,46 @@ export default function Login() {
                 button:disabled { opacity: 0.55; cursor: not-allowed; }
             `}</style>
         </GuestLayout>
+    );
+}
+
+function ThrottleBanner({ message }) {
+    // Seconds are baked into the server message ("…try again in 55 seconds.").
+    const initial = (() => {
+        const match = /(\d+)\s*second/i.exec(message) ?? /(\d+)/.exec(message);
+        return match ? parseInt(match[1], 10) : 0;
+    })();
+
+    const [seconds, setSeconds] = useState(initial);
+
+    useEffect(() => {
+        if (initial <= 0) return;
+        const id = setInterval(() => setSeconds(s => (s <= 1 ? 0 : s - 1)), 1000);
+        return () => clearInterval(id);
+    }, [initial]);
+
+    const ready = seconds <= 0;
+    const text = ready
+        ? 'You can try signing in again now.'
+        : `Too many login attempts. Please try again in ${seconds} second${seconds === 1 ? '' : 's'}.`;
+    const color = ready ? '#16a34a' : '#ef4444';
+
+    return (
+        <div role="alert" aria-live="polite" style={{
+            display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
+            padding: '0.7rem 0.85rem', marginBottom: '1.25rem',
+            background: ready ? 'rgba(22,163,74,0.1)' : 'rgba(239,68,68,0.1)',
+            border: `1px solid ${ready ? 'rgba(22,163,74,0.4)' : 'rgba(239,68,68,0.4)'}`,
+            borderRadius: 'var(--admin-radius)',
+            color, fontSize: '0.82rem', lineHeight: 1.45,
+        }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '0.1rem' }}>
+                {ready
+                    ? <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>
+                    : <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>}
+            </svg>
+            <span>{text}</span>
+        </div>
     );
 }
 

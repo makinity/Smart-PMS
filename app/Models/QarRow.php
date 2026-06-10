@@ -13,5 +13,8 @@ class QarRow extends Model
         'variance', 'remarks', 'sort_order',
     ];
 
-    public function header(): BelongsTo { return $this->belongsTo(QarHeader::class, 'qar_header_id'); }
+    public function header(): BelongsTo
+    {
+        return $this->belongsTo(QarHeader::class, 'qar_header_id');
+    }
 }

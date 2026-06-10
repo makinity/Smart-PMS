@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Ipcr extends Model
 {
+    use RecordsActivity;
+
     public const STATUS_RELEASED_BY_PMT = 'released_by_pmt';
 
     protected $fillable = [

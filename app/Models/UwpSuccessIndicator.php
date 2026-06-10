@@ -23,7 +23,7 @@ class UwpSuccessIndicator extends Model
 
     protected $casts = [
         'allotted_budget' => 'decimal:2',
-        'sort_order'      => 'integer',
+        'sort_order' => 'integer',
     ];
 
     public function uwpMfo(): BelongsTo

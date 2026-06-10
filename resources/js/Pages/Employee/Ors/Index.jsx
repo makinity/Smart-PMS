@@ -502,15 +502,21 @@ export default function Index() {
                 </div>
             )}
 
-            {/* ── MOBILE: day list view, FAB ── */}
+            {/* ── MOBILE: full calendar grid (dot chips), FAB ── */}
             {bp === 'mobile' && (
                 <div style={card}>
                     <CalHeader cal={cal} setCal={setCal} orsGateLocked={effectivelyLocked} showLogBtn={false} compact />
-                    <MiniCalStrip year={cal.year} month={cal.month} entries={calendarEntries}
-                        today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked}
-                        selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-                    <MobileDayList year={cal.year} month={cal.month} entries={calendarEntries}
-                        today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked} />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                        {WEEKDAYS_SHORT.map((d, i) => (
+                            <div key={i} style={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', padding: '0.2rem 0' }}>{d}</div>
+                        ))}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.25rem' }}>
+                        {cells.map((day, i) => (
+                            <DayCellTablet key={i} day={day} year={cal.year} month={cal.month}
+                                entries={calendarEntries} today={today} onDayClick={onDayClick} gateLocked={effectivelyLocked} />
+                        ))}
+                    </div>
                     <Legend scrollable />
                     {/* FAB */}
                     {!orsGateLocked && (

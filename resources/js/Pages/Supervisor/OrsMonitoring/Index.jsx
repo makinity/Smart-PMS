@@ -257,7 +257,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
                         {[
                             { icon: 'bi-calendar3', text: entry.work_date },
                             { icon: 'bi-stopwatch',  text: formatDuration(entry.total_seconds) },
-                            entry.quantity && { icon: 'bi-hash', text: entry.quantity },
+                            entry.quantity && { icon: 'bi-stack', text: `QTY: ${entry.quantity}` },
                             entry.submitted_at && { icon: 'bi-send', text: `Submitted ${relativeTime(entry.submitted_at)}` },
                         ].filter(Boolean).map((m, i) => (
                             <span key={i} style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>

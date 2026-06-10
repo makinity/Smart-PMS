@@ -68,19 +68,19 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div style={{ ...card, padding: '1rem 1.25rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto auto', gap: '0.65rem', alignItems: 'center' }}>
+                {/* Filters — single row across all breakpoints */}
+                <div style={{ ...card, padding: isMobile ? '0.85rem 0.9rem' : '1rem 1.25rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', gap: isMobile ? '0.4rem' : '0.65rem', alignItems: 'center' }}>
                         {/* Search */}
-                        <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative', minWidth: 0 }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
                             <input
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                placeholder="Search employee name…"
-                                style={{ ...inputStyle, paddingLeft: '2.1rem', width: '100%' }}
+                                placeholder={isMobile ? 'Search…' : 'Search employee name…'}
+                                style={{ ...inputStyle, ...(isMobile ? compactInput : null), paddingLeft: '2.1rem', width: '100%' }}
                             />
                         </div>
                         {/* Month */}
@@ -88,10 +88,10 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                             type="month"
                             value={month}
                             onChange={e => setMonth(e.target.value)}
-                            style={inputStyle}
+                            style={{ ...inputStyle, ...(isMobile ? compactInput : null) }}
                         />
                         {/* Status filter */}
-                        <select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}>
+                        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inputStyle, ...(isMobile ? compactInput : null) }}>
                             {['', 'submitted', 'approved', 'returned'].map(s => (
                                 <option key={s} value={s}>{{ '': 'All', submitted: 'Submitted', approved: 'Approved', returned: 'Returned' }[s]}</option>
                             ))}
@@ -207,4 +207,5 @@ const card      = { background: 'var(--admin-card)', border: '1px solid var(--ad
 const iconBox   = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', flexShrink: 0 };
 const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.15rem' };
 const inputStyle = { padding: '0.55rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' };
+const compactInput = { padding: '0.5rem 0.5rem', fontSize: '0.78rem', borderRadius: 8 };
 const btnView   = { display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.45rem 0.9rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };

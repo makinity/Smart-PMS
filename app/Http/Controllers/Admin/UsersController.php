@@ -126,7 +126,8 @@ class UsersController extends Controller
     {
         $service->sendEmployeeId($user, $request->user());
 
-        return back()->with('success', 'Employee ID email sent successfully.');
+        // Feedback is shown via the client-side snackbar (onSuccess), so no flash here.
+        return back();
     }
 
     public function activate(Request $request, User $user, AdminUserManagementService $service)

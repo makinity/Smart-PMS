@@ -14,7 +14,6 @@ use Spatie\Permission\Models\Role;
 class AdminUserManagementService
 {
     public function __construct(
-        private readonly AuditLogService $auditLog,
         private readonly HmsEmployeeSyncService $hrisSync,
     ) {}
 
@@ -30,7 +29,7 @@ class AdminUserManagementService
 
     public function create(array $data, User $actor): User
     {
-        return DB::transaction(function () use ($data, $actor) {
+        return DB::transaction(function () use ($data) {
             $user = User::create([
                 'employee_id' => trim((string) $data['employee_id']),
                 'name' => trim((string) $data['name']),
@@ -47,20 +46,13 @@ class AdminUserManagementService
             $this->syncRole($user, $data['role']);
             $user->load('office');
 
-            $this->audit(
-                actor: $actor,
-                actionKey: 'create',
-                target: $user,
-                metadata: ['employee_id' => $user->employee_id, 'role' => $user->role]
-            );
-
             return $user;
         });
     }
 
     public function update(User $user, array $data, User $actor): User
     {
-        return DB::transaction(function () use ($user, $data, $actor) {
+        return DB::transaction(function () use ($user, $data) {
             $nextRole = $data['role'] ?? $user->role;
             $nextDisabled = array_key_exists('is_disabled', $data)
                 ? (bool) $data['is_disabled']
@@ -91,13 +83,6 @@ class AdminUserManagementService
             $user->save();
             $this->syncRole($user, $nextRole);
             $user->load('office');
-
-            $this->audit(
-                actor: $actor,
-                actionKey: 'update',
-                target: $user,
-                metadata: ['employee_id' => $user->employee_id, 'role' => $user->role]
-            );
 
             return $user;
         });
@@ -138,34 +123,23 @@ class AdminUserManagementService
             email: $email,
         ));
 
-        $this->audit(
-            actor: $actor,
-            actionKey: 'send_employee_code',
-            target: $user,
-            metadata: ['email' => $email, 'employee_id' => $user->employee_id]
-        );
+        activity('User')
+            ->performedOn($user)
+            ->causedBy($actor)
+            ->withProperties(['email' => $email, 'employee_id' => $user->employee_id])
+            ->event('sent_employee_id')
+            ->log('Sent employee ID');
     }
 
     public function syncFromHris(string $baseUrl, string $token, User $actor): array
     {
         $summary = $this->hrisSync->sync($baseUrl, $token);
 
-        $this->auditLog->log([
-            'actor_user_id' => $actor->id,
-            'actor_name' => $actor->name,
-            'actor_role' => $actor->role,
-            'action_key' => 'sync',
-            'module_key' => 'admin.hris',
-            'target_type' => 'hris_sync',
-            'target_id' => null,
-            'route_name' => request()?->route()?->getName(),
-            'http_method' => request()?->method(),
-            'ip_address' => request()?->ip(),
-            'user_agent' => request()?->userAgent(),
-            'status' => 'success',
-            'summary' => 'Successful sync in Admin Hris',
-            'metadata' => $summary,
-        ]);
+        activity('Hris')
+            ->causedBy($actor)
+            ->withProperties($summary)
+            ->event('hris_sync')
+            ->log('Synced users from HRIS');
 
         return $summary;
     }
@@ -181,13 +155,6 @@ class AdminUserManagementService
             'activated_at' => $active ? ($user->activated_at ?? now()) : null,
         ])->save();
 
-        $this->audit(
-            actor: $actor,
-            actionKey: $active ? 'activate' : 'deactivate',
-            target: $user,
-            metadata: ['employee_id' => $user->employee_id]
-        );
-
         return $user->fresh('office');
     }
 
@@ -200,13 +167,6 @@ class AdminUserManagementService
         $user->forceFill([
             'is_disabled' => $disabled,
         ])->save();
-
-        $this->audit(
-            actor: $actor,
-            actionKey: $disabled ? 'disable' : 'enable',
-            target: $user,
-            metadata: ['employee_id' => $user->employee_id]
-        );
 
         return $user->fresh('office');
     }
@@ -240,38 +200,6 @@ class AdminUserManagementService
     {
         Role::findOrCreate($role, 'web');
         $user->syncRoles([$role]);
-    }
-
-    private function audit(User $actor, string $actionKey, ?User $target = null, array $metadata = [], string $moduleKey = 'admin.users'): void
-    {
-        $this->auditLog->log([
-            'actor_user_id' => $actor->id,
-            'actor_name' => $actor->name,
-            'actor_role' => $actor->role,
-            'action_key' => $actionKey,
-            'module_key' => $moduleKey,
-            'target_type' => $target ? 'user' : null,
-            'target_id' => $target ? (string) $target->id : null,
-            'route_name' => request()?->route()?->getName(),
-            'http_method' => request()?->method(),
-            'ip_address' => request()?->ip(),
-            'user_agent' => request()?->userAgent(),
-            'status' => 'success',
-            'summary' => $this->buildSummary($actionKey, $target),
-            'metadata' => array_filter($metadata, static fn ($value) => $value !== null && $value !== ''),
-        ]);
-    }
-
-    private function buildSummary(string $actionKey, ?User $target): string
-    {
-        $actionLabel = Str::title(str_replace('_', ' ', $actionKey));
-        $summary = "Successful {$actionLabel} in Admin Users";
-
-        if ($target) {
-            $summary .= " (user: {$target->id})";
-        }
-
-        return $summary;
     }
 
     private function normalizeEmail(mixed $email): string

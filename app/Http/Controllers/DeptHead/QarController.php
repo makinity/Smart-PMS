@@ -11,6 +11,7 @@ use App\Models\QarHeader;
 use App\Models\QarMporLink;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
+use App\Services\QarConsolidationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,100 +20,7 @@ use Inertia\Inertia;
 
 class QarController extends Controller
 {
-    // ── Quarter helpers ───────────────────────────────────────────────────────
-
-    private function quarterMonths(PerformancePeriod $period, int $q): array
-    {
-        $year = $period->start_date->year;
-        // Q1 = Jan-Mar, Q2 = Apr-Jun (period is 2 quarters / 6 months)
-        $base = ($q - 1) * 3 + 1;
-
-        return [
-            Carbon::create($year, $base, 1)->startOfMonth(),
-            Carbon::create($year, $base + 1, 1)->startOfMonth(),
-            Carbon::create($year, $base + 2, 1)->startOfMonth(),
-        ];
-    }
-
-    private function quarterKey(PerformancePeriod $period, int $q): string
-    {
-        return $period->start_date->year.'-Q'.$q;
-    }
-
-    // ── Consolidate Annex I rows from endorsed MPORs in a quarter ─────────────
-
-    private function consolidate(int $officeId, PerformancePeriod $period, int $q): array
-    {
-        $months = $this->quarterMonths($period, $q);
-
-        $monthStrings = array_map(fn ($m) => $m->format('Y-m'), $months);
-
-        $mpors = Mpor::where('office_id', $officeId)
-            ->where('status', 'approved')
-            ->whereIn('month', $monthStrings)
-            ->with(['employee'])
-            ->get();
-
-        if ($mpors->isEmpty()) {
-            return ['rows' => [], 'mpors' => []];
-        }
-
-        // Collect all rated entries from all employees in those MPORs
-        $rows = [];
-        $sort = 0;
-
-        foreach ($mpors as $mpor) {
-            $start = Carbon::parse($mpor->month.'-01')->startOfMonth();
-            $end = $start->copy()->endOfMonth();
-
-            $entries = OrsEntry::with(['ipcrItem.indicator.uwpMfo.uwpFunction', 'monitoring'])
-                ->where('employee_id', $mpor->employee_id)
-                ->where('status', 'rated')
-                ->where('quantity', '>', 0)
-                ->whereBetween('work_date', [$start, $end])
-                ->get()
-                ->filter(fn ($e) => ($m = $e->monitoring->first()) && $m->quality_rating !== null && $m->timeliness_rating !== null);
-
-            foreach ($entries as $entry) {
-                $item = $entry->ipcrItem;
-                $indicator = $item?->indicator;
-                if (! $indicator) {
-                    continue;
-                }
-
-                $mfo = $indicator->uwpMfo;
-                $rowKey = $item->id.'_'.strtolower(trim($indicator->indicator_text ?? ''));
-
-                if (! isset($rows[$rowKey])) {
-                    $rows[$rowKey] = [
-                        'ppa_code' => (string) $item->id,
-                        'mfo_title' => $mfo?->title ?? 'Unknown',
-                        'indicator_text' => $indicator->indicator_text ?? '',
-                        'target_quantity' => is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : null,
-                        'target_timeline' => $indicator->target_timeline ?? '',
-                        'actual_performance' => 0,
-                        'variance' => null,
-                        'remarks' => 'Consolidated from multiple employee MPORs',
-                        'sort_order' => $sort++,
-                    ];
-                }
-                $rows[$rowKey]['actual_performance'] += (int) $entry->quantity;
-            }
-        }
-
-        // Compute variance
-        foreach ($rows as &$row) {
-            if ($row['target_quantity'] !== null) {
-                $row['variance'] = $row['actual_performance'] - $row['target_quantity'];
-            }
-        }
-        unset($row);
-
-        return [
-            'rows' => array_values($rows),
-            'mpors' => $mpors,
-        ];
-    }
+    public function __construct(private QarConsolidationService $qar) {}
 
     // ── Index ─────────────────────────────────────────────────────────────────
 
@@ -126,9 +34,9 @@ class QarController extends Controller
             $q = 1;
         }
 
-        $consolidated = $period ? $this->consolidate($user->office_id, $period, $q) : ['rows' => [], 'mpors' => collect()];
+        $consolidated = $period ? $this->qar->consolidate($user->office_id, $period, $q) : ['rows' => [], 'mpors' => collect()];
 
-        $quarterKey = $period ? $this->quarterKey($period, $q) : null;
+        $quarterKey = $period ? $this->qar->quarterKey($period, $q) : null;
         $qarHeader = $quarterKey
             ? QarHeader::where('office_id', $user->office_id)
                 ->where('quarter_key', $quarterKey)
@@ -151,7 +59,7 @@ class QarController extends Controller
 
         // Months covered
         $quarterMonths = $period
-            ? array_map(fn ($m) => $m->format('Y-m'), $this->quarterMonths($period, $q))
+            ? array_map(fn ($m) => $m->format('Y-m'), $this->qar->quarterMonths($period, $q))
             : [];
         $coveredMonths = $mporList->pluck('month')->unique()->values();
 
@@ -185,10 +93,10 @@ class QarController extends Controller
         $q = (int) $request->input('q', 1);
         abort_unless($q >= 1 && $q <= 2, 422, 'Invalid quarter.');
 
-        $consolidated = $this->consolidate($user->office_id, $period, $q);
+        $consolidated = $this->qar->consolidate($user->office_id, $period, $q);
         abort_if(empty($consolidated['rows']), 422, 'No approved MPORs found for this quarter.');
 
-        $quarterKey = $this->quarterKey($period, $q);
+        $quarterKey = $this->qar->quarterKey($period, $q);
 
         $header = DB::transaction(function () use ($user, $period, $quarterKey, $consolidated) {
             $header = QarHeader::updateOrCreate(

@@ -178,6 +178,12 @@ export default function Index() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                             {qarHeader && <StatusBadge status={qarHeader.status} />}
+                            {annexRows.length > 0 && (
+                                <a href={`/stage-two/forms/qar-export?q=${q}`} style={btnExport}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Export Excel
+                                </a>
+                            )}
                             {canSubmit && (
                                 <button onClick={handleSubmit} disabled={endorsing} style={{ ...btnPrimary, background: '#a78bfa', opacity: endorsing ? 0.7 : 1 }}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -347,3 +353,4 @@ const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-te
 const tdS       = { padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', verticalAlign: 'middle' };
 const btnView   = { display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.35rem 0.75rem', borderRadius: 7, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };
 const btnPrimary = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 1.15rem', borderRadius: 10, border: 'none', color: '#fff', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' };
+const btnExport  = { display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none' };
