@@ -9,6 +9,12 @@ const statusStyle = s => ({
         s === 'returned'  ? { background: 'rgba(239,68,68,0.15)',   color: '#f87171',             borderColor: 'rgba(239,68,68,0.35)' } :
                             { background: 'rgba(234,179,8,0.15)',   color: '#facc15',             borderColor: 'rgba(234,179,8,0.35)' }),
 });
+const FILTERS = [
+    { key: 'all', label: 'All' },
+    { key: 'submitted', label: 'Submitted' },
+    { key: 'approved', label: 'Approved' },
+    { key: 'returned', label: 'Returned' },
+];
 
 const EyeIcon = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,15 +51,31 @@ export default function Index() {
                     <p style={sub}>Review OPCR submissions from all offices.</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-                    <input type="text" placeholder="Search office or period…" value={search}
-                        onChange={e => setSearch(e.target.value)} style={searchInput} />
-                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectInput}>
-                        <option value="all">All statuses</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="approved">Approved</option>
-                        <option value="returned">Returned</option>
-                    </select>
+                <div style={{ marginBottom: '1.25rem' }}>
+                    <input
+                        type="text"
+                        placeholder="Search office or period…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{ ...searchInput, width: '100%', minWidth: 0 }}
+                    />
+                    <div style={filterRow}>
+                        {FILTERS.map(({ key, label }) => (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => setStatusFilter(key)}
+                                style={{
+                                    ...filterBtn,
+                                    borderColor: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-border)',
+                                    background: statusFilter === key ? 'rgba(59,130,246,0.12)' : 'transparent',
+                                    color: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                                }}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {filtered.length > 0 ? (
@@ -130,5 +152,6 @@ const td          = { padding: '0.75rem', color: 'var(--admin-text-primary)' };
 const iconBtn     = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '2rem', height: '2rem', borderRadius: 6, border: '1px solid var(--admin-border-strong)', color: 'var(--admin-accent)', background: 'none', cursor: 'pointer' };
 const listCard    = { background: 'var(--admin-bg)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, padding: '1rem' };
 const empty       = { padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' };
-const searchInput = { flex: 1, minWidth: 220, padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)' };
-const selectInput = { padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)', cursor: 'pointer' };
+const searchInput = { minWidth: 220, padding: '0.5rem 0.85rem', fontSize: '0.85rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, color: 'var(--admin-text-primary)' };
+const filterRow   = { display: 'flex', gap: 4, marginTop: '0.6rem', overflowX: 'auto', scrollbarWidth: 'none' };
+const filterBtn   = { flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' };

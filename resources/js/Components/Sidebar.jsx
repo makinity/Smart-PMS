@@ -99,7 +99,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
             <nav className="sb-nav">
                 {links.map(({ href, label, icon }) => {
                     const isRoot = links[0].href === href;
-                    const active = isRoot ? url === href : url === href || url.startsWith(href + '/');
+                    const active = isRoot ? url === href || url.startsWith(href + '?') : url === href || url.startsWith(href + '/') || url.startsWith(href + '?');
                     return (
                         <Link
                             key={href}

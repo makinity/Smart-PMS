@@ -26,13 +26,12 @@ function Avatar({ name, src, size = 40 }) {
 export default function Index({ qars, offices, search: iS, officeId: iO, status: iSt }) {
     const bp = useBreakpoint();
     const [search, setSearch]   = useState(iS ?? '');
-    const [officeId, setOffice] = useState(iO ?? '');
     const [status, setStatus]   = useState(iSt ?? '');
 
     useEffect(() => {
-        const t = setTimeout(() => router.get('/pmt/qar', { search, office_id: officeId, status }, { preserveState: true, replace: true }), 300);
+        const t = setTimeout(() => router.get('/pmt/qar', { search, status }, { preserveState: true, replace: true }), 300);
         return () => clearTimeout(t);
-    }, [search, officeId, status]);
+    }, [search, status]);
 
     const isMobile = bp === 'mobile';
 
@@ -55,21 +54,16 @@ export default function Index({ qars, offices, search: iS, officeId: iO, status:
 
                 {/* Filters */}
                 <div style={{ ...card, padding: '1rem 1.25rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr auto auto', gap: '0.65rem' }}>
+                    <div style={{ marginBottom: '0.65rem' }}>
                         <div style={{ position: 'relative' }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search office or dept head…" style={{ ...inputStyle, paddingLeft: '2.1rem', width: '100%' }} />
                         </div>
-                        <select value={officeId} onChange={e => setOffice(e.target.value)} style={inputStyle}>
-                            <option value="">All Offices</option>
-                            {offices.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                        </select>
-                        <select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}>
-                            <option value="">All Status</option>
-                            <option value="submitted">Submitted</option>
-                            <option value="pmt_approved">Approved</option>
-                            <option value="returned">Returned</option>
-                        </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        {[['', 'All'], ['submitted', 'Submitted'], ['pmt_approved', 'Approved'], ['returned', 'Returned']].map(([val, label]) => (
+                            <button key={val} onClick={() => setStatus(val)} style={{ padding: '0.3rem 0.9rem', borderRadius: 99, fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', border: '1px solid', transition: 'all 0.15s', background: status === val ? 'rgba(59,130,246,0.12)' : 'transparent', borderColor: status === val ? 'rgba(59,130,246,0.4)' : 'var(--admin-border-strong)', color: status === val ? 'var(--admin-accent)' : 'var(--admin-text-secondary)' }}>{label}</button>
+                        ))}
                     </div>
                 </div>
 
