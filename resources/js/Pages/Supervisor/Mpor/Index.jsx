@@ -70,9 +70,9 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
 
                 {/* Filters — single row across all breakpoints */}
                 <div style={{ ...card, padding: isMobile ? '0.85rem 0.9rem' : '1rem 1.25rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', gap: isMobile ? '0.4rem' : '0.65rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: isMobile ? '0.4rem' : '0.65rem', alignItems: 'center', marginBottom: '0.6rem' }}>
                         {/* Search */}
-                        <div style={{ position: 'relative', minWidth: 0 }}>
+                        <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
                                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
@@ -90,12 +90,18 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                             onChange={e => setMonth(e.target.value)}
                             style={{ ...inputStyle, ...(isMobile ? compactInput : null) }}
                         />
-                        {/* Status filter */}
-                        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inputStyle, ...(isMobile ? compactInput : null) }}>
-                            {['', 'submitted', 'approved', 'returned'].map(s => (
-                                <option key={s} value={s}>{{ '': 'All', submitted: 'Submitted', approved: 'Approved', returned: 'Returned' }[s]}</option>
-                            ))}
-                        </select>
+                    </div>
+                    {/* Status pills */}
+                    <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                        {STATUSES.map(s => (
+                            <button key={s} onClick={() => setStatus(s)} style={{
+                                flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',
+                                fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                                borderColor: status === s ? 'var(--admin-accent)' : 'var(--admin-border)',
+                                background: status === s ? 'rgba(59,130,246,0.12)' : 'transparent',
+                                color: status === s ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                            }}>{STATUS_LABELS[s]}</button>
+                        ))}
                     </div>
                 </div>
 

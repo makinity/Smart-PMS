@@ -609,8 +609,8 @@ function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount
                 <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>
                     {pendingCount} pending · {ratedCount} rated
                 </div>
-                <div style={{ marginTop: '0.6rem', display: 'flex', gap: 6 }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
+                <div style={{ marginTop: '0.6rem' }}>
+                    <div style={{ position: 'relative' }}>
                         <i className="bi bi-search" style={{ position: 'absolute', left: 9, top: '50%',
                             transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', fontSize: '0.78rem', pointerEvents: 'none' }} />
                         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
@@ -620,16 +620,15 @@ function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount
                                 borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem',
                                 outline: 'none', fontFamily: 'inherit' }} />
                     </div>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                    <div style={{ display: 'flex', gap: 4, marginTop: '0.6rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
                         {[{ key: 'all', label: 'All' }, { key: 'submitted', label: 'Pending' }, { key: 'rated', label: 'Rated' }].map(({ key, label }) => (
                             <button key={key} onClick={() => setStatusFilter(key)} style={{
-                                padding: '0.38rem 0.7rem', borderRadius: 7, border: '1px solid', fontSize: '0.72rem',
-                                fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                                flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',
+                                fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
                                 borderColor: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-border)',
                                 background: statusFilter === key ? 'rgba(59,130,246,0.12)' : 'transparent',
-                                color: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-text-muted)' }}>
-                                {label}
-                            </button>
+                                color: statusFilter === key ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                            }}>{label}</button>
                         ))}
                     </div>
                 </div>
