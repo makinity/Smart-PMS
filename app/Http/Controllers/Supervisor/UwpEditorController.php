@@ -11,6 +11,7 @@ use App\Models\UwpQetStandard;
 use App\Models\UwpIndicatorAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class UwpEditorController extends Controller
 {
@@ -203,6 +204,39 @@ class UwpEditorController extends Controller
                 'employee_id' => $a->employee_id,
                 'employee'    => ['id' => $a->employee?->id, 'name' => $a->employee?->name, 'position' => $a->employee?->position],
             ]),
+        ]);
+    }
+
+    public function suggestions(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $indicatorId = (int) $request->indicator_id;
+        $periodId    = (int) $request->period_id;
+
+        // Try FastAPI first
+        try {
+            $response = Http::timeout(3)->post(env('FASTAPI_URL') . '/suggest-employees', [
+                'uwp_success_indicator_id' => $indicatorId,
+                'performance_period_id'    => $periodId,
+            ]);
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+        } catch (\Throwable) {}
+
+        // Fallback: read ml_kpi_predictions directly from DB
+        $prediction = \Illuminate\Support\Facades\DB::table('ml_kpi_predictions')
+            ->where('uwp_success_indicator_id', $indicatorId)
+            ->first();
+
+        if (!$prediction) {
+            return response()->json(['recommendations' => [], 'feasibility_label' => null, 'feasibility_probability' => null, 'risk_level' => null]);
+        }
+
+        return response()->json([
+            'feasibility_label'       => $prediction->feasibility_label,
+            'feasibility_probability' => $prediction->feasibility_probability,
+            'risk_level'              => $prediction->risk_level,
+            'recommendations'         => json_decode($prediction->recommendations, true) ?? [],
         ]);
     }
 }

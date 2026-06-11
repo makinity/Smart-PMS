@@ -175,6 +175,8 @@ class DatabaseController extends Controller
             'accomplishment_submissions',
             'qar_headers', 'qar_rows',
             'audit_logs',
+            'employee_performance_snapshots',
+            'ml_kpi_predictions',
         ];
         return array_values(array_filter($allowed, fn ($t) => Schema::hasTable($t)));
     }

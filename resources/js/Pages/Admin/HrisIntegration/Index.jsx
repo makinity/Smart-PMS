@@ -185,7 +185,8 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
                         </div>
                     ) : null}
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 0.95fr', gap: '0.75rem' }} className="hris-grid">
+                    <style>{`.hris-grid { display: grid; grid-template-columns: 1.35fr 0.95fr; gap: 0.75rem; } @media (max-width: 767px) { .hris-grid { grid-template-columns: 1fr; } }`}</style>
+                    <div style={{ gap: '0.75rem' }} className="hris-grid">
                         <form onSubmit={submit} style={card}>
                             <p style={cardHeader}>Connection Settings</p>
                             <p style={statCaption}>Use the HRIS endpoint and access token for admin-driven syncs.</p>

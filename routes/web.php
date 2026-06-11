@@ -139,6 +139,7 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::get('/', [\App\Http\Controllers\Supervisor\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/uwp', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'index'])->name('uwp.index');
     Route::post('/uwp', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'store'])->name('uwp.store');
+    Route::get('/uwp/suggestions',    [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'suggestions'])->name('uwp.suggestions');
     Route::get('/uwp/{id}/editor', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'editor'])->name('uwp.editor');
     Route::get('/uwp/{id}', [\App\Http\Controllers\Supervisor\UnitWorkPlanController::class, 'show'])->name('uwp.show');
 

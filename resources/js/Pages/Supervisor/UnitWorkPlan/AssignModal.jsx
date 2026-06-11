@@ -1,47 +1,83 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
 
-function toAiData(employee) {
-    const p = employee.ai_prediction ?? {};
+function toAiData(rec) {
+    const score = rec.fit_score ?? 0;
+    // Derive risk from fit_score regardless of what FastAPI returns
+    const risk = score >= 75 ? 'Low' : score >= 50 ? 'Medium' : 'High';
     return {
-        load: p.load ?? 0,
-        successProb: p.success_prob ?? 0,
-        risk: p.risk ?? 'High',
-        status: p.status ?? 'Available',
-        warning: p.warning ?? false,
+        load:        0,
+        successProb: score,
+        risk,
+        status:      'Available',
+        warning:     score > 0 ? (rec.warning ?? false) : false,
     };
 }
 
-// Prototype: rank all UWP indicators for this employee based on simulated past performance
-// In real integration: replaced by FastAPI /suggest-indicators response
-function suggestIndicators(employee, allIndicators) {
-    const seed = employee.name.charCodeAt(0);
-    return allIndicators.map(si => {
-        const base = 2.5 + ((seed * (si.id ?? 1) * 7) % 25) / 10;
-        const fit  = Math.min(base, 5.0);
-        return {
-            id:            si.id,
-            indicator_text: si.indicator_text,
-            mfo_title:     si.mfo_title,
-            function_name: si.function_name,
-            fitScore:      Math.round((fit / 5) * 100),
-            fitLabel:      fit >= 4.0 ? 'Strong fit' : fit >= 3.0 ? 'Moderate fit' : 'Weak fit',
-            fitColor:      fit >= 4.0 ? '#4ade80'   : fit >= 3.0 ? '#facc15'       : '#f87171',
-        };
-    }).sort((a, b) => b.fitScore - a.fitScore);
+function fitColor(label) {
+    if (label === 'Strong fit')   return '#4ade80';
+    if (label === 'Moderate fit') return '#facc15';
+    return '#f87171';
 }
 
-export default function AssignModal({ indicator, employees, allIndicators = [], onSave, onClose }) {
+export default function AssignModal({ indicator, periodId = 1, employees, allIndicators = [], onSave, onClose }) {
     const initialIds = new Set((indicator.assignments ?? []).map(a => a.employee_id));
     const [selected, setSelected]       = useState(initialIds);
     const [search, setSearch]           = useState('');
     const [warning, setWarning]         = useState(null);
     const [expandedEmp, setExpandedEmp] = useState(null);
+    const [mlData, setMlData]           = useState(null);
+    const [allMlData, setAllMlData]     = useState({}); // indicatorId → recommendations
+    const [mlLoading, setMlLoading]     = useState(true);
 
-    const enriched = useMemo(() => employees.map(e => ({
-        ...e,
-        _ai:          toAiData(e),
-        _suggestions: suggestIndicators(e, allIndicators),
-    })), [employees, allIndicators]);
+    useEffect(() => {
+        setMlData(null);
+        if (!indicator.id) { setMlLoading(false); return; }
+        setMlLoading(true);
+
+        // Fetch current indicator predictions + all indicator predictions in parallel
+        const indicatorIds = allIndicators.map(si => si.id).filter(Boolean);
+        const requests = [
+            axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: indicator.id, period_id: periodId } }),
+            ...indicatorIds.map(id => axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: id, period_id: periodId } }).then(r => ({ id, data: r.data })).catch(() => ({ id, data: null }))),
+        ];
+
+        Promise.allSettled(requests).then(([main, ...rest]) => {
+            if (main.status === 'fulfilled') setMlData(main.value.data);
+            const map = {};
+            rest.forEach(r => { if (r.status === 'fulfilled' && r.value.data) map[r.value.id] = r.value.data; });
+            setAllMlData(map);
+        }).finally(() => setMlLoading(false));
+    }, [indicator.id, periodId]);
+
+    const recMap = useMemo(() => {
+        const map = {};
+        (mlData?.recommendations ?? []).forEach(r => { map[r.employee_id] = r; });
+        return map;
+    }, [mlData]);
+
+    const enriched = useMemo(() => employees.map(e => {
+        const rec = recMap[e.id] ?? {};
+        return {
+            ...e,
+            _ai: toAiData(rec),
+            _suggestions: allIndicators.map(si => {
+                const siPred = allMlData[si.id];
+                const siRec  = siPred?.recommendations?.find(r => r.employee_id === e.id) ?? {};
+                const siScore = siRec.fit_score ?? 0;
+                const siLabel = siScore >= 75 ? 'Strong fit' : siScore >= 50 ? 'Moderate fit' : 'Weak fit';
+                return {
+                    id:             si.id,
+                    indicator_text: si.indicator_text,
+                    mfo_title:      si.mfo_title,
+                    function_name:  si.function_name,
+                    fitScore:       siScore,
+                    fitLabel:       siLabel,
+                    fitColor:       fitColor(siLabel),
+                };
+            }).sort((a, b) => b.fitScore - a.fitScore),
+        };
+    }), [employees, recMap, allMlData, allIndicators]);
 
     const filtered = enriched.filter(e =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,7 +89,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
         .sort((a, b) => a._ai.load - b._ai.load)[0];
 
     function toggle(emp) {
-        if (!selected.has(emp.id) && emp._ai.warning) { setWarning(emp); return; }
+        if (!selected.has(emp.id) && (emp._ai.warning || (mlData && emp._ai.risk === 'High'))) { setWarning(emp); return; }
         commit(emp.id);
     }
 
@@ -113,7 +149,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
                                 <div style={s.avatar}>{emp.name.charAt(0)}</div>
                                 <div style={s.empInfo}>
                                     <div style={{ ...s.empName, ...(emp.id === warning.id ? { color: '#f97316' } : {}) }}>{emp.name}</div>
-                                    <div style={s.empPos}>{emp.position} &bull; Load: {emp._ai.load}%</div>
+                                    <div style={s.empPos}>{emp.position}</div>
                                 </div>
                                 {emp.id === warning.id && <span style={{ color: '#f97316', fontSize: '1rem' }}>(!)</span>}
                             </label>
@@ -130,7 +166,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
     }
 
     // Normal screen
-    const safeRec = recommended && recommended._ai.load < 50;
+    const safeRec = mlData && recommended && recommended._ai.successProb >= 50 && recommended._ai.risk !== 'High';
 
     return (
         <div style={s.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -142,6 +178,13 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
                     </div>
                     <button style={s.closeBtn} onClick={onClose}>&#x2715;</button>
                 </div>
+
+                {mlLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '3rem', color: 'var(--admin-text-muted)', fontSize: '0.875rem' }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'pms-spin 0.7s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/><style>{`@keyframes pms-spin{to{transform:rotate(360deg)}}`}</style></svg>
+                        <span>Analyzing with AI…</span>
+                    </div>
+                ) : (<>
 
                 {safeRec && (
                     <div style={s.safeBanner}>
@@ -184,7 +227,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
                                         <div style={s.avatar}>{emp.name.charAt(0)}</div>
                                         <div>
                                             <div style={s.empName}>{emp.name}</div>
-                                            <div style={s.empPos}>{emp.position} &bull; Load: {ai.load}%</div>
+                                            <div style={s.empPos}>{emp.position}</div>
                                         </div>
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
@@ -240,7 +283,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
                             </div>
                         );
                     })}
-                    {filtered.length === 0 && <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>No employees found</div>}
+                    {!mlLoading && filtered.length === 0 && <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>No employees found</div>}
                 </div>
 
                 <div style={s.footer}>
@@ -256,6 +299,7 @@ export default function AssignModal({ indicator, employees, allIndicators = [], 
                         </button>
                     </div>
                 </div>
+                </>)}
             </div>
         </div>
     );
