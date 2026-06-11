@@ -51,7 +51,6 @@ export default function Dashboard({ totalUsers, totalOffices, activePeriod, acti
     const quickLinks = [
         { title: 'User Directory',      desc: 'Manage accounts and roles',         href: '/administrator/users',               icon: 'bi-people-fill' },
         { title: 'Offices',             desc: 'View and edit organizational units', href: '/administrator/offices',             icon: 'bi-building-fill' },
-        { title: 'Performance Periods', desc: 'Configure evaluation timelines',     href: '/administrator/performance-periods', icon: 'bi-calendar3' },
         { title: 'Audit Logs',          desc: 'Track system activity and changes',  href: '/administrator/audit-logs',          icon: 'bi-journal-text' },
     ];
 

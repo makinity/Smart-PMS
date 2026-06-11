@@ -59,7 +59,6 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::resource('offices', \App\Http\Controllers\Admin\OfficeController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
     Route::post('offices/{office}/toggle-status', [\App\Http\Controllers\Admin\OfficeController::class, 'toggleStatus'])->name('offices.toggle-status');
     Route::get('offices/{office}/export-history', [\App\Http\Controllers\Admin\OfficeController::class, 'exportHistory'])->name('offices.export-history');
-    Route::get('/performance-periods', [\App\Http\Controllers\Admin\PerformancePeriodsController::class, 'index'])->name('performance-periods.index');
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogsController::class, 'index'])->name('audit-logs.index');
     Route::get('/database', [\App\Http\Controllers\Admin\DatabaseController::class, 'index'])->name('database.index');
     Route::get('/hris', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.index');

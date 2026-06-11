@@ -6,7 +6,6 @@ const roleLinks = {
         { href: '/administrator', label: 'Dashboard', icon: 'bi-grid-1x2-fill' },
         { href: '/administrator/users', label: 'Users', icon: 'bi-people-fill' },
         { href: '/administrator/offices', label: 'Offices', icon: 'bi-building-fill' },
-        { href: '/administrator/performance-periods', label: 'Periods', icon: 'bi-calendar3' },
         { href: '/administrator/reports', label: 'Reports', icon: 'bi-bar-chart-fill' },
         { href: '/administrator/hris-integration', label: 'HRIS Integration', icon: 'bi-plug-fill' },
         { href: '/administrator/database', label: 'Database', icon: 'bi-hdd-stack-fill' },
