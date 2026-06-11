@@ -488,6 +488,18 @@ export default function Index({
         status: filters.status || '',
         office: filters.office || '',
     });
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            router.get('/administrator/users', {
+                search: query.search || undefined,
+                role: query.role || undefined,
+                status: query.status || undefined,
+                office: query.office || undefined,
+            }, { preserveState: true, preserveScroll: true, replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+    }, [query.search, query.role, query.status, query.office]);
     const [editor, setEditor] = useState(null);
     const [activeMenuId, setActiveMenuId] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -598,19 +610,6 @@ export default function Index({
         router.post('/administrator/users', payload, config);
     }
 
-    function submitSearch(event) {
-        event.preventDefault();
-        router.get(
-            '/administrator/users',
-            {
-                search: query.search || undefined,
-                role: query.role || undefined,
-                status: query.status || undefined,
-                office: query.office || undefined,
-            },
-            { preserveState: true, preserveScroll: true, replace: true }
-        );
-    }
 
     function handleSendCode(user) {
         if (!user?.email) {
@@ -736,7 +735,7 @@ export default function Index({
 
                     <div style={card}>
                         <p style={cardHeader}>Directory Filters</p>
-                        <form onSubmit={submitSearch} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                             {/* Search row */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)' }}>
                                 <IconSearch className="h-4 w-4" style={{ flexShrink: 0, color: 'var(--admin-text-muted)' }} />
@@ -747,8 +746,8 @@ export default function Index({
                                     style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}
                                 />
                             </div>
-                            {/* Dropdowns + buttons row */}
-                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                            {/* Dropdowns row */}
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 {[
                                     { key: 'role',   label: 'Role',   opts: [['', 'All roles'],   ...roleOptions.map(r => [r.key ?? r, r.label ?? r])] },
                                     { key: 'status', label: 'Status', opts: [['', 'All statuses'], ['active','Active'], ['inactive','Inactive'], ['disabled','Disabled']] },
@@ -761,12 +760,8 @@ export default function Index({
                                         </select>
                                     </label>
                                 ))}
-                                <div style={{ display: 'flex', gap: '0.5rem', paddingBottom: 0 }}>
-                                    <button type="submit" style={actionPrimary}>Filter</button>
-                                    <button type="button" onClick={() => { setQuery({ search: '', role: '', status: '', office: '' }); router.get('/administrator/users', {}, { preserveState: false, preserveScroll: true, replace: true }); }} style={actionSecondary}>Reset</button>
-                                </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
 
                     <div style={card}>

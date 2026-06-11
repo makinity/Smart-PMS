@@ -61,6 +61,14 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::get('offices/{office}/export-history', [\App\Http\Controllers\Admin\OfficeController::class, 'exportHistory'])->name('offices.export-history');
     Route::get('/audit-logs', [\App\Http\Controllers\Admin\AuditLogsController::class, 'index'])->name('audit-logs.index');
     Route::get('/database', [\App\Http\Controllers\Admin\DatabaseController::class, 'index'])->name('database.index');
+    Route::post('/database/test-connection', [\App\Http\Controllers\Admin\DatabaseController::class, 'testConnection'])->name('database.test-connection');
+    Route::post('/database/backup', [\App\Http\Controllers\Admin\DatabaseController::class, 'backup'])->name('database.backup');
+    Route::post('/database/restore', [\App\Http\Controllers\Admin\DatabaseController::class, 'restore'])->name('database.restore');
+    Route::get('/database/backups', [\App\Http\Controllers\Admin\DatabaseController::class, 'backups'])->name('database.backups');
+    Route::get('/database/backups/{filename}/download', [\App\Http\Controllers\Admin\DatabaseController::class, 'downloadBackup'])->name('database.backups.download')->where('filename', '.+');
+    Route::delete('/database/backups/{filename}', [\App\Http\Controllers\Admin\DatabaseController::class, 'deleteBackup'])->name('database.backups.delete')->where('filename', '.+');
+    Route::get('/database/table-info', [\App\Http\Controllers\Admin\DatabaseController::class, 'tableInfo'])->name('database.table-info');
+    Route::post('/database/export', [\App\Http\Controllers\Admin\DatabaseController::class, 'export'])->name('database.export');
     Route::get('/hris', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.index');
     Route::get('/hris-integration', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.integration');
     Route::post('/hris/sync', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'sync'])->name('hris.sync');

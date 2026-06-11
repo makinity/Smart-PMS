@@ -1,25 +1,68 @@
-﻿import AppLayout from '@/Layouts/AppLayout';
+import { useState } from 'react';
+import AppLayout from '@/Layouts/AppLayout';
+import ConnectionTab from './tabs/ConnectionTab';
+import BackupTab from './tabs/BackupTab';
+import ExportsTab from './tabs/ExportsTab';
 
-const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '2rem', boxShadow: 'var(--admin-shadow)' };
-const iconBox = { width: 48, height: 48, borderRadius: 12, background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' };
-const h = { fontWeight: 700, fontSize: '1.15rem', color: 'var(--admin-text-primary)', marginBottom: '0.4rem' };
-const p = { fontSize: '0.9rem', color: 'var(--admin-text-muted)', lineHeight: 1.6, marginBottom: '1rem' };
-const badgesStyle = { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' };
-const badgeStyle = { padding: '0.25rem 0.75rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600, background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.22)' };
-const notice = { marginTop: '1.5rem', padding: '0.85rem 1rem', borderRadius: 'var(--admin-radius)', background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.18)', fontSize: '0.83rem', color: 'var(--admin-text-muted)' };
+const TABS = [
+    { key: 'connection', label: 'Connection',   icon: '🔗' },
+    { key: 'backup',     label: 'Backup',        icon: '☁' },
+    { key: 'exports',    label: 'Data Exports',  icon: '⬇' },
+];
 
-export default function Index() {
+export default function Index({ env, backups, tables }) {
+    const [tab, setTab] = useState('connection');
+
     return (
         <AppLayout title="Database">
-            <div style={card}>
-                <div style={iconBox}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-                <h4 style={h}>Database</h4>
-                <p style={p}>Administrative database tools — backup, restore, and maintenance utilities.</p>
-                        <div style={{badgesStyle}}><span style={{badgeStyle}}>System</span>
-                        <span style={{badgeStyle}}>Maintenance</span></div>
-                <div style={notice}><i className="bi bi-cone-striped" style={{ marginRight: "0.4rem", color: "var(--admin-accent)" }} /> This section is under construction. Full functionality will be available soon.</div>
+            <style>{`
+                .db-tab-bar { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+                .db-tab-bar::-webkit-scrollbar { display: none; }
+                .db-tab-btn { flex-shrink: 0; padding: 0.75rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.875rem; font-weight: 600; color: var(--admin-text-muted); display: flex; align-items: center; gap: 0.4rem; transition: color 0.15s, border-color 0.15s; white-space: nowrap; }
+                .db-tab-btn:hover { color: var(--admin-text-primary); }
+                .db-tab-btn.active { color: var(--admin-accent); border-bottom-color: var(--admin-accent); }
+                @media (max-width: 639px) {
+                    .db-tab-btn { padding: 0.65rem 0.9rem; font-size: 0.82rem; }
+                    .db-tab-icon { display: none; }
+                }
+            `}</style>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                {/* Page header */}
+                <div style={card}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                        <div style={iconBox}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div>
+                            <p style={statLabel}>Admin Directory</p>
+                            <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>Database</h1>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginTop: '0.15rem' }}>Administrative database tools — backup, restore, and connection management.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tab bar */}
+                <div style={{ ...card, padding: '0 1.25rem' }}>
+                    <div className="db-tab-bar">
+                        {TABS.map(({ key, label, icon }) => (
+                            <button key={key} onClick={() => setTab(key)} className={`db-tab-btn${tab === key ? ' active' : ''}`}>
+                                <span className="db-tab-icon">{icon}</span> {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Tab content */}
+                {tab === 'connection' && <ConnectionTab env={env} />}
+                {tab === 'backup'     && <BackupTab backups={backups} env={env} />}
+                {tab === 'exports'    && <ExportsTab tables={tables} />}
             </div>
         </AppLayout>
     );
 }
 
+const card     = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
+const iconBox  = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', flexShrink: 0 };
+const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.1rem' };
