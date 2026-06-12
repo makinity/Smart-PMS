@@ -3,14 +3,13 @@ import axios from 'axios';
 
 function toAiData(rec) {
     const score = rec.fit_score ?? 0;
-    // Derive risk from fit_score regardless of what FastAPI returns
-    const risk = score >= 75 ? 'Low' : score >= 50 ? 'Medium' : 'High';
+    const risk = rec.risk_level ?? (score >= 75 ? 'Low' : score >= 50 ? 'Medium' : 'High');
     return {
         load:        0,
         successProb: score,
         risk,
         status:      'Available',
-        warning:     score < 50,
+        warning:     rec.warning ?? (score < 50),
     };
 }
 

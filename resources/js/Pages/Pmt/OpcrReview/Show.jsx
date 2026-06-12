@@ -222,7 +222,7 @@ export default function Show() {
                                     </div>
                                     <span style={s.countBadge}>{mfo.successIndicators.length} Indicator{mfo.successIndicators.length !== 1 ? 's' : ''}</span>
                                 </div>
-                                {mfo.successIndicators.map((si, idx) => <SiCard key={si.id} si={si} index={idx + 1} />)}
+                                {mfo.successIndicators.map((si, idx) => <SiCard key={si.id} si={si} index={idx + 1} periodId={opcr?.performance_period_id ?? 1} />)}
                             </section>
                         ))}
                     </main>
@@ -300,7 +300,7 @@ export default function Show() {
     );
 }
 
-function SiCard({ si, index }) {
+function SiCard({ si, index, periodId = 1 }) {
     const [qetOpen, setQetOpen] = useState(false);
     const [assigneesOpen, setAssigneesOpen] = useState(false);
     const budget    = si.allotted_budget ? parseFloat(si.allotted_budget) : 0;
@@ -355,6 +355,9 @@ function SiCard({ si, index }) {
                 <AssigneesModal
                     assignees={assignees}
                     subtitle={si.indicator_text}
+                    indicatorId={si.id}
+                    periodId={periodId}
+                    suggestionsUrl="/pmt/uwp/suggestions"
                     onClose={() => setAssigneesOpen(false)}
                 />
             )}

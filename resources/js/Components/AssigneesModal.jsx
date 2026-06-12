@@ -79,7 +79,7 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                     ) : filtered.map(emp => {
                         const rec  = recMap[emp.id] ?? {};
                         const prob = rec.fit_score ?? 0;
-                        const risk = prob >= 75 ? 'Low' : prob >= 50 ? 'Medium' : 'High';
+                        const risk = rec.risk_level ?? (prob >= 75 ? 'Low' : prob >= 50 ? 'Medium' : 'High');
                         const rc   = RISK_COLOR[risk];
                         return (
                             <div key={emp.id} style={s.empRow}>

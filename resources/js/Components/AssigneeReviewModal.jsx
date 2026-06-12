@@ -68,7 +68,7 @@ export default function AssigneeReviewModal({ indicator, periodId = 1, employees
                             {employees.map(emp => {
                                 const rec   = recMap[emp.id] ?? {};
                                 const score = rec.fit_score ?? 0;
-                                const risk  = score >= 75 ? 'Low' : score >= 50 ? 'Medium' : 'High';
+                                const risk  = rec.risk_level ?? (score >= 75 ? 'Low' : score >= 50 ? 'Medium' : 'High');
                                 const rc    = riskColors[risk];
                                 return (
                                     <div key={emp.id} style={s.empRow}>

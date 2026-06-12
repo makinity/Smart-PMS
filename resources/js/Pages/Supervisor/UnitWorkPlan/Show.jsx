@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
+import AssigneesModal from '@/Components/AssigneesModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -207,7 +208,7 @@ export default function Show() {
                                         <span style={s.indicatorBadge}>{mfo.successIndicators?.length ?? 0} Indicator{mfo.successIndicators?.length !== 1 ? 's' : ''}</span>
                                     </div>
                                     {mfo.successIndicators?.map((si, idx) => (
-                                        <IndicatorCard key={si.id} si={si} index={idx + 1} />
+                                        <IndicatorCard key={si.id} si={si} index={idx + 1} periodId={uwp?.performance_period_id ?? 1} />
                                     ))}
                                     {!mfo.successIndicators?.length && <p style={s.empty}>No indicators.</p>}
                                 </section>
@@ -238,8 +239,9 @@ export default function Show() {
     );
 }
 
-function IndicatorCard({ si, index }) {
+function IndicatorCard({ si, index, periodId = 1 }) {
     const [qetOpen, setQetOpen] = useState(false);
+    const [assigneesOpen, setAssigneesOpen] = useState(false);
     const budget    = si.allotted_budget ? parseFloat(si.allotted_budget) : 0;
     const assignees = si.assignments ?? [];
     const hasQet    = si.qetStandards?.length > 0;
@@ -265,7 +267,7 @@ function IndicatorCard({ si, index }) {
                 {assignees.length > 0 && (
                     <>
                         <span style={s.metaDot} />
-                        <div style={{ display: 'flex' }}>
+                        <button type="button" onClick={() => setAssigneesOpen(true)} style={{ display: 'flex', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                             {assignees.slice(0, 3).map((a, i) => (
                                 <div key={i} style={{ ...s.avatar, background: colorFor(a.employee?.name), zIndex: 10 - i }}>
                                     {a.employee?.profile_photo
@@ -279,7 +281,7 @@ function IndicatorCard({ si, index }) {
                                     +{assignees.length - 3}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     </>
                 )}
             </div>
@@ -307,6 +309,16 @@ function IndicatorCard({ si, index }) {
                         </div>
                     )}
                 </div>
+            )}
+
+            {assigneesOpen && (
+                <AssigneesModal
+                    assignees={assignees}
+                    subtitle={si.indicator_text}
+                    indicatorId={si.id}
+                    periodId={periodId}
+                    onClose={() => setAssigneesOpen(false)}
+                />
             )}
         </div>
     );

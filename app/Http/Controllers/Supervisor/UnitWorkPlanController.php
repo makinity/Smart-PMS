@@ -76,7 +76,7 @@ class UnitWorkPlanController extends Controller
                             'standard_text' => $q->standard_text,
                         ]),
                         'assignments' => $si->assignments->map(fn ($a) => [
-                            'employee' => ['id' => $a->employee?->id, 'name' => $a->employee?->name],
+                            'employee' => ['id' => $a->employee?->id, 'name' => $a->employee?->name, 'position' => $a->employee?->position, 'avatar' => $a->employee?->profile_photo_url],
                         ]),
                     ]),
                 ]),

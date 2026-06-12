@@ -80,6 +80,7 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
 Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Pmt\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/opcr-review', [\App\Http\Controllers\Pmt\OpcrController::class, 'index'])->name('opcr-review.index');
+    Route::get('/uwp/suggestions', [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'suggestions'])->name('uwp.suggestions');
     Route::get('/opcr-review/{id}', [\App\Http\Controllers\Pmt\OpcrController::class, 'show'])->name('opcr-review.show');
     Route::patch('/opcr-review/{id}/approve', [\App\Http\Controllers\Pmt\OpcrController::class, 'approve'])->name('opcr-review.approve');
     Route::patch('/opcr-review/{id}/return', [\App\Http\Controllers\Pmt\OpcrController::class, 'returnOpcr'])->name('opcr-review.return');
