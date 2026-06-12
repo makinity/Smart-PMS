@@ -10,7 +10,7 @@ function toAiData(rec) {
         successProb: score,
         risk,
         status:      'Available',
-        warning:     score > 0 ? (rec.warning ?? false) : false,
+        warning:     score < 50,
     };
 }
 

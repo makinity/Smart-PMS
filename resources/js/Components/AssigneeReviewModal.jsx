@@ -7,13 +7,13 @@ function fitColor(label) {
     return '#f87171';
 }
 
-export default function AssigneeReviewModal({ indicator, periodId = 1, employees, onClose }) {
+export default function AssigneeReviewModal({ indicator, periodId = 1, employees, onClose, suggestionsUrl = '/supervisor/uwp/suggestions' }) {
     const [mlData, setMlData]       = useState(null);
     const [mlLoading, setMlLoading] = useState(true);
 
     useEffect(() => {
         if (!indicator?.id) { setMlLoading(false); return; }
-        axios.get('/supervisor/uwp/suggestions', {
+        axios.get(suggestionsUrl, {
             params: { indicator_id: indicator.id, period_id: periodId }
         }).then(({ data }) => setMlData(data)).catch(() => {}).finally(() => setMlLoading(false));
     }, [indicator?.id, periodId]);

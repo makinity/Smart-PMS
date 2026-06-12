@@ -13,14 +13,14 @@ const RISK_COLOR = {
 
 function probColor(p) { return p >= 75 ? '#4ade80' : p >= 50 ? '#facc15' : '#f87171'; }
 
-export default function AssigneesModal({ assignees = [], title = 'Assigned Employees', subtitle, onClose, indicatorId, periodId = 1 }) {
+export default function AssigneesModal({ assignees = [], title = 'Assigned Employees', subtitle, onClose, indicatorId, periodId = 1, suggestionsUrl = '/supervisor/uwp/suggestions' }) {
     const [search, setSearch]   = useState('');
     const [recMap, setRecMap]   = useState({});
     const [mlOnline, setMlOnline] = useState(false);
 
     useEffect(() => {
         if (!indicatorId) return;
-        axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: indicatorId, period_id: periodId } })
+        axios.get(suggestionsUrl, { params: { indicator_id: indicatorId, period_id: periodId } })
             .then(({ data }) => {
                 const map = {};
                 (data.recommendations ?? []).forEach(r => { map[r.employee_id] = r; });
@@ -66,8 +66,10 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                 {/* Table header */}
                 <div style={s.tableHead}>
                     <span style={{ flex: 2 }}>EMPLOYEE</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>SUCCESS PROB.</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>RISK</span>
+                    {mlOnline && <>
+                        <span style={{ flex: 1, textAlign: 'center' }}>SUCCESS PROB.</span>
+                        <span style={{ flex: 1, textAlign: 'center' }}>RISK</span>
+                    </>}
                 </div>
 
                 {/* Rows */}
@@ -76,7 +78,7 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                         <div style={s.empty}>{employees.length === 0 ? 'No employees assigned to this indicator.' : 'No employees match your search.'}</div>
                     ) : filtered.map(emp => {
                         const rec  = recMap[emp.id] ?? {};
-                        const prob = rec.fit_score ?? (emp.ai_prediction?.success_prob ?? 0);
+                        const prob = rec.fit_score ?? 0;
                         const risk = prob >= 75 ? 'Low' : prob >= 50 ? 'Medium' : 'High';
                         const rc   = RISK_COLOR[risk];
                         return (
@@ -88,15 +90,17 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                                         <div style={s.empPos}>{emp.position ?? '—'}</div>
                                     </div>
                                 </div>
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
-                                    <div style={{ height: 6, borderRadius: 3, background: 'var(--admin-border)', overflow: 'hidden' }}>
-                                        <div style={{ height: '100%', width: `${prob}%`, borderRadius: 3, background: probColor(prob), transition: 'width 0.3s' }} />
+                                {mlOnline && <>
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
+                                        <div style={{ height: 6, borderRadius: 3, background: 'var(--admin-border)', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${prob}%`, borderRadius: 3, background: probColor(prob), transition: 'width 0.3s' }} />
+                                        </div>
+                                        <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{prob}%</span>
                                     </div>
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{prob}%</span>
-                                </div>
-                                <div style={{ flex: 1, textAlign: 'center' }}>
-                                    <span style={{ padding: '0.15rem 0.6rem', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, background: rc.bg, color: rc.color, border: `1px solid ${rc.border}` }}>{risk}</span>
-                                </div>
+                                    <div style={{ flex: 1, textAlign: 'center' }}>
+                                        <span style={{ padding: '0.15rem 0.6rem', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600, background: rc.bg, color: rc.color, border: `1px solid ${rc.border}` }}>{risk}</span>
+                                    </div>
+                                </>}
                             </div>
                         );
                     })}

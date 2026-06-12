@@ -333,6 +333,7 @@ function IndicatorCard({ si, index, periodId = 1 }) {
                     subtitle={si.indicator_text}
                     indicatorId={si.id}
                     periodId={periodId}
+                    suggestionsUrl="/dept-head/uwp/suggestions"
                     onClose={() => setAssigneesOpen(false)}
                 />
             )}

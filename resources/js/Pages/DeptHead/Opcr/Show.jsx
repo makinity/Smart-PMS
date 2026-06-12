@@ -370,6 +370,7 @@ function SiCard({ si, index, periodId = 1 }) {
                     indicator={si}
                     periodId={periodId}
                     employees={(si.assignments ?? []).map(a => a.employee).filter(Boolean)}
+                    suggestionsUrl="/dept-head/uwp/suggestions"
                     onClose={() => setAssigneesOpen(false)}
                 />
             )}

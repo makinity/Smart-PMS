@@ -116,6 +116,7 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
 Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-head.')->group(function () {
     Route::get('/', [\App\Http\Controllers\DeptHead\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/uwp', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'index'])->name('uwp.index');
+    Route::get('/uwp/suggestions', [\App\Http\Controllers\Supervisor\UwpEditorController::class, 'suggestions'])->name('uwp.suggestions');
     Route::get('/uwp/{id}', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'show'])->name('uwp.show');
     Route::patch('/uwp/{id}/approve', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'approve'])->name('uwp.approve');
     Route::patch('/uwp/{id}/return', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'returnUwp'])->name('uwp.return');
