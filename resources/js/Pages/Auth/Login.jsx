@@ -92,21 +92,27 @@ export default function Login() {
             <button
                 onClick={() => setDarkMode(v => !v)}
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                style={{
-                    position: 'fixed', top: '1rem', right: '1rem', zIndex: 100,
-                    display: 'flex', alignItems: 'center', gap: '0.45rem',
-                    padding: '0.4rem 0.85rem',
-                    background: 'var(--admin-card)',
-                    border: '1px solid var(--admin-border-strong)',
-                    borderRadius: '999px',
-                    color: 'var(--admin-text-secondary)',
-                    fontSize: '0.82rem', fontWeight: 500,
-                    cursor: 'pointer',
-                    boxShadow: 'var(--admin-shadow)',
-                    transition: 'opacity 0.15s',
-                }}
+                style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 100, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-                {darkMode ? '☀️' : '🌙'} {darkMode ? 'Light' : 'Dark'}
+                <div style={{
+                    width: 48, height: 26, borderRadius: 13,
+                    background: darkMode ? 'var(--admin-accent)' : '#cbd5e1',
+                    position: 'relative', transition: 'background 0.2s',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                }}>
+                    <div style={{
+                        position: 'absolute', top: 3, left: darkMode ? 25 : 3,
+                        width: 20, height: 20, borderRadius: '50%',
+                        background: '#fff', transition: 'left 0.2s',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        {darkMode
+                            ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                            : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/></svg>
+                        }
+                    </div>
+                </div>
             </button>
 
             <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
