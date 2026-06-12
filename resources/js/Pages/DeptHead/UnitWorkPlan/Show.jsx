@@ -217,7 +217,7 @@ export default function Show() {
                                         <span style={s.indicatorBadge}>{mfo.successIndicators?.length ?? 0} Indicator{mfo.successIndicators?.length !== 1 ? 's' : ''}</span>
                                     </div>
                                     {mfo.successIndicators?.map((si, idx) => (
-                                        <IndicatorCard key={si.id} si={si} index={idx + 1} />
+                                        <IndicatorCard key={si.id} si={si} index={idx + 1} periodId={uwp?.performance_period_id ?? 1} />
                                     ))}
                                     {!mfo.successIndicators?.length && <p style={s.empty}>No indicators.</p>}
                                 </section>
@@ -271,7 +271,7 @@ export default function Show() {
     );
 }
 
-function IndicatorCard({ si, index }) {
+function IndicatorCard({ si, index, periodId = 1 }) {
     const [qetOpen, setQetOpen] = useState(false);
     const [assigneesOpen, setAssigneesOpen] = useState(false);
     const hasQet    = si.qetStandards?.length > 0;
@@ -331,6 +331,8 @@ function IndicatorCard({ si, index }) {
                 <AssigneesModal
                     assignees={assignees}
                     subtitle={si.indicator_text}
+                    indicatorId={si.id}
+                    periodId={periodId}
                     onClose={() => setAssigneesOpen(false)}
                 />
             )}

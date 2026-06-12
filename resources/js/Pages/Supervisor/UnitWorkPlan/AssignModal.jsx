@@ -89,7 +89,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
         .sort((a, b) => a._ai.load - b._ai.load)[0];
 
     function toggle(emp) {
-        if (!selected.has(emp.id) && (emp._ai.warning || (mlData && emp._ai.risk === 'High'))) { setWarning(emp); return; }
+        if (!selected.has(emp.id) && (emp._ai.warning || (mlOnline && emp._ai.risk === 'High'))) { setWarning(emp); return; }
         commit(emp.id);
     }
 
@@ -166,7 +166,8 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     }
 
     // Normal screen
-    const safeRec = mlData && recommended && recommended._ai.successProb >= 50 && recommended._ai.risk !== 'High';
+    const mlOnline = mlData?.ml_online === true;
+    const safeRec = mlOnline && recommended && recommended._ai.successProb >= 50 && recommended._ai.risk !== 'High';
 
     return (
         <div style={s.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -205,9 +206,9 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
 
                 <div style={s.tableHead}>
                     <span style={{ flex: 2 }}>EMPLOYEE</span>
-                    <span style={{ flex: 1, textAlign: 'center' }}>SUCCESS PROB.</span>
+                    {mlOnline && <><span style={{ flex: 1, textAlign: 'center' }}>SUCCESS PROB.</span>
                     <span style={{ flex: 1, textAlign: 'center' }}>RISK</span>
-                    <span style={{ flex: 0.5, textAlign: 'center' }}>FIT</span>
+                    <span style={{ flex: 0.5, textAlign: 'center' }}>FIT</span></>}
                 </div>
 
                 <div style={s.list}>
@@ -230,6 +231,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                                             <div style={s.empPos}>{emp.position}</div>
                                         </div>
                                     </div>
+                                    {mlOnline && <>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, padding: '0 0.5rem' }}>
                                         <div style={{ height: 6, borderRadius: 3, background: 'var(--admin-border)', overflow: 'hidden' }}>
                                             <div style={{ height: '100%', width: `${ai.successProb}%`, borderRadius: 3, background: ai.successProb >= 75 ? '#4ade80' : ai.successProb >= 50 ? '#facc15' : '#f87171', transition: 'width 0.3s' }} />
@@ -247,6 +249,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                                             &#9733;
                                         </button>
                                     </div>
+                                    </>}
                                 </div>
 
                                 {/* Suggested Success Indicators Panel */}
@@ -288,8 +291,8 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
 
                 <div style={s.footer}>
                     <div style={s.aiActive}>
-                        <span style={{ color: 'var(--admin-accent)', fontSize: '0.72rem' }}>*</span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>AI OPTIMIZATION ACTIVE</span>
+                        <span style={{ color: mlOnline ? 'var(--admin-accent)' : '#f87171', fontSize: '0.72rem' }}>●</span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>{mlOnline ? 'AI OPTIMIZATION ACTIVE' : 'AI OFFLINE — Manual assignment mode'}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button style={s.btnOutline} onClick={onClose}>Cancel</button>

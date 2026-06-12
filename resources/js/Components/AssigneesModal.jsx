@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import axios from 'axios';
 
 // Read-only viewer for employees assigned to a success indicator.
-// Mirrors the Supervisor UWP AssignModal layout (success probability + risk),
-// using the backend demo AI prediction attached to each employee.
+// Fetches real ML predictions from /supervisor/uwp/suggestions.
 
 const RISK_COLOR = {
     Low:    { bg: 'rgba(74,222,128,0.15)', color: '#4ade80', border: 'rgba(74,222,128,0.3)' },
@@ -11,18 +11,26 @@ const RISK_COLOR = {
     High:   { bg: 'rgba(239,68,68,0.15)',  color: '#f87171', border: 'rgba(239,68,68,0.3)' },
 };
 
-function probColor(p) {
-    return p >= 75 ? '#4ade80' : p >= 50 ? '#facc15' : '#f87171';
-}
+function probColor(p) { return p >= 75 ? '#4ade80' : p >= 50 ? '#facc15' : '#f87171'; }
 
-export default function AssigneesModal({ assignees = [], title = 'Assigned Employees', subtitle, onClose }) {
-    const [search, setSearch] = useState('');
+export default function AssigneesModal({ assignees = [], title = 'Assigned Employees', subtitle, onClose, indicatorId, periodId = 1 }) {
+    const [search, setSearch]   = useState('');
+    const [recMap, setRecMap]   = useState({});
+    const [mlOnline, setMlOnline] = useState(false);
 
-    const employees = assignees
-        .map(a => a.employee ?? a)
-        .filter(Boolean);
+    useEffect(() => {
+        if (!indicatorId) return;
+        axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: indicatorId, period_id: periodId } })
+            .then(({ data }) => {
+                const map = {};
+                (data.recommendations ?? []).forEach(r => { map[r.employee_id] = r; });
+                setRecMap(map);
+                setMlOnline(data.ml_online === true);
+            }).catch(() => {});
+    }, [indicatorId, periodId]);
 
-    const filtered = employees.filter(e =>
+    const employees = assignees.map(a => a.employee ?? a).filter(Boolean);
+    const filtered  = employees.filter(e =>
         e.name?.toLowerCase().includes(search.toLowerCase()) ||
         (e.position ?? '').toLowerCase().includes(search.toLowerCase())
     );
@@ -41,9 +49,9 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
 
                 {/* AI banner */}
                 <div style={s.aiBanner}>
-                    <span style={{ color: 'var(--admin-accent)', fontSize: '0.78rem' }}>✦</span>
+                    <span style={{ color: mlOnline ? 'var(--admin-accent)' : '#f87171', fontSize: '0.78rem' }}>●</span>
                     <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
-                        AI WORKLOAD INSIGHTS (DEMO)
+                        {mlOnline ? 'AI WORKLOAD INSIGHTS' : 'AI OFFLINE — No predictions available'}
                     </span>
                 </div>
 
@@ -67,10 +75,10 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                     {filtered.length === 0 ? (
                         <div style={s.empty}>{employees.length === 0 ? 'No employees assigned to this indicator.' : 'No employees match your search.'}</div>
                     ) : filtered.map(emp => {
-                        const ai = emp.ai_prediction ?? {};
-                        const prob = ai.success_prob ?? 0;
-                        const risk = ai.risk ?? '—';
-                        const rc = RISK_COLOR[risk] ?? { bg: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', border: 'var(--admin-border)' };
+                        const rec  = recMap[emp.id] ?? {};
+                        const prob = rec.fit_score ?? (emp.ai_prediction?.success_prob ?? 0);
+                        const risk = prob >= 75 ? 'Low' : prob >= 50 ? 'Medium' : 'High';
+                        const rc   = RISK_COLOR[risk];
                         return (
                             <div key={emp.id} style={s.empRow}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2, minWidth: 0 }}>

@@ -61,7 +61,11 @@ class MlTrainingDataSeeder extends Seeder
 
     public function run(): void
     {
-        DB::table('employee_performance_snapshots')->truncate();
+        // Only seed if table is empty — avoids wiping real data
+        if (DB::table('employee_performance_snapshots')->count() > 0) {
+            $this->command->info('ML snapshots already exist, skipping seed.');
+            return;
+        }
 
         $rows = [];
         $now  = now()->toDateTimeString();

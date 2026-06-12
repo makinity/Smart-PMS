@@ -219,7 +219,7 @@ class UwpEditorController extends Controller
                 'performance_period_id'    => $periodId,
             ]);
             if ($response->successful()) {
-                return response()->json($response->json());
+                return response()->json(array_merge($response->json(), ['ml_online' => true]));
             }
         } catch (\Throwable) {}
 
@@ -229,7 +229,7 @@ class UwpEditorController extends Controller
             ->first();
 
         if (!$prediction) {
-            return response()->json(['recommendations' => [], 'feasibility_label' => null, 'feasibility_probability' => null, 'risk_level' => null]);
+            return response()->json(['recommendations' => [], 'feasibility_label' => null, 'feasibility_probability' => null, 'risk_level' => null, 'ml_online' => false]);
         }
 
         return response()->json([
@@ -237,6 +237,7 @@ class UwpEditorController extends Controller
             'feasibility_probability' => $prediction->feasibility_probability,
             'risk_level'              => $prediction->risk_level,
             'recommendations'         => json_decode($prediction->recommendations, true) ?? [],
+            'ml_online'               => false,
         ]);
     }
 }
