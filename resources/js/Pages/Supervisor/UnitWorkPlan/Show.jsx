@@ -5,6 +5,7 @@ import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 import AssigneesModal from '@/Components/AssigneesModal';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -246,13 +247,6 @@ function IndicatorCard({ si, index, periodId = 1 }) {
     const assignees = si.assignments ?? [];
     const hasQet    = si.qetStandards?.length > 0;
 
-    const COLORS = ['#3b82f6','#8b5cf6','#ec4899','#f59e0b','#10b981','#ef4444','#06b6d4'];
-    function colorFor(name) { return COLORS[(name ?? '').charCodeAt(0) % COLORS.length]; }
-    function initials(name) {
-        if (!name) return '?';
-        return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-    }
-
     return (
         <div style={s.siCard} className="si-card">
             {/* Title row */}
@@ -269,12 +263,8 @@ function IndicatorCard({ si, index, periodId = 1 }) {
                         <span style={s.metaDot} />
                         <button type="button" onClick={() => setAssigneesOpen(true)} style={{ display: 'flex', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                             {assignees.slice(0, 3).map((a, i) => (
-                                <div key={i} style={{ ...s.avatar, background: colorFor(a.employee?.name), zIndex: 10 - i }}>
-                                    {a.employee?.profile_photo
-                                        ? <img src={a.employee.profile_photo} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} alt="" />
-                                        : initials(a.employee?.name)
-                                    }
-                                </div>
+                                <img key={i} src={avatarSrc(a.employee?.avatar, a.employee?.profile_photo_url)} onError={onAvatarError} alt={a.employee?.name}
+                                    style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
                             ))}
                             {assignees.length > 3 && (
                                 <div style={{ ...s.avatar, background: 'var(--admin-border-strong)', color: 'var(--admin-text-muted)', fontSize: '0.6rem' }}>

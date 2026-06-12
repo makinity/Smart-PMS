@@ -84,7 +84,7 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                         return (
                             <div key={emp.id} style={s.empRow}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2, minWidth: 0 }}>
-                                    <img src={avatarSrc(emp.avatar)} onError={onAvatarError} alt={emp.name} style={s.avatar} />
+                                    <img src={avatarSrc(emp.avatar, emp.profile_photo_url)} onError={onAvatarError} alt={emp.name} style={s.avatar} />
                                     <div style={{ minWidth: 0 }}>
                                         <div style={s.empName}>{emp.name}</div>
                                         <div style={s.empPos}>{emp.position ?? '—'}</div>

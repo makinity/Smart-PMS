@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 function fitColor(label) {
     if (label === 'Strong fit')   return '#4ade80';
@@ -73,7 +74,7 @@ export default function AssigneeReviewModal({ indicator, periodId = 1, employees
                                 return (
                                     <div key={emp.id} style={s.empRow}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2 }}>
-                                            <div style={s.avatar}>{emp.name?.charAt(0)}</div>
+                                            <img src={avatarSrc(emp.avatar, emp.profile_photo_url)} onError={onAvatarError} alt={emp.name} style={s.avatar} />
                                             <div>
                                                 <div style={s.empName}>{emp.name}</div>
                                                 <div style={s.empPos}>{emp.position}</div>
@@ -122,7 +123,7 @@ const s = {
     tableHead:{ display: 'flex', padding: '0.5rem 1.5rem', fontSize: '0.62rem', fontWeight: 700, color: 'var(--admin-text-muted)', letterSpacing: '0.07em', borderBottom: '1px solid var(--admin-border)' },
     list:     { flex: 1, overflowY: 'auto' },
     empRow:   { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 1.5rem', borderBottom: '1px solid var(--admin-border)' },
-    avatar:   { width: 32, height: 32, borderRadius: '50%', background: 'rgba(59,130,246,0.2)', color: 'var(--admin-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem', flexShrink: 0 },
+    avatar:   { width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 },
     empName:  { fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-primary)' },
     empPos:   { fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem' },
     footer:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.85rem 1.5rem', borderTop: '1px solid var(--admin-border)' },
