@@ -53,10 +53,13 @@ export default function Index() {
 
     const card = { background:'var(--admin-card)', border:'1px solid var(--admin-border-strong)', borderRadius:'var(--admin-radius)', boxShadow:'var(--admin-shadow)' };
     const tabs = [
-        { key: '',               label: 'All',               count: counts.all },
-        { key: 'Outstanding',    label: '🏆 Outstanding',    count: counts['Outstanding'] },
-        { key: 'Very Satisfactory', label: '⭐ Very Satisfactory', count: counts['Very Satisfactory'] },
-        { key: 'Satisfactory',   label: '✓ Satisfactory',    count: counts['Satisfactory'] },
+        { key: '',                  label: 'All',              count: counts.all, icon: null },
+        { key: 'Outstanding',       label: 'Outstanding',      count: counts['Outstanding'],
+          icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+        { key: 'Very Satisfactory', label: 'Very Satisfactory',count: counts['Very Satisfactory'],
+          icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+        { key: 'Satisfactory',      label: 'Satisfactory',     count: counts['Satisfactory'],
+          icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg> },
     ];
 
     return (
@@ -86,6 +89,7 @@ export default function Index() {
                                     background: active ? cfg.bg : 'var(--admin-card)', color: active ? cfg.color : 'var(--admin-text-muted)',
                                     cursor:'pointer', fontSize:'0.8rem', fontWeight: active ? 700 : 500,
                                     display:'flex', alignItems:'center', gap:'0.4rem', transition:'all 0.15s' }}>
+                                {t.icon && t.icon}
                                 {t.label}
                                 <span style={{ fontSize:'0.7rem', fontWeight:700, padding:'1px 6px', borderRadius:99,
                                     background: active ? cfg.color : 'var(--admin-bg-secondary)',
