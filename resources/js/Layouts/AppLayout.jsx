@@ -98,12 +98,12 @@ export default function AppLayout({ children, title, description }) {
                         radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 26%),
                         linear-gradient(180deg, var(--admin-bg-primary) 0%, var(--admin-bg-secondary) 100%);
                 }
-                .admin-content { flex: 1; padding: 1.75rem; overflow: auto; }
+                .admin-content { flex: 1; padding: 1rem 1.5rem; overflow: auto; }
 
                 /* On mobile: sidebar is an overlay, main takes full width */
                 @media (max-width: 767px) {
                     .app-main { margin-left: 0 !important; }
-                    .admin-content { padding: 1rem; }
+                    .admin-content { padding: 0.75rem 1rem; }
                 }
             `}</style>
         </div>
