@@ -201,6 +201,9 @@ Route::prefix('employee')->middleware(['auth', 'role:employee'])->name('employee
     Route::get('/accomplishment/smpor', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'smpor'])->name('accomplishment.smpor');
     Route::get('/accomplishment/ipcr', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'ipcr'])->name('accomplishment.ipcr');
     Route::post('/accomplishment/submit', [\App\Http\Controllers\Employee\SmporIpcrAccomplishmentController::class, 'submit'])->name('accomplishment.submit');
+    Route::get('/history', [\App\Http\Controllers\Employee\HistoryController::class, 'index'])->name('history.index');
+    Route::get('/history/ipcr/{ipcr}', [\App\Http\Controllers\Employee\HistoryController::class, 'showIpcr'])->name('history.ipcr');
+    Route::get('/history/ipcr/{ipcr}', [\App\Http\Controllers\Employee\HistoryController::class, 'showIpcr'])->name('history.ipcr');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Employee/Profile'))->name('profile');
 });
 
