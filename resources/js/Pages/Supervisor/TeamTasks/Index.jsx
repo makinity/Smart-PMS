@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import TaskDetailsModal from '@/Pages/Employee/MyTask/TaskDetailsModal';
@@ -22,9 +22,10 @@ const FILTERS = [
 ];
 
 function fmtSeconds(s) {
-    if (!s) return null;
+    if (!s && s !== 0) return null;
+    if (s < 60) return '<1m';
     const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : m > 0 ? `${m}m` : '<1m';
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 function fmtDate(d) {
@@ -32,9 +33,25 @@ function fmtDate(d) {
     return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
 }
 
+function liveSeconds(entry) {
+    let total = entry.total_seconds ?? 0;
+    if (entry.status === 'recording' && entry.started_at) {
+        total += Math.floor((Date.now() - new Date(entry.started_at).getTime()) / 1000);
+    }
+    return total;
+}
+
 function TaskCard({ entry, onClick }) {
     const sc = STATUS_CFG[entry.status] ?? STATUS_CFG.draft;
     const isLive = entry.status === 'recording';
+    const [secs, setSecs] = useState(() => liveSeconds(entry));
+
+    useEffect(() => {
+        setSecs(liveSeconds(entry));
+        if (!isLive) return;
+        const id = setInterval(() => setSecs(liveSeconds(entry)), 1000);
+        return () => clearInterval(id);
+    }, [entry.status, entry.started_at, entry.total_seconds]);
 
     return (
         <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border)',
@@ -42,7 +59,6 @@ function TaskCard({ entry, onClick }) {
             borderTop: `3px solid ${sc.c}`, cursor: 'pointer' }}
             className="task-card"
             onClick={onClick}>
-            {/* Employee + status */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                     <img src={avatarSrc(entry.employee_avatar)} alt={entry.employee_name} onError={onAvatarError}
@@ -68,27 +84,52 @@ function TaskCard({ entry, onClick }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginTop: 'auto' }}>
                 {entry.work_date && <Chip icon="📅">{fmtDate(entry.work_date)}</Chip>}
                 {entry.quantity > 0 && <Chip icon="✦">{entry.quantity} qty</Chip>}
-                {entry.total_seconds > 0 && <Chip icon="⏱">{fmtSeconds(entry.total_seconds)}</Chip>}
+                {secs > 0 && <Chip icon="⏱" live={isLive}>{fmtSeconds(secs)}</Chip>}
             </div>
         </div>
     );
 }
 
-function Chip({ icon, children }) {
+function Chip({ icon, children, live }) {
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem',
-            color: 'var(--admin-text-muted)', background: 'var(--admin-bg-secondary)',
-            padding: '2px 7px', borderRadius: 99, border: '1px solid var(--admin-border)' }}>
+            color: live ? '#f59e0b' : 'var(--admin-text-muted)',
+            background: live ? 'rgba(245,158,11,0.1)' : 'var(--admin-bg-secondary)',
+            padding: '2px 7px', borderRadius: 99,
+            border: `1px solid ${live ? 'rgba(245,158,11,0.3)' : 'var(--admin-border)'}` }}>
             <span style={{ fontSize: '0.6rem' }}>{icon}</span>{children}
         </span>
     );
 }
 
 export default function Index() {
-    const { entries = [], period } = usePage().props;
+    const { entries: initialEntries = [], period, auth } = usePage().props;
+    const [entries, setEntries] = useState(initialEntries);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [activeEntry, setActiveEntry] = useState(null);
+    const channelRef = useRef(null);
+
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId || !window.Echo) return;
+
+        channelRef.current = window.Echo.private(`supervisor.${userId}`)
+            .listen('.ors.activity', ({ entry }) => {
+                setEntries(prev => {
+                    const idx = prev.findIndex(e => e.id === entry.id);
+                    if (idx === -1) return [entry, ...prev];
+                    const next = [...prev];
+                    next[idx] = entry;
+                    return next;
+                });
+                setActiveEntry(prev => prev?.id === entry.id ? entry : prev);
+            });
+
+        return () => {
+            if (channelRef.current) window.Echo.leave(`supervisor.${userId}`);
+        };
+    }, [auth?.user?.id]);
 
     const filtered = entries.filter(e => {
         const matchStatus = filter === 'all' || e.status === filter;
@@ -103,7 +144,6 @@ export default function Index() {
         <AppLayout title="Team Tasks">
             <style>{css}</style>
             <div style={{ ...card, padding: '1.25rem' }}>
-                {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
                     <div>
                         <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>Team Task Monitor</div>
@@ -121,7 +161,6 @@ export default function Index() {
                     )}
                 </div>
 
-                {/* Search */}
                 <div style={{ position: 'relative', marginBottom: '0.6rem' }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                         style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', pointerEvents: 'none' }}>
@@ -134,7 +173,6 @@ export default function Index() {
                             borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem', outline: 'none', fontFamily: 'inherit' }} />
                 </div>
 
-                {/* Filter pills */}
                 <div style={{ display: 'flex', gap: 4, marginBottom: '1.25rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
                     {FILTERS.map(({ key }) => {
                         const sc = STATUS_CFG[key];
@@ -150,8 +188,7 @@ export default function Index() {
                                 color: active ? (sc?.c ?? 'var(--admin-accent)') : 'var(--admin-text-muted)',
                             }}>
                                 {label}
-                                <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '1px 5px', borderRadius: 99,
-                                    background: 'rgba(0,0,0,0.1)' }}>
+                                <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '1px 5px', borderRadius: 99, background: 'rgba(0,0,0,0.1)' }}>
                                     {countOf(key)}
                                 </span>
                             </button>
@@ -159,7 +196,6 @@ export default function Index() {
                     })}
                 </div>
 
-                {/* Card grid */}
                 {filtered.length === 0 ? (
                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"

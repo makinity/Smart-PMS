@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employee;
 
+use App\Events\OrsActivityEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Ipcr;
 use App\Models\IpcrItem;
@@ -196,6 +197,8 @@ class OrsController extends Controller
             $entry->update(['status' => 'recording', 'started_at' => now()]);
         }
 
+        broadcast(new OrsActivityEvent($entry->fresh()));
+
         return back()->with('success', 'Task logged successfully.');
     }
 
@@ -213,6 +216,8 @@ class OrsController extends Controller
             'resume' => $this->timerResume($orsEntry),
             'stop'  => $this->timerStop($orsEntry),
         };
+
+        broadcast(new OrsActivityEvent($orsEntry->fresh()));
 
         return back();
     }
@@ -304,6 +309,8 @@ class OrsController extends Controller
             'submitted_at' => now(),
             'locked_at'    => now(),
         ]);
+
+        broadcast(new OrsActivityEvent($orsEntry->fresh()));
 
         // Notify assigned supervisor
         $supervisor = User::find($orsEntry->supervisor_id);
