@@ -23,9 +23,10 @@ const FILTERS = [
 
 function fmtSeconds(s) {
     if (!s && s !== 0) return null;
-    if (s < 60) return '<1m';
-    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    const m = Math.floor(s / 60);
+    if (m < 1) return '<1m';
+    const h = Math.floor(m / 60), rem = m % 60;
+    return h > 0 ? `${h}h ${rem}m` : `${m}m`;
 }
 
 function fmtDate(d) {
