@@ -278,6 +278,38 @@ export default function Index() {
                                                     )}
                                                 </div>
                                             )}
+                                            {row.snapshot && (
+                                                <div>
+                                                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Snapshot</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-primary)' }}>
+                                                        Indicators: <strong>{row.snapshot.indicator_count}</strong>
+                                                    </div>
+                                                    {row.snapshot.avg_score > 0 && (
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-primary)', marginTop: 2 }}>
+                                                            Avg Score: <strong>{row.snapshot.avg_score}</strong>
+                                                        </div>
+                                                    )}
+                                                    {row.snapshot.previous_final_score && (
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 4 }}>
+                                                            Prev Period: <strong>{row.snapshot.previous_final_score}</strong>
+                                                            {row.snapshot.previous_adjectival && ` (${row.snapshot.previous_adjectival})`}
+                                                        </div>
+                                                    )}
+                                                    {row.snapshot.was_flagged && (
+                                                        <div style={{ fontSize: '0.7rem', color: '#f59e0b', marginTop: 4 }}>⚑ Flagged for calibration</div>
+                                                    )}
+                                                    {Object.keys(row.snapshot.feasibility_labels ?? {}).length > 0 && (
+                                                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+                                                            {Object.entries(row.snapshot.feasibility_labels).map(([label, count]) => (
+                                                                <Badge key={label} label={`${label}: ${count}`}
+                                                                    color={label === 'achievable' ? '#10b981' : label === 'at_risk' ? '#f59e0b' : '#ef4444'}
+                                                                    bg={label === 'achievable' ? 'rgba(16,185,129,0.1)' : label === 'at_risk' ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)'}
+                                                                    size="0.62rem" />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

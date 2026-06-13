@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentSubmission;
 use App\Models\DevelopmentPlan;
+use App\Models\EmployeePerformanceSnapshot;
 use App\Models\Ipcr;
 use App\Models\OrsEntry;
 use Inertia\Inertia;
@@ -66,24 +67,45 @@ class HistoryController extends Controller
         foreach ($ipcrs as $ipcr) {
             $period = $ipcr['period'];
             if (! isset($history[$period])) {
-                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null];
+                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null, 'snapshot' => null];
             }
             $history[$period]['ipcr'] = $ipcr;
         }
         foreach ($submissions as $sub) {
             $period = $sub['period'];
             if (! isset($history[$period])) {
-                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null];
+                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null, 'snapshot' => null];
             }
             $history[$period]['submission'] = $sub;
         }
         foreach ($idps as $idp) {
             $period = $idp['period'];
             if (! isset($history[$period])) {
-                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null];
+                $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null, 'snapshot' => null];
             }
             $history[$period]['idp'] = $idp;
         }
+
+        // Enrich with snapshot data (per-period summary)
+        EmployeePerformanceSnapshot::with('period:id,name')
+            ->where('employee_id', $user->id)
+            ->whereNotNull('performance_period_id')
+            ->get()
+            ->groupBy(fn ($s) => $s->period?->name)
+            ->each(function ($rows, $period) use (&$history) {
+                if (! isset($history[$period])) {
+                    $history[$period] = ['period' => $period, 'ipcr' => null, 'submission' => null, 'idp' => null, 'snapshot' => null];
+                }
+                $history[$period]['snapshot'] = [
+                    'indicator_count'      => $rows->count(),
+                    'avg_score'            => round($rows->whereNotNull('final_score')->avg('final_score') ?? 0, 2),
+                    'previous_final_score' => $rows->first()?->previous_final_score,
+                    'previous_adjectival'  => $rows->first()?->previous_adjectival_rating,
+                    'was_flagged'          => $rows->contains('was_flagged_for_calibration', true),
+                    'feasibility_labels'   => $rows->whereNotNull('feasibility_label')
+                        ->countBy('feasibility_label')->toArray(),
+                ];
+            });
 
         $ratedSubmissions = $submissions->filter(fn ($s) => $s['final_rating'] !== null);
         $bestSubmission = $ratedSubmissions->sortByDesc('final_rating')->first();
