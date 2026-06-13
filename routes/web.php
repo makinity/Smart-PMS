@@ -11,6 +11,11 @@ Route::get('/dashboard', function () {
     $user = auth()->user();
     if (! $user) return redirect()->route('login');
 
+    // Preserve just_logged_in through the redirect chain
+    if (session()->has('just_logged_in')) {
+        session()->reflash();
+    }
+
     // Force-refresh Spatie permission cache then resolve role
     $user->unsetRelation('roles');
     $role = $user->getRoleNames()->first() ?? $user->role;

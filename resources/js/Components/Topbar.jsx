@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import NotificationPanel from '@/Components/NotificationPanel';
 
@@ -34,6 +34,14 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
     const { auth } = usePage().props;
     const user = auth?.user;
     const [open, setOpen] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        setOpen(false);
+        setLoggingOut(true);
+        setTimeout(() => router.visit('/logout'), 1000);
+    };
     const ref = useRef(null);
 
     useEffect(() => {
@@ -45,6 +53,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
     const userAvatar = avatarSrc(user?.avatar, user?.profile_photo_url);
 
     return (
+        <>
         <header className="tb-root">
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
                 <button className="tb-hamburger" onClick={onMobileMenuToggle} title="Menu">
@@ -93,10 +102,10 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                                 {darkMode ? 'Light Mode' : 'Dark Mode'}
                             </button>
                             <div className="tb-dd-divider" />
-                            <Link href="/logout" method="post" as="button" className="tb-dd-item tb-dd-logout" onClick={() => setOpen(false)}>
+                            <button className="tb-dd-item tb-dd-logout" onClick={handleLogout}>
                                 <i className="bi bi-box-arrow-right" />
                                 Logout
-                            </Link>
+                            </button>
                         </div>
                     )}
                 </div>
@@ -230,6 +239,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                 }
                 .tb-dd-logout { color: #f87171; }
                 .tb-dd-logout:hover { background: rgba(239,68,68,0.1); color: #fca5a5; }
+                @keyframes plsSlide{0%{transform:translateX(-100%)}50%{transform:translateX(200%)}100%{transform:translateX(200%)}}
 
                 /* ── Hamburger ── */
                 .tb-hamburger {
@@ -256,5 +266,18 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                 }
             `}</style>
         </header>
+        {loggingOut && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: darkMode ? '#0f1117' : '#f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', padding: '2.5rem 3rem', background: darkMode ? '#1a1d27' : '#ffffff', border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, borderRadius: 20, boxShadow: '0 24px 64px rgba(0,0,0,0.2)' }}>
+                    <img src="/images/pms-logo.png" alt="Smart PMS" style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 14, marginBottom: 4 }} />
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: darkMode ? '#f1f5f9' : '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 }}>Smart PMS</div>
+                    <div style={{ fontSize: '0.82rem', color: darkMode ? 'rgba(241,245,249,0.45)' : 'rgba(15,23,42,0.45)', marginBottom: 8 }}>Signing out…</div>
+                    <div style={{ width: 180, height: 4, borderRadius: 99, background: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: '45%', borderRadius: 99, background: 'linear-gradient(90deg,#3b82f6,#6366f1)', animation: 'plsSlide 1.1s ease-in-out infinite' }} />
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }

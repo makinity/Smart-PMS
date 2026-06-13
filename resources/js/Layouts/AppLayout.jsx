@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import Sidebar from '@/Components/Sidebar';
 import Topbar from '@/Components/Topbar';
 import { ToastProvider } from '@/Components/Snackbar';
 import { ConfirmProvider } from '@/Components/ConfirmDialog';
+import LoginLoadingScreen from '@/Components/LoginLoadingScreen';
 
 export default function AppLayout({ children, title, description }) {
+    const page = usePage();
+    const [showLoader] = useState(() => !!page?.props?.flash?.just_logged_in);
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'dark') === 'dark');
     const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sb-collapsed') === '1');
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,6 +35,7 @@ export default function AppLayout({ children, title, description }) {
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
+            {showLoader && <LoginLoadingScreen />}
             {/* Mobile backdrop */}
             {mobileOpen && (
                 <div

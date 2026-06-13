@@ -37,9 +37,10 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'flash' => [
-                'success' => $request->session()->get('success'),
-                'error'   => $request->session()->get('error'),
-                'summary'  => $request->session()->get('summary'),
+                'success'       => $request->session()->get('success'),
+                'error'         => $request->session()->get('error'),
+                'summary'       => $request->session()->get('summary'),
+                'just_logged_in'=> $request->session()->get('just_logged_in', false),
             ],
             'ziggy' => fn () => (new Ziggy)->toArray(),
         ]);
