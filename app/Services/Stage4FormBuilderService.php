@@ -98,6 +98,18 @@ class Stage4FormBuilderService
         }
 
         $result = [];
+        $fnWeights = [];
+        if ($ipcr) {
+            foreach ($ipcr->items as $item) {
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
+                if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+            }
+        }
+        foreach ($entries as $entry) {
+            $fn = $entry->ipcrItem?->indicator?->uwpMfo?->uwpFunction;
+            if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+        }
+
         foreach ($sections as $fnType => $outputs) {
             $rows = [];
             foreach ($outputs as $title => $monthData) {
@@ -112,7 +124,7 @@ class Stage4FormBuilderService
                 }
                 $rows[] = $row;
             }
-            $result[] = ['type' => $fnType, 'rows' => $rows];
+            $result[] = ['type' => $fnType, 'weight' => $fnWeights[$fnType] ?? 0, 'rows' => $rows];
         }
 
         return ['months' => $months, 'sections' => $result];

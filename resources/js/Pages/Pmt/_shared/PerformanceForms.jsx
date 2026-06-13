@@ -43,7 +43,7 @@ export function SmporTable({ table }) {
             {sections.map(section => (
                 <div key={section.type} style={{ marginBottom: '0.75rem', border: '1px solid var(--admin-border)', borderRadius: 8, overflow: 'hidden' }}>
                     <div style={{ padding: '0.5rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-text-primary)', textTransform: 'capitalize' }}>
-                        {section.type} Functions
+                        {section.type}{section.weight ? ` (${section.weight}%)` : ''}
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>

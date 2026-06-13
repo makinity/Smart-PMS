@@ -310,7 +310,7 @@ export default function IpcrPreview() {
                             {fn.weight && (
                                 <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99,
                                     background: 'rgba(59,130,246,0.10)', color: 'var(--admin-accent)' }}>
-                                    {fn.weight}%
+                                    {parseInt(fn.weight)}%
                                 </span>
                             )}
                         </div>

@@ -108,7 +108,7 @@ export default function SmporPreview() {
                             display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-grid-3x3-gap" style={{ color: 'var(--admin-accent)', fontSize: '0.85rem' }} />
                             <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--admin-text-primary)', textTransform: 'capitalize' }}>
-                                {section.type} Functions
+                                {section.type}{section.weight ? ` (${section.weight}%)` : ''}
                             </span>
                             <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: 'var(--admin-text-muted)' }}>
                                 {section.rows.length} output{section.rows.length !== 1 ? 's' : ''}

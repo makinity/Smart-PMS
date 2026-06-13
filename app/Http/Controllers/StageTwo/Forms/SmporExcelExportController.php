@@ -181,7 +181,7 @@ class SmporExcelExportController extends Controller
         // ── Data rows ────────────────────────────────────────────────────────
         foreach ($sections as $section) {
             $ws->mergeCells("A{$r}:{$lastCol}{$r}");
-            $ws->setCellValue("A{$r}", strtoupper($section['type']) . ' FUNCTION');
+            $ws->setCellValue("A{$r}", strtoupper($section['type']) . ' (' . ($section['weight'] ?? 0) . '%)');
             $ws->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
                 'font'      => ['bold' => true, 'size' => 9, 'color' => ['argb' => self::FG_WHITE]],
                 'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::BG_SECTION]],
@@ -348,6 +348,17 @@ class SmporExcelExportController extends Controller
         }
 
         $result = [];
+        $fnWeights = [];
+        if ($ipcr) {
+            foreach ($ipcr->items as $item) {
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
+                if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+            }
+        }
+        foreach ($entries as $entry) {
+            $fn = $entry->ipcrItem?->indicator?->uwpMfo?->uwpFunction;
+            if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+        }
         foreach ($sections as $fnType => $outputs) {
             $rows = [];
             foreach ($outputs as $title => $monthData) {
@@ -360,7 +371,7 @@ class SmporExcelExportController extends Controller
                 foreach ($months as $m) $row['months'][$m] = $monthData[$m] ?? ['qty' => 0, 'qual_pts' => 0, 'time_pts' => 0];
                 $rows[] = $row;
             }
-            $result[] = ['type' => $fnType, 'rows' => $rows];
+            $result[] = ['type' => $fnType, 'weight' => $fnWeights[$fnType] ?? 0, 'rows' => $rows];
         }
         return ['months' => $months, 'sections' => $result];
     }

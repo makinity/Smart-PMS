@@ -141,6 +141,7 @@ class AccomplishmentController extends Controller
             'submitted_at' => $s->submitted_at?->toIso8601String(),
             'employee_name' => $s->employee?->name ?? '—',
             'employee_office' => $s->employee?->office?->name ?? '—',
+            'employee_avatar' => $s->employee?->profile_photo_url,
             'period' => $s->period?->name ?? '—',
         ];
     }
@@ -207,6 +208,17 @@ class AccomplishmentController extends Controller
         }
 
         $result = [];
+        $fnWeights = [];
+        if ($ipcr) {
+            foreach ($ipcr->items as $item) {
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
+                if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+            }
+        }
+        foreach ($entries as $entry) {
+            $fn = $entry->ipcrItem?->indicator?->uwpMfo?->uwpFunction;
+            if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+        }
         foreach ($sections as $fnType => $outputs) {
             $rows = [];
             foreach ($outputs as $title => $monthData) {
@@ -221,7 +233,7 @@ class AccomplishmentController extends Controller
                 }
                 $rows[] = $row;
             }
-            $result[] = ['type' => $fnType, 'rows' => $rows];
+            $result[] = ['type' => $fnType, 'weight' => $fnWeights[$fnType] ?? 0, 'rows' => $rows];
         }
 
         return ['months' => $months, 'sections' => $result];

@@ -346,6 +346,18 @@ class SmporIpcrAccomplishmentController extends Controller
             $sections[$fnType][$outputTitle][$monthLabel]['time_pts'] = ($sections[$fnType][$outputTitle][$monthLabel]['time_pts'] ?? 0) + ($qty * ($mon?->timeliness_rating ?? 0));
         }
 
+        $fnWeights = [];
+        if ($ipcr) {
+            foreach ($ipcr->items as $item) {
+                $fn = $item->indicator?->uwpMfo?->uwpFunction;
+                if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+            }
+        }
+        foreach ($entries as $entry) {
+            $fn = $entry->ipcrItem?->indicator?->uwpMfo?->uwpFunction;
+            if ($fn) $fnWeights[strtolower($fn->name)] = (int) round((float) $fn->weight_percent);
+        }
+
         $result = [];
         foreach ($sections as $fnType => $outputs) {
             $rows = [];
@@ -365,7 +377,7 @@ class SmporIpcrAccomplishmentController extends Controller
                 }
                 $rows[] = $row;
             }
-            $result[] = ['type' => $fnType, 'rows' => $rows];
+            $result[] = ['type' => $fnType, 'weight' => $fnWeights[$fnType] ?? 0, 'rows' => $rows];
         }
 
         return ['months' => $months, 'sections' => $result];

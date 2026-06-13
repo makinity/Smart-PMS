@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
@@ -119,7 +120,7 @@ function SmporTable({ table }) {
             {sections.map(section => (
                 <div key={section.type} style={{ marginBottom: '0.75rem', border: '1px solid var(--admin-border)', borderRadius: 8, overflow: 'hidden' }}>
                     <div style={{ padding: '0.5rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-text-primary)', textTransform: 'capitalize' }}>
-                        {section.type} Functions
+                        {section.type}{section.weight ? ` (${section.weight}%)` : ''}
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -377,14 +378,20 @@ export default function Show() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: '0.85rem' }}>
                         <div>
                             <button onClick={() => router.visit('/dept-head/accomplishment-review')}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <i className="bi bi-arrow-left" /> Back
                             </button>
-                            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)', marginBottom: 2 }}>
-                                {submission?.employee_name}
-                                <span style={{ fontWeight: 400, color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}> — {submission?.employee_office}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <img src={avatarSrc(submission?.employee_avatar)} onError={onAvatarError} alt={submission?.employee_name}
+                                    style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--admin-border-strong)', flexShrink: 0 }} />
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)', marginBottom: 2 }}>
+                                        {submission?.employee_name}
+                                        <span style={{ fontWeight: 400, color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}> — {submission?.employee_office}</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{submission?.period}</div>
+                                </div>
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{submission?.period}</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             {submission?.dept_head_flagged_for_calibration && (
