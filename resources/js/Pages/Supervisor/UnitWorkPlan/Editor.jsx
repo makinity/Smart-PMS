@@ -112,6 +112,11 @@ export default function Editor() {
     }
 
     async function handleSubmit() {
+        const totalWeight = functions.reduce((sum, f) => sum + (parseFloat(f.weight_percent) || 0), 0);
+        if (totalWeight !== 100) {
+            toast(`Total function weight must be 100%. Current total: ${totalWeight}%.`, 'error');
+            return;
+        }
         if (!await confirm('Submit this UWP for review? You will not be able to edit it after submission.')) return;
         let success = false;
         try {
@@ -499,6 +504,7 @@ export default function Editor() {
             {fnModal !== null && (
                 <FunctionModal
                     fn={fnModal.fn ?? {}}
+                    functions={functions}
                     onSave={handleSaveFunction}
                     onClose={() => setFnModal(null)}
                     bp={bp}
@@ -1010,16 +1016,41 @@ function AddMfoSidebar({ ctx, onSave, onClose, bp }) {
 }
 
 // ── Function create/edit modal ──
-function FunctionModal({ fn, onSave, onClose, bp }) {
+function FunctionModal({ fn, functions = [], onSave, onClose, bp }) {
     const { renderValue: visibleFn, closing } = useDelayedPresence(fn);
     const left = useSidebarLeft();
     const isEdit = !!visibleFn?.id;
-    const [name, setName]     = useState(fn?.name ?? '');
+
+    const typeLabels = { core: 'Core Functions', support: 'Support Functions', strategic: 'Strategic Functions' };
+
+    function getAutoName(selectedType) {
+        // existing types excluding the one being edited
+        const existing = functions.filter(f => !isEdit || f.id !== visibleFn?.id);
+        const usedTypes = existing.map(f => f.function_type);
+        const order = ['core', 'support', 'strategic'];
+        const sorted = order.filter(t => t === selectedType || usedTypes.includes(t));
+        const idx = sorted.indexOf(selectedType);
+        const prefix = String.fromCharCode(65 + idx); // A, B, C
+        return `${prefix}. ${typeLabels[selectedType]}`;
+    }
+
     const [type, setType]     = useState(fn?.function_type ?? 'core');
+    const [name, setName]     = useState(fn?.name ?? (!fn?.id ? getAutoName(fn?.function_type ?? 'core') : ''));
     const [weight, setWeight] = useState(fn?.weight_percent ?? '');
+
+    // types already used (excluding current fn when editing)
+    const usedTypes = functions.filter(f => !isEdit || f.id !== visibleFn?.id).map(f => f.function_type);
+
+    const usedWeight = functions
+        .filter(f => !isEdit || f.id !== visibleFn?.id)
+        .reduce((sum, f) => sum + (parseFloat(f.weight_percent) || 0), 0);
+    const remainingWeight = 100 - usedWeight;
+    const weightExceeds = parseFloat(weight) > remainingWeight;
 
     async function handleSave() {
         if (!name.trim()) return;
+        if (!isEdit && usedTypes.includes(type)) return;
+        if (weightExceeds) return;
         await onSave({ id: visibleFn?.id, name, function_type: type, weight_percent: weight || null });
     }
 
@@ -1035,25 +1066,32 @@ function FunctionModal({ fn, onSave, onClose, bp }) {
             <div style={sFn.body}>
                 <div style={sAdd.fieldGroup}>
                     <label style={sAdd.label}>FUNCTION NAME</label>
-                    <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} placeholder="e.g. A. CORE FUNCTIONS" value={name} onChange={e => setName(e.target.value)} />
+                    <input style={{ ...sAdd.input, paddingLeft: '0.75rem', textTransform: 'uppercase' }} placeholder="e.g. A. CORE FUNCTIONS" value={name} onChange={e => setName(e.target.value.toUpperCase())} />
                 </div>
                 <div style={sAdd.row}>
                     <div style={{ flex: 1 }}>
                         <label style={sAdd.label}>TYPE</label>
-                        <select style={{ ...sAdd.input, paddingLeft: '0.75rem' }} value={type} onChange={e => setType(e.target.value)}>
-                            <option value="core">Core</option>
-                            <option value="support">Support</option>
+                        <select style={{ ...sAdd.input, paddingLeft: '0.75rem' }} value={type} onChange={e => {
+                                const val = e.target.value;
+                                setType(val);
+                                if (!isEdit) setName(getAutoName(val));
+                            }}>
+                            <option value="core" disabled={usedTypes.includes('core')}>Core{usedTypes.includes('core') ? ' (added)' : ''}</option>
+                            <option value="support" disabled={usedTypes.includes('support')}>Support{usedTypes.includes('support') ? ' (added)' : ''}</option>
+                            <option value="strategic" disabled={usedTypes.includes('strategic')}>Strategic{usedTypes.includes('strategic') ? ' (added)' : ''}</option>
                         </select>
                     </div>
                     <div style={{ flex: 1 }}>
                         <label style={sAdd.label}>WEIGHT %</label>
-                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem' }} type="number" min="0" max="100" placeholder="e.g. 80" value={weight} onChange={e => setWeight(e.target.value)} />
+                        <input style={{ ...sAdd.input, paddingLeft: '0.75rem', borderColor: weightExceeds ? '#ef4444' : undefined }} type="number" min="0" max="100" placeholder="e.g. 80" value={weight} onChange={e => setWeight(e.target.value)} />
+                        {weightExceeds && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>Max allowed: {remainingWeight}%</div>}
+                        {!weightExceeds && weight === '' && <div style={{ color: 'var(--admin-text-muted)', fontSize: '0.75rem', marginTop: '0.25rem' }}>Remaining: {remainingWeight}%</div>}
                     </div>
                 </div>
             </div>
             <div style={sFn.footer}>
                 <button style={{ background: 'none', border: '1px solid var(--admin-border-strong)', cursor: 'pointer', color: 'var(--admin-text-muted)', borderRadius: 8, padding: '0.5rem 1.1rem', fontWeight: 600, fontSize: '0.85rem' }} onClick={onClose}>Cancel</button>
-                <button style={{ ...s.btnPrimary, padding: '0.5rem 1.25rem' }} onClick={handleSave}>{isEdit ? 'Save Changes' : 'Add Function'}</button>
+                <button style={{ ...s.btnPrimary, padding: '0.5rem 1.25rem', opacity: ((!isEdit && usedTypes.includes(type)) || weightExceeds) ? 0.5 : 1, cursor: ((!isEdit && usedTypes.includes(type)) || weightExceeds) ? 'not-allowed' : 'pointer' }} onClick={handleSave} disabled={(!isEdit && usedTypes.includes(type)) || weightExceeds}>{isEdit ? 'Save Changes' : 'Add Function'}</button>
             </div>
         </>
     );

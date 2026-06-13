@@ -50,6 +50,11 @@ export default function Show() {
     const canSubmit      = uwp?.status === 'draft' || uwp?.status === 'returned';
 
     function handleSubmit() {
+        const totalWeight = fns.reduce((sum, f) => sum + (parseFloat(f.weight_percent) || 0), 0);
+        if (totalWeight !== 100) {
+            toast(`Total function weight must be 100%. Current total: ${totalWeight}%.`, 'error');
+            return;
+        }
         confirm('Submit this UWP for review? You will not be able to edit it after submission.').then(ok => {
             if (!ok) return;
             setSubmitting(true);

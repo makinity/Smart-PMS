@@ -60,7 +60,7 @@ class UwpEditorController extends Controller
         $this->authorizeUwp($uwp);
         $data = $request->validate([
             'name'           => 'required|string|max:255',
-            'function_type'  => 'required|in:core,support',
+            'function_type'  => 'required|in:core,support,strategic',
             'weight_percent' => 'nullable|numeric|min:0|max:100',
         ]);
         $fn = $uwp->uwpFunctions()->create([
@@ -75,7 +75,7 @@ class UwpEditorController extends Controller
         $this->authorizeUwp($uwp);
         $data = $request->validate([
             'name'           => 'required|string|max:255',
-            'function_type'  => 'required|in:core,support',
+            'function_type'  => 'required|in:core,support,strategic',
             'weight_percent' => 'nullable|numeric|min:0|max:100',
         ]);
         $fn->update($data);
