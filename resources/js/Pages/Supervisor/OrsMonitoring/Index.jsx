@@ -662,7 +662,7 @@ function EmptyState() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { entries: initialEntries, autoOpenEntryId } = usePage().props;
+    const { entries: initialEntries, autoOpenEntryId, auth } = usePage().props;
     const [entries,      setEntries]      = useState(initialEntries ?? []);
     const [selectedId,   setSelectedId]   = useState(autoOpenEntryId ?? initialEntries?.[0]?.id ?? null);
     const [search,       setSearch]       = useState('');
@@ -671,6 +671,33 @@ export default function Index() {
 
     const bp = useBreakpoint();
     const isMobileOrTablet = bp !== 'desktop';
+
+    // Real-time: add new submitted entries instantly
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId || !window.Echo) return;
+
+        const channel = window.Echo.private(`supervisor.${userId}`)
+            .listen('.ors.activity', ({ entry }) => {
+                if (entry.status !== 'submitted') return;
+                setEntries(prev => {
+                    if (prev.find(e => e.id === entry.id)) return prev;
+                    // Format to match controller shape
+                    const formatted = {
+                        ...entry,
+                        indicator_text: entry.indicator_text ?? entry.indicator ?? '—',
+                        employee_office: null,
+                        evidence_count: 0,
+                        evidences: [],
+                        qet_standards: [],
+                        rating: null,
+                    };
+                    return [formatted, ...prev];
+                });
+            });
+
+        return () => window.Echo.leave(`supervisor.${userId}`);
+    }, [auth?.user?.id]);
 
     const filtered = entries.filter(e => {
         const matchStatus = statusFilter === 'all' || e.status === statusFilter;
