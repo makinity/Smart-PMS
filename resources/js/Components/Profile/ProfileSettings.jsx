@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const pageCard = {
@@ -175,16 +175,33 @@ export default function ProfileSettings({ description }) {
 
     const avatarSrc = resolveAvatar(photoPreview, user.profile_photo_url);
 
+    const [profileProcessing, setProfileProcessing] = useState(false);
+    const [profileSuccess, setProfileSuccess] = useState(false);
+    const [profileErrors, setProfileErrors] = useState({});
+
     const submitProfile = (e) => {
         e.preventDefault();
+        setProfileProcessing(true);
+        setProfileErrors({});
 
-        profileForm.put('/user/profile-information', {
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('name', profileForm.data.name);
+        formData.append('email', profileForm.data.email);
+        if (profileForm.data.profile_photo) {
+            formData.append('profile_photo', profileForm.data.profile_photo);
+        }
+
+        router.post('/user/profile-information', formData, {
             preserveScroll: true,
-            forceFormData: true,
             onSuccess: () => {
                 profileForm.reset('profile_photo');
                 setPhotoPreview(null);
+                setProfileSuccess(true);
+                setTimeout(() => setProfileSuccess(false), 3000);
             },
+            onError: (errors) => setProfileErrors(errors),
+            onFinish: () => setProfileProcessing(false),
         });
     };
 
@@ -274,7 +291,7 @@ export default function ProfileSettings({ description }) {
                     <form onSubmit={submitProfile}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '1rem' }} className="profile-edit-grid">
                             <div>
-                                <Field labelText="Display Name" error={profileForm.errors.name}>
+                                <Field labelText="Display Name" error={profileErrors.name}>
                                     <input
                                         type="text"
                                         value={profileForm.data.name}
@@ -289,7 +306,7 @@ export default function ProfileSettings({ description }) {
                                     />
                                 </Field>
 
-                                <Field labelText="Email Address" error={profileForm.errors.email} hint="Use a valid address where you can receive account notices.">
+                                <Field labelText="Email Address" error={profileErrors.email} hint="Use a valid address where you can receive account notices.">
                                     <input
                                         type="email"
                                         value={profileForm.data.email}
@@ -304,7 +321,7 @@ export default function ProfileSettings({ description }) {
                                     />
                                 </Field>
 
-                                <Field labelText="Profile Photo" error={profileForm.errors.profile_photo} hint="PNG, JPG, or WEBP up to 2 MB.">
+                                <Field labelText="Profile Photo" error={profileErrors.profile_photo} hint="PNG, JPG, or WEBP up to 2 MB.">
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
                                         <label style={{ ...actionButton, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <input
@@ -382,18 +399,19 @@ export default function ProfileSettings({ description }) {
                                         profileForm.setData('profile_photo', null);
                                         setPhotoPreview(null);
                                         profileForm.clearErrors();
+                                        setProfileErrors({});
                                     }}
                                     style={mutedButton}
                                 >
                                     Reset
                                 </button>
-                                <button type="submit" style={primaryButton} disabled={profileForm.processing}>
-                                    {profileForm.processing ? 'Updating...' : 'Update Profile'}
+                                <button type="submit" style={primaryButton} disabled={profileProcessing}>
+                                    {profileProcessing ? 'Updating...' : 'Update Profile'}
                                 </button>
                             </div>
                         </div>
 
-                        {profileForm.recentlySuccessful && (
+                        {profileSuccess && (
                             <div style={{
                                 marginTop: '1rem',
                                 padding: '0.9rem 1rem',

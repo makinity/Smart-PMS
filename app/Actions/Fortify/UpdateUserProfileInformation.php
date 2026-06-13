@@ -48,8 +48,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             ])->save();
         }
 
-        if (! empty($input['profile_photo'] ?? null)) {
-            $path = $input['profile_photo']->store('profile-photos', 'public');
+        $photo = $input['profile_photo'] ?? null;
+        if ($photo instanceof \Illuminate\Http\UploadedFile) {
+            $path = $photo->store('profile-photos', 'public');
 
             $user->forceFill([
                 'profile_photo_path' => $path,
