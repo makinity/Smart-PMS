@@ -314,7 +314,7 @@ class IpcrExcelExportController extends Controller
 
             // Section banner
             $ws->mergeCells("A{$r}:{$lastCol}{$r}");
-            $ws->setCellValue("A{$r}", $label);
+            $ws->setCellValue("A{$r}", $label . ' (' . ($typeWeights[$type] ?? 0) . '%)');
             $ws->getStyle("A{$r}:{$lastCol}{$r}")->applyFromArray([
                 'font' => ['bold' => true, 'size' => 9],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $bg]],

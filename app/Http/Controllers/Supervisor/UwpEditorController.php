@@ -214,7 +214,7 @@ class UwpEditorController extends Controller
 
         // Try FastAPI first
         try {
-            $response = Http::timeout(3)->post(env('FASTAPI_URL') . '/suggest-employees', [
+            $response = Http::timeout(1)->post(env('FASTAPI_URL') . '/suggest-employees', [
                 'uwp_success_indicator_id' => $indicatorId,
                 'performance_period_id'    => $periodId,
             ]);

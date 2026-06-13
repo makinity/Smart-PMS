@@ -35,7 +35,7 @@ class UwpSampleSeeder extends Seeder
         // Dimensions: quality, efficiency, timeliness — Ratings: 5=Outstanding, 4=VS, 3=S, 2=US, 1=Poor
         $data = [
             [
-                'name' => 'A. CORE FUNCTIONS', 'function_type' => 'core', 'weight_percent' => 80,
+                'name' => 'A. CORE FUNCTIONS', 'function_type' => 'core', 'weight_percent' => 70,
                 'mfos' => [
                     [
                         'title' => 'RECRUITMENT, SELECTION AND PLACEMENT (RSP)',
@@ -236,6 +236,97 @@ class UwpSampleSeeder extends Seeder
                                         3 => '100% of reports submitted within 1 day after deadline',
                                         2 => 'Reports submitted 2–3 days after deadline',
                                         1 => 'Reports submitted beyond 3 days after deadline or not submitted',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'C. STRATEGIC FUNCTIONS', 'function_type' => 'strategic', 'weight_percent' => 10,
+                'mfos' => [
+                    [
+                        'title' => 'STRATEGIC PLANNING AND ORGANIZATIONAL DEVELOPMENT',
+                        'indicators' => [
+                            [
+                                'text' => '1 strategic HR plan formulated and submitted within 30 working days',
+                                'qty' => 1, 'timeline' => 'strategic HR plan submitted within 30 working days', 'budget' => 0,
+                                'qet' => [
+                                    'q' => [
+                                        5 => 'Plan is comprehensive, data-driven, and fully aligned with office mandate; zero revisions required',
+                                        4 => 'Plan is substantially complete and aligned; 1-2 minor revisions needed',
+                                        3 => 'Plan is generally acceptable with 3-4 minor gaps',
+                                        2 => 'Plan has major gaps or misalignment with strategic objectives',
+                                        1 => 'Plan not submitted or critically deficient',
+                                    ],
+                                    'e' => [
+                                        5 => 'Planning process optimized; consultations and data gathering completed ahead of schedule',
+                                        4 => 'Process efficient; most steps completed with minimal delays',
+                                        3 => 'Process adequate; standard planning steps followed',
+                                        2 => 'Planning process had notable inefficiencies or redundant steps',
+                                        1 => 'Planning process was largely unstructured or inefficient',
+                                    ],
+                                    't' => [
+                                        5 => 'Plan submitted within 25 working days',
+                                        4 => 'Plan submitted within 27 working days',
+                                        3 => 'Plan submitted within 30 working days',
+                                        2 => 'Plan submitted within 31–35 working days',
+                                        1 => 'Plan submitted beyond 35 working days or not submitted',
+                                    ],
+                                ],
+                            ],
+                            [
+                                'text' => '100% of strategic objectives monitored and reported every quarter',
+                                'qty' => 100, 'timeline' => '% of strategic objectives monitored and reported every quarter', 'budget' => 0,
+                                'qet' => [
+                                    'q' => [
+                                        5 => '100% of objectives monitored with accurate, complete, and actionable reports',
+                                        4 => '100% monitored with 1-2 minor gaps in reporting',
+                                        3 => '100% monitored with 3-4 minor gaps or inconsistencies',
+                                        2 => 'Monitoring done but with major gaps or inaccurate data',
+                                        1 => 'Objectives not monitored or reports not submitted',
+                                    ],
+                                    'e' => [
+                                        5 => 'Monitoring fully systematized using performance dashboards; no manual tracking errors',
+                                        4 => 'Monitoring efficient; tools used effectively with minimal manual steps',
+                                        3 => 'Monitoring adequate; standard tracking process followed',
+                                        2 => 'Monitoring process had notable inefficiencies',
+                                        1 => 'Monitoring largely ad hoc or untracked',
+                                    ],
+                                    't' => [
+                                        5 => 'Reports submitted at least 5 days before end of each quarter',
+                                        4 => 'Reports submitted 1-4 days before end of each quarter',
+                                        3 => 'Reports submitted on the last day of each quarter',
+                                        2 => 'Reports submitted 1-5 days after end of quarter',
+                                        1 => 'Reports submitted beyond 5 days after end of quarter or not submitted',
+                                    ],
+                                ],
+                            ],
+                            [
+                                'text' => '1 capacity development plan prepared and endorsed within 20 working days',
+                                'qty' => 1, 'timeline' => 'capacity development plan endorsed within 20 working days', 'budget' => 0,
+                                'qet' => [
+                                    'q' => [
+                                        5 => 'Plan is comprehensive, need-based, and fully endorsed; zero revisions required',
+                                        4 => 'Plan substantially complete; 1-2 minor revisions needed before endorsement',
+                                        3 => 'Plan acceptable with 3-4 minor gaps; endorsed with minor comments',
+                                        2 => 'Plan has major gaps; returned for significant revisions',
+                                        1 => 'Plan not prepared or not endorsed',
+                                    ],
+                                    'e' => [
+                                        5 => 'Training needs analysis completed using validated tools; plan derived systematically',
+                                        4 => 'Plan developed efficiently; TNA tools used with minimal gaps',
+                                        3 => 'Plan developed adequately; standard process followed',
+                                        2 => 'Plan development had notable inefficiencies in data gathering',
+                                        1 => 'Plan development was largely unstructured',
+                                    ],
+                                    't' => [
+                                        5 => 'Plan endorsed within 15 working days',
+                                        4 => 'Plan endorsed within 17 working days',
+                                        3 => 'Plan endorsed within 20 working days',
+                                        2 => 'Plan endorsed within 21–25 working days',
+                                        1 => 'Plan endorsed beyond 25 working days or not endorsed',
                                     ],
                                 ],
                             ],

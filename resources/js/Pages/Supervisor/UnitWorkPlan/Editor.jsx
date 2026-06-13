@@ -4,6 +4,7 @@ import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import QetModal from './QetModal';
 import AssignModal from './AssignModal';
 
@@ -657,9 +658,8 @@ function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDel
                         <span style={s.metaDot} />
                         <div style={s.avatarGroup}>
                             {assignees.slice(0, 3).map((a, i) => (
-                                <div key={i} style={{ ...s.avatar, zIndex: 10 - i }}>
-                                    {initials(a.employee?.name)}
-                                </div>
+                                <img key={i} src={avatarSrc(a.employee?.avatar, a.employee?.profile_photo_url)} onError={onAvatarError} alt={a.employee?.name}
+                                    style={{ ...s.avatar, objectFit: 'cover', zIndex: 10 - i }} />
                             ))}
                             {assignees.length > 3 && <div style={{ ...s.avatar, background: 'var(--admin-border-strong)' }}>+{assignees.length - 3}</div>}
                         </div>

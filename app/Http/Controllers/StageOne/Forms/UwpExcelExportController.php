@@ -241,15 +241,29 @@ class UwpExcelExportController extends Controller
 
         // ── Data rows ──────────────────────────────────────────────────────────
         $outputs = $uwpData['outputs'] ?? [];
-        $byType  = ['core' => [], 'support' => []];
+
+        // Build dynamic function list from the UWP model (preserves order + real names/weights)
+        $uwp->loadMissing('uwpFunctions');
+        $functions = $uwp->uwpFunctions->sortBy('sort_order');
+
+        // Color map per type
+        $bgColors = [
+            'core'      => self::BG_CORE,
+            'support'   => self::BG_SUPPORT,
+            'strategic' => 'FFDAE8FC', // light blue
+        ];
+
+        // Group outputs by function_type
+        $byType = [];
         foreach ($outputs as $out) {
             $byType[strtolower($out['function_type'] ?? 'core')][] = $out;
         }
 
-        foreach ([
-            'core'    => ['A. CORE FUNCTIONS (80%)',    self::BG_CORE],
-            'support' => ['C. SUPPORT FUNCTIONS (20%)', self::BG_SUPPORT],
-        ] as $type => [$label, $bgColor]) {
+        foreach ($functions as $fn) {
+            $type    = strtolower($fn->function_type);
+            $label   = strtoupper($fn->name) . ' (' . ($fn->weight_percent ?? 0) . '%)';
+            $bgColor = $bgColors[$type] ?? self::BG_CORE;
+
             // Section banner
             $ws->mergeCells("A{$r}:H{$r}");
             $ws->setCellValue("A{$r}", $label);
@@ -264,7 +278,7 @@ class UwpExcelExportController extends Controller
             $ws->getRowDimension($r)->setRowHeight(16);
             $r++;
 
-            foreach ($byType[$type] as $output) {
+            foreach ($byType[$type] ?? [] as $output) {
                 $mfoTitle   = $output['mfo'] ?? '';
                 $indicators = $output['success_indicators'] ?? [];
                 $mfoStart   = $r;
@@ -290,7 +304,6 @@ class UwpExcelExportController extends Controller
 
                     $this->writeDataRow($ws, $r, $idx === 0 ? $mfoTitle : '', $siText, $stdCols, $si);
 
-                    // Row height based on content
                     $maxLines = max(1,
                         (int) ceil(mb_strlen($siText) / 38),
                         ...array_map(fn($t) => $t ? substr_count($t, "\n") + 1 : 1, $stdCols)
@@ -301,7 +314,6 @@ class UwpExcelExportController extends Controller
 
                 if (count($indicators) > 1) {
                     $ws->mergeCells("A{$mfoStart}:A" . ($r - 1));
-                    // Re-apply MFO cell style after merge
                     $ws->getStyle("A{$mfoStart}")->applyFromArray([
                         'font'      => ['bold' => true, 'size' => 8],
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -314,12 +326,14 @@ class UwpExcelExportController extends Controller
         }
 
         // ── Footer summary rows ────────────────────────────────────────────────
-        foreach ([
-            'Weighted Average Rating for Core Functions (80%)',
-            'Weighted Average Rating for Strategic Objectives (35%)',
-            'OVERALL RATING',
-            'ADJECTIVAL RATING',
-        ] as $label) {
+        $footLabels = [];
+        foreach ($functions as $fn) {
+            $footLabels[] = 'Weighted Average Rating for ' . $fn->name . ' (' . ($fn->weight_percent ?? 0) . '%)';
+        }
+        $footLabels[] = 'OVERALL RATING';
+        $footLabels[] = 'ADJECTIVAL RATING';
+
+        foreach ($footLabels as $label) {
             // Label spans A–C (right-aligned), value area spans D–H (empty, bordered)
             $ws->mergeCells("A{$r}:C{$r}");
             $ws->mergeCells("D{$r}:H{$r}");

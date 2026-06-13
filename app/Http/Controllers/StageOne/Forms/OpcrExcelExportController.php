@@ -240,17 +240,17 @@ class OpcrExcelExportController extends Controller
         $r = $h3 + 1;
 
         // ── Build merged output data from OPCR UWPs ────────────────────────────
-        $byType      = ['core' => [], 'support' => []];
+        $byType      = [];
         $typeWeights = [];
 
         foreach ($opcr->uwps as $uwp) {
-            $accountable = $uwp->creator?->name ?? '';
             foreach ($uwp->uwpFunctions as $fn) {
                 $type   = strtolower($fn->function_type ?? 'core');
                 $mfoKey = $fn->name;
                 if (!isset($typeWeights[$type])) {
                     $typeWeights[$type] = (int) round((float) $fn->weight_percent);
                 }
+                if (!isset($byType[$type])) $byType[$type] = [];
                 if (!isset($byType[$type][$mfoKey])) {
                     $byType[$type][$mfoKey] = [];
                 }
@@ -265,6 +265,13 @@ class OpcrExcelExportController extends Controller
                             $prefix = strtoupper(substr($q->dimension, 0, 1)) . ': ';
                             $std[$q->rating] = ($std[$q->rating] ? $std[$q->rating] . "\n" : '') . $prefix . $q->standard_text;
                         }
+                        // Use assigned employees, fallback to UWP creator
+                        $assignedNames = $si->assignments
+                            ->map(fn($a) => $a->employee?->name)
+                            ->filter()
+                            ->implode(', ');
+                        $accountable = $assignedNames ?: ($uwp->creator?->name ?? '');
+
                         $byType[$type][$mfoKey][$mfoTitle][] = [
                             'text'        => $si->indicator_text,
                             'budget'      => $si->allotted_budget,
@@ -281,7 +288,7 @@ class OpcrExcelExportController extends Controller
             if (empty($fnGroups)) continue;
 
             // Get first function name for this type to use as section label
-            $sectionLabel = array_key_first($fnGroups);
+            $sectionLabel = array_key_first($fnGroups) . ' (' . ($typeWeights[$type] ?? 0) . '%)';
             $bg = $type === 'core' ? self::BG_CORE : self::BG_SUPP;
 
             // Section banner

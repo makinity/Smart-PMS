@@ -29,13 +29,13 @@ class MlTrainingDataSeeder extends Seeder
 
     // Real indicators from DB
     private array $indicators = [
-        ['id' => 1, 'text' => '1 plantilla prepared with 3-4 minor errors on the 26th day after instruction',        'qty' => 1,   'timeline_days' => 26,  'function_type' => 'core',    'mfo_title' => 'HR Management'],
-        ['id' => 2, 'text' => '1 plantilla reviewed with 3-4 minor errors on the 5th day after preparation',         'qty' => 1,   'timeline_days' => 5,   'function_type' => 'core',    'mfo_title' => 'HR Management'],
-        ['id' => 3, 'text' => '1 plantilla of personnel scanned, banked & bound within 60 minutes upon receipt',     'qty' => 1,   'timeline_days' => 1,   'function_type' => 'support', 'mfo_title' => 'Records Management'],
-        ['id' => 4, 'text' => '1 consolidated OPCR performance summary report prepared within 10 working days',       'qty' => 1,   'timeline_days' => 10,  'function_type' => 'core',    'mfo_title' => 'Performance Management'],
-        ['id' => 5, 'text' => '100% of incoming and outgoing communications acted upon within 2 working days',        'qty' => 100, 'timeline_days' => 2,   'function_type' => 'support', 'mfo_title' => 'Administrative Support'],
-        ['id' => 6, 'text' => '100% attendance in required meetings, trainings, and seminars',                        'qty' => 100, 'timeline_days' => 180, 'function_type' => 'support', 'mfo_title' => 'Administrative Support'],
-        ['id' => 7, 'text' => '100% of required reports submitted on time with 3-4 minor errors',                     'qty' => 100, 'timeline_days' => 7,   'function_type' => 'core',    'mfo_title' => 'Reporting'],
+        ['id' => 1, 'text' => '1 plantilla prepared with 3-4 minor errors on the 26th day after instruction',        'qty' => 1,   'timeline_days' => 26,  'function_type' => 'core',       'mfo_title' => 'HR Management'],
+        ['id' => 2, 'text' => '1 plantilla reviewed with 3-4 minor errors on the 5th day after preparation',         'qty' => 1,   'timeline_days' => 5,   'function_type' => 'core',       'mfo_title' => 'HR Management'],
+        ['id' => 3, 'text' => '1 plantilla of personnel scanned, banked & bound within 60 minutes upon receipt',     'qty' => 1,   'timeline_days' => 1,   'function_type' => 'support',    'mfo_title' => 'Records Management'],
+        ['id' => 4, 'text' => '1 consolidated OPCR performance summary report prepared within 10 working days',       'qty' => 1,   'timeline_days' => 10,  'function_type' => 'core',       'mfo_title' => 'Performance Management'],
+        ['id' => 5, 'text' => '100% of incoming and outgoing communications acted upon within 2 working days',        'qty' => 100, 'timeline_days' => 2,   'function_type' => 'support',    'mfo_title' => 'Administrative Support'],
+        ['id' => 6, 'text' => '100% attendance in required meetings, trainings, and seminars',                        'qty' => 100, 'timeline_days' => 180, 'function_type' => 'support',    'mfo_title' => 'Administrative Support'],
+        ['id' => 7, 'text' => '100% of required reports submitted on time with 3-4 minor errors',                     'qty' => 100, 'timeline_days' => 7,   'function_type' => 'core',       'mfo_title' => 'Reporting'],
     ];
 
     /**
@@ -65,6 +65,29 @@ class MlTrainingDataSeeder extends Seeder
         if (DB::table('employee_performance_snapshots')->count() > 0) {
             $this->command->info('ML snapshots already exist, skipping seed.');
             return;
+        }
+
+        // Dynamically resolve strategic indicator IDs from DB
+        $strategicIndicators = [
+            ['text' => '1 strategic HR plan formulated and submitted within 30 working days',          'qty' => 1,   'timeline_days' => 30,  'mfo_title' => 'Strategic Planning'],
+            ['text' => '100% of strategic objectives monitored and reported every quarter',             'qty' => 100, 'timeline_days' => 90,  'mfo_title' => 'Strategic Planning'],
+            ['text' => '1 annual accomplishment report aligned with strategic goals submitted on time', 'qty' => 1,   'timeline_days' => 15,  'mfo_title' => 'Strategic Planning'],
+            ['text' => '100% of priority programs identified in the office strategic plan implemented', 'qty' => 100, 'timeline_days' => 180, 'mfo_title' => 'Organizational Development'],
+            ['text' => '1 capacity development plan prepared and endorsed within 20 working days',      'qty' => 1,   'timeline_days' => 20,  'mfo_title' => 'Organizational Development'],
+        ];
+
+        foreach ($strategicIndicators as $si) {
+            $row = DB::table('uwp_success_indicators')
+                ->where('indicator_text', $si['text'])
+                ->first();
+            $this->indicators[] = [
+                'id'             => $row?->id ?? null,
+                'text'           => $si['text'],
+                'qty'            => $si['qty'],
+                'timeline_days'  => $si['timeline_days'],
+                'function_type'  => 'strategic',
+                'mfo_title'      => $si['mfo_title'],
+            ];
         }
 
         $rows = [];

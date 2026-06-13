@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
+import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 function toAiData(rec) {
     const score = rec.fit_score ?? 0;
@@ -145,7 +146,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                         {filtered.map(emp => (
                             <label key={emp.id} style={{ ...s.empRow, ...(emp.id === warning.id ? s.empRowWarn : selected.has(emp.id) ? s.empRowChecked : {}) }}>
                                 <input type="checkbox" checked={selected.has(emp.id) || emp.id === warning.id} onChange={() => {}} style={s.checkbox} />
-                                <div style={s.avatar}>{emp.name.charAt(0)}</div>
+                                <img src={avatarSrc(emp.avatar, emp.profile_photo_url)} onError={onAvatarError} alt={emp.name} style={{ ...s.avatar, objectFit: 'cover' }} />
                                 <div style={s.empInfo}>
                                     <div style={{ ...s.empName, ...(emp.id === warning.id ? { color: '#f97316' } : {}) }}>{emp.name}</div>
                                     <div style={s.empPos}>{emp.position}</div>
@@ -224,7 +225,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                                     onClick={() => toggle(emp)}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 2 }}>
                                         <input type="checkbox" checked={checked} onChange={() => {}} style={s.checkbox} />
-                                        <div style={s.avatar}>{emp.name.charAt(0)}</div>
+                                        <img src={avatarSrc(emp.avatar, emp.profile_photo_url)} onError={onAvatarError} alt={emp.name} style={{ ...s.avatar, objectFit: 'cover' }} />
                                         <div>
                                             <div style={s.empName}>{emp.name}</div>
                                             <div style={s.empPos}>{emp.position}</div>
