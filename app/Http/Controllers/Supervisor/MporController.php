@@ -194,6 +194,7 @@ class MporController extends Controller
     public function approve(Mpor $mpor)
     {
         $user = Auth::user();
+        $user->loadMissing('office');
         abort_unless($mpor->office_id === $user->office_id, 403);
         abort_unless($mpor->status === 'submitted', 422, 'MPOR is not in submitted status.');
 
@@ -209,6 +210,15 @@ class MporController extends Controller
             event: 'mpor.approved',
             message: 'Your MPOR for ' . $mpor->month . ' has been approved by your supervisor.',
             url: '/employee/mpor?month=' . $mpor->month,
+        ));
+
+        // Notify dept-head that a new MPOR has been included in QAR
+        $deptHead = User::where('id', $user->office?->head_id)->first();
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'info',
+            event: 'mpor.included_in_qar',
+            message: ($mpor->employee?->name ?? 'An employee') . '\'s MPOR for ' . $mpor->month . ' has been approved and included in the QAR.',
+            url: '/dept-head/qar',
         ));
 
         return back()->with('success', 'MPOR approved.');
