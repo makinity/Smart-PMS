@@ -687,8 +687,8 @@ export default function Index() {
                         ...entry,
                         indicator_text: entry.indicator_text ?? entry.indicator ?? '—',
                         employee_office: null,
-                        evidence_count: 0,
-                        evidences: [],
+                        evidence_count: entry.evidence_count ?? 0,
+                        evidences: entry.evidences ?? [],
                         qet_standards: [],
                         rating: null,
                     };

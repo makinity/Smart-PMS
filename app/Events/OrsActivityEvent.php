@@ -36,6 +36,13 @@ class OrsActivityEvent implements ShouldBroadcastNow
             'notes'          => $orsEntry->notes,
             'submitted_at'   => $orsEntry->submitted_at?->toIso8601String(),
             'locked_at'      => $orsEntry->locked_at?->toIso8601String(),
+            'evidence_count' => $orsEntry->evidences->count(),
+            'evidences'      => $orsEntry->evidences->map(fn($ev) => [
+                'id'        => $ev->id,
+                'file_name' => $ev->file_name,
+                'file_path' => \Illuminate\Support\Facades\Storage::url($ev->file_path),
+                'file_size' => $ev->file_size,
+            ])->toArray(),
         ];
     }
 
