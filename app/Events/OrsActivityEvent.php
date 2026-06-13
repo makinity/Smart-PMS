@@ -39,9 +39,12 @@ class OrsActivityEvent implements ShouldBroadcastNow
         ];
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('supervisor.' . $this->entry['supervisor_id']);
+        return [
+            new PrivateChannel('supervisor.' . $this->entry['supervisor_id']),
+            new PrivateChannel('App.Models.User.' . $this->entry['employee_id']),
+        ];
     }
 
     public function broadcastAs(): string

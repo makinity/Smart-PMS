@@ -353,13 +353,39 @@ function Legend({ scrollable }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, orsGateLocked, orsGateReason, orsOptions, supervisors, calendarEntries, activeEntry: initialActive, stats, mporLockedMonths = [] } = usePage().props;
+    const { period, orsGateLocked, orsGateReason, orsOptions, supervisors, calendarEntries, activeEntry: initialActive, stats, mporLockedMonths = [], auth } = usePage().props;
 
     const today = new Date().toISOString().slice(0, 10);
+    const [activeEntry, setActiveEntry] = useState(initialActive);
+    const [liveEntries, setLiveEntries] = useState({}); // id → updated entry for calendar pills
     const [cal,   setCal]   = useState(() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }; });
     const [modal, setModal] = useState(null);
     const [selectedDate, setSelectedDate] = useState(today);
     const bp = useBreakpoint();
+
+    // Sync activeEntry when page props change (e.g. after timerAction reload)
+    useEffect(() => { setActiveEntry(initialActive); }, [initialActive?.id, initialActive?.status, initialActive?.total_seconds]);
+
+    // Websocket: update active timer + calendar entry status in real time
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId || !window.Echo) return;
+        const channel = window.Echo.private(`App.Models.User.${userId}`)
+            .listen('.ors.activity', ({ entry }) => {
+                setActiveEntry(prev => {
+                    if (entry.status === 'recording' || entry.status === 'paused') return entry;
+                    if (prev?.id === entry.id) return null; // stopped/submitted
+                    return prev;
+                });
+                setLiveEntries(prev => ({ ...prev, [entry.id]: entry }));
+            })
+            .notification((payload) => {
+                if (payload.event === 'ors.rated_by_supervisor') {
+                    router.reload({ only: ['calendarEntries', 'activeEntry', 'stats'] });
+                }
+            });
+        return () => window.Echo.leave(`App.Models.User.${userId}`);
+    }, [auth?.user?.id]);
 
     // MPOR lock: format cal month as YYYY-MM and check against locked months
     const calMonthStr = `${cal.year}-${String(cal.month + 1).padStart(2, '0')}`;
@@ -392,7 +418,7 @@ export default function Index() {
     }
 
     function openEntry(entry) {
-        if (initialActive && initialActive.id === entry.id) { setModal({ type: 'entry', entry: initialActive }); return; }
+        if (activeEntry && activeEntry.id === entry.id) { setModal({ type: 'entry', entry: activeEntry }); return; }
         fetch(`/employee/ors/${entry.id}/entry`, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.json()).then(fresh => setModal({ type: 'entry', entry: fresh }))
             .catch(() => setModal({ type: 'entry', entry }));
@@ -450,7 +476,7 @@ export default function Index() {
 
             {/* Timer Panel */}
             <div style={{ marginBottom: '0.75rem' }}>
-                <ActiveTimerPanel entry={initialActive} onAction={timerAction} onOpenEntry={openEntry} compact={bp === 'mobile'} />
+                <ActiveTimerPanel entry={activeEntry} onAction={timerAction} onOpenEntry={openEntry} compact={bp === 'mobile'} />
             </div>
 
             {/* ── DESKTOP: full calendar ── */}
@@ -543,7 +569,7 @@ export default function Index() {
                     onLogTask={modal.mporLocked || orsGateLocked ? null : date => setModal({ type: 'log', date })} />
             )}
             {modal?.type === 'entry' && (
-                <TaskDetailsModal entry={modal.entry?.id === initialActive?.id ? initialActive : modal.entry} onClose={closeModal} />
+                <TaskDetailsModal entry={modal.entry?.id === activeEntry?.id ? activeEntry : modal.entry} onClose={closeModal} />
             )}
         </AppLayout>
     );

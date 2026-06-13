@@ -355,7 +355,7 @@ class OrsController extends Controller
             'id'              => $e->id,
             'work_date'       => $e->work_date->toDateString(),
             'status'          => $e->status,
-            'total_seconds'   => $e->live_seconds,
+            'total_seconds'   => $e->total_seconds,
             'started_at'      => $e->started_at?->toIso8601String(),
             'quantity'        => $e->quantity,
             'notes'           => $e->notes,

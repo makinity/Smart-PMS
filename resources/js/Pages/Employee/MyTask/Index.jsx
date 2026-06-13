@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { formatDuration, statusCfg } from '../Ors/orsHelpers';
 import TaskDetailsModal from './TaskDetailsModal';
@@ -68,6 +68,21 @@ function TaskCard({ task, onView }) {
     const cfg = statusCfg(task.status);
     const isLive = task.status === 'recording';
 
+    const [secs, setSecs] = useState(() => {
+        let total = task.total_seconds ?? 0;
+        if (isLive && task.started_at) total += Math.floor((Date.now() - new Date(task.started_at).getTime()) / 1000);
+        return total;
+    });
+
+    useEffect(() => {
+        let total = task.total_seconds ?? 0;
+        if (isLive && task.started_at) total += Math.floor((Date.now() - new Date(task.started_at).getTime()) / 1000);
+        setSecs(total);
+        if (!isLive) return;
+        const id = setInterval(() => setSecs(prev => prev + 1), 1000);
+        return () => clearInterval(id);
+    }, [task.status, task.started_at, task.total_seconds]);
+
     return (
         <article style={{ ...s.card, borderTop: `3px solid ${cfg.color}`, cursor: 'pointer' }}
             className="task-card"
@@ -98,10 +113,10 @@ function TaskCard({ task, onView }) {
                 {task.quantity > 0 && (
                     <span style={chip}>✦ {task.quantity} qty</span>
                 )}
-                {task.total_seconds > 0 && (
-                    <span style={{ ...chip, fontFamily: 'monospace' }}>
+                {secs > 0 && (
+                    <span style={{ ...chip, fontFamily: 'monospace', color: isLive ? '#f59e0b' : undefined, borderColor: isLive ? 'rgba(245,158,11,0.3)' : undefined, background: isLive ? 'rgba(245,158,11,0.08)' : undefined }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {formatDuration(task.total_seconds ?? 0)}
+                        {formatDuration(secs)}
                     </span>
                 )}
             </div>
@@ -112,15 +127,36 @@ function TaskCard({ task, onView }) {
 const chip = { display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.65rem', color: 'var(--admin-text-muted)', background: 'var(--admin-bg-secondary)', padding: '2px 7px', borderRadius: 99, border: '1px solid var(--admin-border)' };
 
 export default function Index({ tasks, filters, summary, statusCounts, periodName, notice, autoOpenEntryId }) {
+    const { auth } = usePage().props;
     const [search, setSearch] = useState(filters?.search ?? '');
     const [status, setStatus] = useState(filters?.status ?? 'all');
     const [activeTask, setActiveTask] = useState(null);
+    const [liveUpdates, setLiveUpdates] = useState({}); // id → updated fields
     const lastAppliedRef = useRef({
         search: filters?.search ?? '',
         status: filters?.status ?? 'all',
     });
 
-    const taskRows = tasks?.data ?? [];
+    // Listen for ORS activity (timer/status updates) and rated notifications
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId || !window.Echo) return;
+
+        const channel = window.Echo.private(`App.Models.User.${userId}`)
+            .listen('.ors.activity', ({ entry }) => {
+                setLiveUpdates(prev => ({ ...prev, [entry.id]: entry }));
+                setActiveTask(prev => prev?.id === entry.id ? { ...prev, ...entry } : prev);
+            })
+            .notification((payload) => {
+                if (payload.event === 'ors.rated_by_supervisor') {
+                    router.reload();
+                }
+            });
+
+        return () => window.Echo.leave(`App.Models.User.${userId}`);
+    }, [auth?.user?.id]);
+
+    const taskRows = (tasks?.data ?? []).map(t => liveUpdates[t.id] ? { ...t, ...liveUpdates[t.id] } : t);
 
     useEffect(() => {
         setSearch(filters?.search ?? '');

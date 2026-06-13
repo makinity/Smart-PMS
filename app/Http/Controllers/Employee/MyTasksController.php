@@ -39,9 +39,7 @@ class MyTasksController extends Controller
         $this->applyStatusFilter($baseQuery, $status);
 
         $tasks = $baseQuery
-            ->orderByDesc('submitted_at')
-            ->orderByDesc('work_date')
-            ->orderByDesc('id')
+            ->orderByDesc('updated_at')
             ->paginate($perPage)
             ->withQueryString()
             ->through(fn (OrsEntry $entry) => $this->formatEntry($entry));
@@ -126,7 +124,7 @@ class MyTasksController extends Controller
             'status' => $entry->status,
             'quantity' => $entry->quantity,
             'notes' => $entry->notes,
-            'total_seconds' => (int) ($entry->live_seconds ?? $entry->total_seconds ?? 0),
+            'total_seconds' => (int) ($entry->total_seconds ?? 0),
             'started_at' => $entry->started_at?->toIso8601String(),
             'stopped_at' => $entry->stopped_at?->toIso8601String(),
             'submitted_at' => $entry->submitted_at?->toIso8601String(),
