@@ -147,13 +147,26 @@ function MobileCards({ sections, metric, setMetric }) {
 
 export default function Index() {
     const { month, sections, grandQty, grandQualAvg, grandTimeAvg, grandQtyTotal,
-            includedCount, excludedCount, hasIpcr, mpor, lastActivity, employee, supervisor } = usePage().props;
+            includedCount, excludedCount, hasIpcr, mpor, lastActivity, employee, supervisor, auth } = usePage().props;
 
     const [metric, setMetric]     = useState('qty');
     const [submitting, setSubmitting] = useState(false);
     const toast   = useToast();
     const confirm = useConfirm();
     const bp      = useBreakpoint();
+
+    // Reload MPOR data when supervisor rates an ORS entry
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId || !window.Echo) return;
+        const channel = window.Echo.private(`App.Models.User.${userId}`)
+            .notification((payload) => {
+                if (payload.event === 'ors.rated_by_supervisor') {
+                    router.reload({ only: ['sections', 'grandQty', 'grandQualAvg', 'grandTimeAvg', 'grandQtyTotal', 'includedCount'] });
+                }
+            });
+        return () => window.Echo.leave(`App.Models.User.${userId}`);
+    }, [auth?.user?.id]);
 
     const monthLabel = (() => {
         try { return new Date(month + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
