@@ -21,6 +21,8 @@ export default function Login() {
         password_confirmation: '',
         profile_photo: null,
     });
+    const [fetching, setFetching] = useState(false);
+    const isLoading = processing || fetching;
 
     function submit(e) {
         e.preventDefault();
@@ -28,6 +30,7 @@ export default function Login() {
         if (mode === 'login') { post('/login'); return; }
 
         if (mode === 'activate-verify') {
+            setFetching(true);
             fetch('/send/id', {
                 method: 'POST',
                 headers: {
@@ -43,7 +46,8 @@ export default function Login() {
                     setData('token', payload.token ?? '');
                     setMode('activate-complete');
                 })
-                .catch(payload => payload?.message && alert(payload.message));
+                .catch(payload => payload?.message && alert(payload.message))
+                .finally(() => setFetching(false));
             return;
         }
 
@@ -330,8 +334,9 @@ export default function Login() {
                                 </Field>
                             )}
 
-                            <button type="submit" disabled={processing} style={{ ...primaryBtn, marginTop: '1.5rem' }}>
-                                {processing ? 'Working…'
+                            <button type="submit" disabled={isLoading} style={{ ...primaryBtn, marginTop: '1.5rem' }}>
+                                {isLoading
+                                    ? (mode === 'login' ? 'Signing in…' : 'Working…')
                                     : mode === 'login' ? 'Sign in'
                                     : mode === 'activate-verify' ? 'Verify account'
                                     : mode === 'activate-complete' ? 'Complete activation'
