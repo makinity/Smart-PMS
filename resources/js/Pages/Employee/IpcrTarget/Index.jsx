@@ -236,23 +236,21 @@ export default function Index() {
             <style>{css}</style>
 
             {/* ── Top bar ── */}
-            <div style={{ ...s.topbar, position: 'relative' }} className="ipcr-topbar">
-                {/* Status pill */}
-                <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }} className="ipcr-status-pill">
-                    <span>{sc.icon}</span><span>{sc.label}</span>
-                </div>
-
-                {/* Row 1: meta info */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div>
+            <div style={{ ...s.topbar }} className="ipcr-topbar">
+                {/* Left: meta info + status */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                         <div style={s.period}>{period?.name ?? 'Performance Period'}</div>
-                        <div style={s.office}>{employee?.office ?? '—'}</div>
+                        <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }} className="ipcr-status-pill">
+                            <span>{sc.icon}</span><span>{sc.label}</span>
+                        </div>
+                        <div style={s.countPill}>{totalItems} indicator{totalItems !== 1 ? 's' : ''}</div>
                     </div>
-                    <div style={s.countPill}>{totalItems} indicator{totalItems !== 1 ? 's' : ''}</div>
+                    <div style={s.office}>{employee?.office ?? '—'}</div>
                 </div>
 
-                {/* Row 2: actions */}
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {/* Right: actions */}
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <a href="/stage-one/forms/ipcr-excel" style={s.exportBtn}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         Export Excel
