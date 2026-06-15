@@ -28,26 +28,40 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const [expandedEmp, setExpandedEmp] = useState(null);
     const [mlData, setMlData]           = useState(null);
     const [allMlData, setAllMlData]     = useState({}); // indicatorId → recommendations
-    const [mlLoading, setMlLoading]     = useState(true);
+    const [mlLoading, setMlLoading]     = useState(false);
 
     useEffect(() => {
         setMlData(null);
-        if (!indicator.id) { setMlLoading(false); return; }
-        setMlLoading(true);
+        if (!indicator.id) { return; }
 
-        // Fetch current indicator predictions + all indicator predictions in parallel
         const indicatorIds = allIndicators.map(si => si.id).filter(Boolean);
-        const requests = [
-            axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: indicator.id, period_id: periodId } }),
-            ...indicatorIds.map(id => axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: id, period_id: periodId } }).then(r => ({ id, data: r.data })).catch(() => ({ id, data: null }))),
-        ];
 
-        Promise.allSettled(requests).then(([main, ...rest]) => {
-            if (main.status === 'fulfilled') setMlData(main.value.data);
-            const map = {};
-            rest.forEach(r => { if (r.status === 'fulfilled' && r.value.data) map[r.value.id] = r.value.data; });
-            setAllMlData(map);
-        }).finally(() => setMlLoading(false));
+        // First, quickly check if ML is online by fetching the main indicator
+        axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: indicator.id, period_id: periodId }, timeout: 5000 })
+            .then(res => {
+                const online = res.data?.ml_online === true;
+                setMlData(res.data);
+                if (online) {
+                    // ML is online — show spinner while we fetch all the rest
+                    setMlLoading(true);
+                }
+                // Fetch all indicator predictions in parallel
+                return Promise.allSettled(
+                    indicatorIds.map(id =>
+                        axios.get('/supervisor/uwp/suggestions', { params: { indicator_id: id, period_id: periodId }, timeout: 5000 })
+                            .then(r => ({ id, data: r.data }))
+                            .catch(() => ({ id, data: null }))
+                    )
+                );
+            })
+            .then(rest => {
+                if (!rest) return;
+                const map = {};
+                rest.forEach(r => { if (r.status === 'fulfilled' && r.value?.data) map[r.value.id] = r.value.data; });
+                setAllMlData(map);
+            })
+            .catch(() => {})
+            .finally(() => setMlLoading(false));
     }, [indicator.id, periodId]);
 
     const recMap = useMemo(() => {
@@ -89,7 +103,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
         .sort((a, b) => a._ai.load - b._ai.load)[0];
 
     function toggle(emp) {
-        if (!selected.has(emp.id) && (emp._ai.warning || (mlOnline && emp._ai.risk === 'High'))) { setWarning(emp); return; }
+        if (mlData?.ml_online && !selected.has(emp.id) && (emp._ai.warning || emp._ai.risk === 'High')) { setWarning(emp); return; }
         commit(emp.id);
     }
 
@@ -165,7 +179,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
         );
     }
 
-    // Normal screen
+        // Normal screen
     const mlOnline = mlData?.ml_online === true;
     const safeRec = mlOnline && recommended && recommended._ai.successProb >= 50 && recommended._ai.risk !== 'High';
 
@@ -180,14 +194,14 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                     <button style={s.closeBtn} onClick={onClose}>&#x2715;</button>
                 </div>
 
-                {mlLoading ? (
+                {mlLoading && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '3rem', color: 'var(--admin-text-muted)', fontSize: '0.875rem' }}>
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'pms-spin 0.7s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/><style>{`@keyframes pms-spin{to{transform:rotate(360deg)}}`}</style></svg>
                         <span>Analyzing with AI…</span>
                     </div>
-                ) : (<>
+                )}
 
-                {safeRec && (
+                {!mlLoading && safeRec && (
                     <div style={s.safeBanner}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                             <span style={s.safeLabel}>* SAFE TO ASSIGN</span>
@@ -199,7 +213,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                     </div>
                 )}
 
-                <div style={s.searchWrap}>
+                {!mlLoading && <><div style={s.searchWrap}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, color: 'var(--admin-text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input style={s.search} placeholder="Search by name, role, or skill..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
                 </div>
@@ -302,7 +316,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                         </button>
                     </div>
                 </div>
-                </>)}
+                </>}
             </div>
         </div>
     );
