@@ -18,10 +18,10 @@ function useBreakpoint() {
 function StatusBadge({ status }) {
     const map = {
         draft:               { label: 'Draft',         bg: 'rgba(234,179,8,0.15)',   color: '#ca8a04', border: 'rgba(234,179,8,0.3)' },
-        dept_head_endorsed:  { label: 'Submitted',     bg: 'rgba(139,92,246,0.15)',  color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
+        dept_head_endorsed:  { label: 'Submitted',     bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         pmt_approved:        { label: 'PMT Approved',  bg: 'rgba(74,222,128,0.15)',  color: '#22c55e', border: 'rgba(74,222,128,0.3)' },
         returned:            { label: 'Returned',      bg: 'rgba(239,68,68,0.15)',   color: '#f87171', border: 'rgba(239,68,68,0.3)' },
-        endorsed:            { label: 'Endorsed',      bg: 'rgba(139,92,246,0.15)',  color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
+        endorsed:            { label: 'Endorsed',      bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
 
     };
     const c = map[status] ?? { label: status, bg: 'rgba(100,100,100,0.12)', color: 'var(--admin-text-muted)', border: 'rgba(100,100,100,0.2)' };
@@ -166,11 +166,7 @@ export default function Index() {
                 <div style={card}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                            <div style={iconBox}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                            </div>
                             <div>
-                                <p style={statLabel}>Quality Assurance Review</p>
                                 <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>
                                     QAR — {period?.name ?? 'No Active Period'}
                                 </h1>
@@ -179,15 +175,15 @@ export default function Index() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                             {qarHeader && <StatusBadge status={qarHeader.status} />}
                             {annexRows.length > 0 && (
-                                <a href={`/stage-two/forms/qar-export?q=${q}`} style={btnExport}>
+                                <a href={`/stage-two/forms/qar-export?q=${q}`} style={{ ...btnExport, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Export Excel
+                                    {bp === 'desktop' && 'Export Excel'}
                                 </a>
                             )}
                             {canSubmit && (
-                                <button onClick={handleSubmit} disabled={endorsing} style={{ ...btnPrimary, background: '#a78bfa', opacity: endorsing ? 0.7 : 1 }}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                                    {endorsing ? 'Submitting…' : 'Submit QAR to PMT'}
+                                <button onClick={handleSubmit} disabled={endorsing} style={{ ...btnPrimary, background: 'var(--admin-accent)', opacity: endorsing ? 0.7 : 1 }} title="Submit QAR to PMT">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    {bp === 'desktop' && (endorsing ? 'Submitting…' : 'Submit QAR to PMT')}
                                 </button>
                             )}
                         </div>
@@ -198,9 +194,9 @@ export default function Index() {
                         <div style={{ display: 'flex', gap: '0.4rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
                             {[1,2].map(n => (
                                 <button key={n} onClick={() => navQ(n)} style={{
-                                    padding: '0.45rem 1rem', borderRadius: 8, border: `1px solid ${q===n ? '#a78bfa' : 'var(--admin-border-strong)'}`,
-                                    background: q===n ? 'rgba(139,92,246,0.12)' : 'var(--admin-bg-secondary)',
-                                    color: q===n ? '#a78bfa' : 'var(--admin-text-muted)',
+                                    padding: '0.45rem 1rem', borderRadius: 8, border: `1px solid ${q===n ? 'var(--admin-accent)' : 'var(--admin-border-strong)'}`,
+                                    background: q===n ? 'rgba(59,130,246,0.12)' : 'var(--admin-bg-secondary)',
+                                    color: q===n ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
                                     fontWeight: q===n ? 700 : 500, fontSize: '0.82rem', cursor: 'pointer',
                                 }}>
                                     {quarterLabels[n]}
@@ -326,7 +322,7 @@ export default function Index() {
                                 <p style={{ ...statLabel, marginBottom: '0.4rem' }}>Prepared by</p>
                                 <div style={{ fontWeight: 700, color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{deptHead?.name}</div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{deptHead?.position ?? 'Department Head'}</div>
-                                {qarHeader?.approved_at && <div style={{ fontSize: '0.72rem', color: '#a78bfa', marginTop: '0.2rem' }}>Submitted {qarHeader.approved_at}</div>}
+                                {qarHeader?.approved_at && <div style={{ fontSize: '0.72rem', color: 'var(--admin-accent)', marginTop: '0.2rem' }}>Submitted {qarHeader.approved_at}</div>}
                             </div>
                             <div>
                                 <p style={{ ...statLabel, marginBottom: '0.4rem' }}>PMT Validation</p>
@@ -348,7 +344,7 @@ export default function Index() {
 }
 
 const card      = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem 1.5rem', boxShadow: 'var(--admin-shadow)' };
-const iconBox   = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(139,92,246,0.08)', color: '#a78bfa', flexShrink: 0 };
+const iconBox   = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, borderRadius: 12, border: '1px solid var(--admin-border)', background: 'rgba(139,92,246,0.08)', color: 'var(--admin-accent)', flexShrink: 0 };
 const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.15rem' };
 const tdS       = { padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', verticalAlign: 'middle' };
 const btnView   = { display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.35rem 0.75rem', borderRadius: 7, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };
