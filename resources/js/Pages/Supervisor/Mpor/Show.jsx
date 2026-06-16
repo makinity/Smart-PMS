@@ -364,7 +364,7 @@ export default function Show() {
                             Back to MPOR List
                         </a>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
                         {/* Employee info */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                             <Avatar name={employee?.name} src={employee?.avatar} size={isMobile ? 44 : 52} />
@@ -374,12 +374,8 @@ export default function Show() {
                                 <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{employee?.position}</div>
                             </div>
                         </div>
-                        {/* Month + status */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                            <div style={{ padding: '0.4rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>
-                                {monthLabel}
-                            </div>
-                            <StatusBadge status={mpor.status} />
+                        <div style={{ padding: '0.2rem 0.6rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-text-primary)', whiteSpace: 'nowrap', alignSelf: 'flex-start' }}>
+                            {monthLabel}
                         </div>
                     </div>
 
