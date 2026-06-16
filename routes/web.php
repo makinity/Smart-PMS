@@ -79,6 +79,12 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::post('/hris/sync', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'sync'])->name('hris.sync');
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportsController::class, 'index'])->name('reports.index');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Admin/Profile'))->name('profile');
+
+    // Machine Learning Control Center
+    Route::get('/ml', [\App\Http\Controllers\Admin\MachineLearningController::class, 'index'])->name('ml.index');
+    Route::post('/ml/train-sql', [\App\Http\Controllers\Admin\MachineLearningController::class, 'trainSql'])->name('ml.train-sql');
+    Route::post('/ml/train-csv', [\App\Http\Controllers\Admin\MachineLearningController::class, 'trainCsv'])->name('ml.train-csv');
+    Route::get('/ml/logs', [\App\Http\Controllers\Admin\MachineLearningController::class, 'logs'])->name('ml.logs');
 });
 
 // PMT

@@ -32,6 +32,7 @@ const roleLinks = {
         { href: '/administrator/hris-integration', label: 'HRIS Integration', icon: 'bi-plug-fill' },
         { href: '/administrator/database', label: 'Database', icon: 'bi-hdd-stack-fill' },
         { href: '/administrator/audit-logs', label: 'Audit Logs', icon: 'bi-journal-text' },
+        { href: '/administrator/ml', label: 'ML Control Center', icon: 'bi-cpu-fill' },
         { href: '/administrator/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
     pmt: [

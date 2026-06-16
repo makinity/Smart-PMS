@@ -40,15 +40,15 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             UwpSampleSeeder::class,
             OrsSampleSeeder::class,
-            MlTrainingDataSeeder::class,
+            // MlTrainingDataSeeder::class,
         ]);
 
         // After all seeders run, trigger ML model training
-        try {
-            Http::post(env('FASTAPI_URL') . '/train');
-        } catch (\Exception $e) {
-            $this->command->warn('ML training skipped: FastAPI not running.');
-        }
+        // try {
+        //     Http::post(env('FASTAPI_URL') . '/train');
+        // } catch (\Exception $e) {
+        //     $this->command->warn('ML training skipped: FastAPI not running.');
+        // }
 
     }
 }
