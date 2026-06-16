@@ -13,7 +13,7 @@ function StatusBadge({ status }) {
     const map = {
         submitted: { label: 'Submitted', bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         approved:  { label: 'Approved',  bg: 'rgba(74,222,128,0.15)', color: '#22c55e',             border: 'rgba(74,222,128,0.3)' },
-        endorsed:  { label: 'Endorsed',  bg: 'rgba(139,92,246,0.15)', color: '#a78bfa',             border: 'rgba(139,92,246,0.3)' },
+        endorsed:  { label: 'Endorsed',  bg: 'rgba(59,130,246,0.15)', color: 'var(--admin-accent)',             border: 'rgba(59,130,246,0.3)' },
     };
     const c = map[status] ?? { label: status, bg: 'rgba(100,100,100,0.12)', color: 'var(--admin-text-muted)', border: 'rgba(100,100,100,0.2)' };
     return <span style={{ padding: '0.22rem 0.7rem', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>{c.label}</span>;
@@ -169,10 +169,10 @@ export default function MporShow() {
                         {timeline.map((step, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-                                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: step.active?(i===2?'#a78bfa':'var(--admin-accent)'):'var(--admin-bg-secondary)', border: `2px solid ${step.active?(i===2?'#a78bfa':'var(--admin-accent)'):'var(--admin-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: step.active?(i===2?'var(--admin-accent)':'var(--admin-accent)'):'var(--admin-bg-secondary)', border: `2px solid ${step.active?(i===2?'var(--admin-accent)':'var(--admin-accent)'):'var(--admin-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                         {step.active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
                                     </div>
-                                    <div style={{ fontSize: '0.65rem', fontWeight: step.active?700:500, color: step.active?(i===2?'#a78bfa':'var(--admin-accent)'):'var(--admin-text-muted)', marginTop: '0.3rem', textAlign: 'center', whiteSpace: 'nowrap' }}>{step.label}</div>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: step.active?700:500, color: step.active?(i===2?'var(--admin-accent)':'var(--admin-accent)'):'var(--admin-text-muted)', marginTop: '0.3rem', textAlign: 'center', whiteSpace: 'nowrap' }}>{step.label}</div>
                                     {step.at && <div style={{ fontSize: '0.6rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem', textAlign: 'center' }}>{step.at}</div>}
                                 </div>
                                 {i < timeline.length-1 && <div style={{ height: 2, flex: 1, background: timeline[i+1].active?'var(--admin-accent)':'var(--admin-border)', margin: '0 0.25rem', marginBottom: '1.5rem', minWidth: 20 }} />}
@@ -216,12 +216,12 @@ export default function MporShow() {
                             </div>
                         </div>
                     </div>
-                    <div style={{ ...card, borderLeft: '3px solid #a78bfa' }}>
+                    <div style={{ ...card, borderLeft: '3px solid var(--admin-accent)' }}>
                         <p style={statLabel}>Supervisor</p>
                         <div style={{ marginTop: '0.5rem' }}>
                             <div style={{ fontWeight: 600, fontSize: '0.88rem', color: mpor.approved_by ? 'var(--admin-text-primary)' : 'var(--admin-text-muted)', fontStyle: mpor.approved_by ? 'normal' : 'italic' }}>{mpor.approved_by ?? 'Pending'}</div>
                             {mpor.approved_at && <div style={{ fontSize: '0.7rem', color: '#22c55e', marginTop: '0.15rem' }}>✓ Approved {mpor.approved_at}</div>}
-                            <div style={{ fontSize: '0.7rem', color: '#a78bfa', marginTop: '0.1rem' }}>↗ Included in QAR</div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--admin-accent)', marginTop: '0.1rem' }}>↗ Included in QAR</div>
                         </div>
                     </div>
                 </div>

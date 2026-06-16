@@ -277,12 +277,12 @@ export default function Show() {
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                             Back to QAR List
                         </a>
-                        <a href={`/stage-two/forms/qar-export?qar=${qar.id}`} style={btnExport}>
+                        <a href={`/stage-two/forms/qar-export?qar=${qar.id}`} style={{ ...btnExport, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Export Excel
+                            {bp === 'desktop' && 'Export Excel'}
                         </a>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                             <Avatar name={deptHead?.name ?? office?.name} src={deptHead?.avatar} size={isMobile ? 44 : 52} />
                             <div>
@@ -291,10 +291,7 @@ export default function Show() {
                                 <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{deptHead?.name} · {deptHead?.position ?? 'Department Head'}</div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                            <div style={{ padding: '0.4rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-accent)' }}>{qar.quarter_key}</div>
-                            <StatusBadge status={qar.status} />
-                        </div>
+                        <div style={{ padding: '0.2rem 0.6rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-accent)', whiteSpace: 'nowrap' }}>{qar.quarter_key}</div>
                     </div>
                 </div>
 
