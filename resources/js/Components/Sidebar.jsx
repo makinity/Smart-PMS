@@ -1,5 +1,28 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+
+const EVENT_ROUTE = {
+    'uwp.returned':                          '/supervisor/uwp',
+    'accomplishment.submitted_to_supervisor':'/supervisor/accomplishment',
+    'ors.submitted_to_supervisor':           '/supervisor/ors-monitoring',
+    'mpor.submitted_to_supervisor':          '/supervisor/mpor',
+    'uwp.submitted':                         '/dept-head/uwp',
+    'opcr.returned':                         '/dept-head/opcr',
+    'accomplishment.supervisor_endorsed':    '/dept-head/accomplishment-review',
+    'opcr.submitted':                        '/pmt/opcr-review',
+    'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
+    'qar.submitted_to_pmt':                  '/pmt/qar',
+    'development_plan.submitted_to_ld':      '/pmt/development-planning',
+    'mpor.approved':                         '/employee/mpor',
+    'mpor.returned_to_employee':             '/employee/mpor',
+    'accomplishment.returned_to_employee':   '/employee/accomplishment',
+    'accomplishment.returned_by_dept_head':  '/employee/accomplishment',
+    'opcr.approved':                         '/employee/ipcr-target',
+    'ipcr.ready_for_commitment':             '/employee/ipcr-target',
+    'ors.rated_by_supervisor':               '/employee/ors',
+    'opcra.employee_rated':                  '/employee/accomplishment',
+    'ipcr.final_score_ready':                '/employee/history',
+};
 
 const roleLinks = {
     admin: [
@@ -59,11 +82,22 @@ const roleHeaders = {
     employee: { icon: 'bi-person-fill', label: 'Employee Portal' },
 };
 
-export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose, notifications = [], onLinkClick }) {
     const { url, props } = usePage();
     const role = props.auth?.user?.roles?.[0] ?? 'employee';
     const links = roleLinks[role] ?? roleLinks.employee;
     const header = roleHeaders[role] ?? roleHeaders.employee;
+
+    // Compute per-route badge counts from unread notifications
+    const badgeCounts = useMemo(() => {
+        const counts = {};
+        notifications.forEach(n => {
+            if (n.is_read) return;
+            const route = EVENT_ROUTE[n.event];
+            if (route) counts[route] = (counts[route] ?? 0) + 1;
+        });
+        return counts;
+    }, [notifications]);
 
     // On mobile the sidebar is always "expanded" (full labels) regardless of desktop collapsed state
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -100,16 +134,29 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                 {links.map(({ href, label, icon }) => {
                     const isRoot = links[0].href === href;
                     const active = isRoot ? url === href || url.startsWith(href + '?') : url === href || url.startsWith(href + '/') || url.startsWith(href + '?');
+                    const count = badgeCounts[href] ?? 0;
                     return (
                         <Link
                             key={href}
                             href={href}
                             className={`sb-link${active ? ' sb-link-active' : ''}`}
                             title={collapsed && !isMobile ? label : undefined}
-                            onClick={isMobile ? onMobileClose : undefined}
+                            onClick={() => { onLinkClick?.(href); if (isMobile) onMobileClose(); }}
                         >
-                            <i className={`bi ${icon} sb-link-icon`} />
-                            {showFull && <span>{label}</span>}
+                            <span style={{ position: 'relative', display: 'inline-flex', flexShrink: 0 }}>
+                                <i className={`bi ${icon} sb-link-icon`} />
+                                {count > 0 && (collapsed && !isMobile) && (
+                                    <span style={{ position: 'absolute', top: -4, right: -4, minWidth: 14, height: 14, padding: '0 3px', borderRadius: 7, background: '#f43f5e', color: '#fff', fontSize: '0.55rem', fontWeight: 700, lineHeight: '14px', textAlign: 'center' }}>
+                                        {count > 9 ? '9+' : count}
+                                    </span>
+                                )}
+                            </span>
+                            {showFull && <span style={{ flex: 1 }}>{label}</span>}
+                            {showFull && count > 0 && (
+                                <span style={{ marginLeft: 'auto', minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, background: '#f43f5e', color: '#fff', fontSize: '0.6rem', fontWeight: 700, lineHeight: '18px', textAlign: 'center' }}>
+                                    {count > 9 ? '9+' : count}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

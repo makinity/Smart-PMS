@@ -30,7 +30,7 @@ function Breadcrumb({ title, description }) {
     );
 }
 
-export default function Topbar({ title, description, darkMode, onToggleDarkMode, onMobileMenuToggle }) {
+export default function Topbar({ title, description, darkMode, onToggleDarkMode, onMobileMenuToggle, notifications, onNotificationsChange }) {
     const { auth } = usePage().props;
     const user = auth?.user;
     const [open, setOpen] = useState(false);
@@ -63,7 +63,7 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <NotificationPanel />
+                <NotificationPanel notifications={notifications} onNotificationsChange={onNotificationsChange} />
 
                 <div className="tb-user" ref={ref}>
                     <button className="tb-pill" onClick={() => setOpen(v => !v)}>

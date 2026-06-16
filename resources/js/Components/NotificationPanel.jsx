@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { usePage } from '@inertiajs/react';
-import { useNotificationListener } from '@/Components/useNotificationListener';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 /* ── type → colour map (background + unread dot) ── */
@@ -47,30 +45,11 @@ function cfg(item) {
     return { ...colour, icon: iconForEvent(item.event) };
 }
 
-export default function NotificationPanel() {
-    const { auth } = usePage().props;
-    const userId = auth?.user?.id;
+export default function NotificationPanel({ notifications: items = [], onNotificationsChange }) {
+    const [open, setOpen]   = useState(false);
+    const panelRef          = useRef(null);
 
-    const [open, setOpen]         = useState(false);
-    const [items, setItems]       = useState([]);
-    const [loading, setLoading]   = useState(false);
-    const panelRef                = useRef(null);
-
-    /* ── fetch notifications ── */
-    const fetchNotifications = useCallback(async () => {
-        setLoading(true);
-        try {
-            const { data } = await axios.get('/api/notifications');
-            setItems(data);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => { fetchNotifications(); }, []);
-
-    /* ── real-time updates ── */
-    useNotificationListener(userId, fetchNotifications);
+    const setItems = onNotificationsChange;
 
     /* ── close on outside click ── */
     useEffect(() => {
@@ -102,7 +81,12 @@ export default function NotificationPanel() {
         }
         if (item.url) {
             setOpen(false);
-            window.location.href = item.url;
+            try {
+                const path = new URL(item.url).pathname + new URL(item.url).search;
+                window.location.href = path;
+            } catch {
+                window.location.href = item.url;
+            }
         }
     };
 
@@ -143,9 +127,7 @@ export default function NotificationPanel() {
 
                     {/* list */}
                     <div className="np-list">
-                        {loading && items.length === 0 ? (
-                            <div className="np-empty">Loading…</div>
-                        ) : items.length === 0 ? (
+                        {items.length === 0 ? (
                             <div className="np-empty">
                                 <i className="bi bi-bell-slash np-empty-icon" />
                                 <span>You're all caught up.</span>

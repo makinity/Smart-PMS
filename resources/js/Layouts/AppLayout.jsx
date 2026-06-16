@@ -1,17 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePage } from '@inertiajs/react';
 import Sidebar from '@/Components/Sidebar';
 import Topbar from '@/Components/Topbar';
 import { ToastProvider } from '@/Components/Snackbar';
 import { ConfirmProvider } from '@/Components/ConfirmDialog';
 import LoginLoadingScreen from '@/Components/LoginLoadingScreen';
+import { useNotificationListener } from '@/Components/useNotificationListener';
+import axios from 'axios';
+
+const EVENT_ROUTE = {
+    'uwp.returned':                          '/supervisor/uwp',
+    'accomplishment.submitted_to_supervisor':'/supervisor/accomplishment',
+    'ors.submitted_to_supervisor':           '/supervisor/ors-monitoring',
+    'mpor.submitted_to_supervisor':          '/supervisor/mpor',
+    'uwp.submitted':                         '/dept-head/uwp',
+    'opcr.returned':                         '/dept-head/opcr',
+    'accomplishment.supervisor_endorsed':    '/dept-head/accomplishment-review',
+    'opcr.submitted':                        '/pmt/opcr-review',
+    'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
+    'qar.submitted_to_pmt':                  '/pmt/qar',
+    'development_plan.submitted_to_ld':      '/pmt/development-planning',
+    'mpor.approved':                         '/employee/mpor',
+    'mpor.returned_to_employee':             '/employee/mpor',
+    'accomplishment.returned_to_employee':   '/employee/accomplishment',
+    'accomplishment.returned_by_dept_head':  '/employee/accomplishment',
+    'opcr.approved':                         '/employee/ipcr-target',
+    'ipcr.ready_for_commitment':             '/employee/ipcr-target',
+    'ors.rated_by_supervisor':               '/employee/ors',
+    'opcra.employee_rated':                  '/employee/accomplishment',
+    'ipcr.final_score_ready':                '/employee/history',
+};
 
 export default function AppLayout({ children, title, description }) {
     const page = usePage();
+    const userId = page?.props?.auth?.user?.id;
     const [showLoader] = useState(() => !!page?.props?.flash?.just_logged_in);
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'dark') === 'dark');
     const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sb-collapsed') === '1');
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+    const fetchNotifications = useCallback(async () => {
+        try {
+            const { data } = await axios.get('/api/notifications');
+            setNotifications(data);
+        } catch {}
+    }, []);
+
+    useEffect(() => { fetchNotifications(); }, []);
+    useNotificationListener(userId, fetchNotifications);
+
+    const markRouteRead = useCallback((href) => {
+        const ids = notifications
+            .filter(n => !n.is_read && EVENT_ROUTE[n.event] === href)
+            .map(n => n.id);
+        if (!ids.length) return;
+        Promise.all(ids.map(id => axios.post(`/api/notifications/${id}/read`)))
+            .then(() => setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, is_read: true } : n)));
+    }, [notifications]);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
@@ -49,6 +95,8 @@ export default function AppLayout({ children, title, description }) {
                 onToggle={() => setCollapsed(v => { const next = !v; localStorage.setItem('sb-collapsed', next ? '1' : '0'); return next; })}
                 mobileOpen={mobileOpen}
                 onMobileClose={() => setMobileOpen(false)}
+                notifications={notifications}
+                onLinkClick={markRouteRead}
             />
 
             {/* Main content — full width on mobile, offset by sidebar on desktop */}
@@ -59,6 +107,8 @@ export default function AppLayout({ children, title, description }) {
                     darkMode={darkMode}
                     onToggleDarkMode={() => setDarkMode(v => !v)}
                     onMobileMenuToggle={() => setMobileOpen(v => !v)}
+                    notifications={notifications}
+                    onNotificationsChange={setNotifications}
                 />
                 <main className="admin-content">
                     {children}

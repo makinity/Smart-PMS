@@ -198,34 +198,45 @@ export default function Index() {
 
                 {/* Header card */}
                 <div style={card}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                        {/* Left: icon + title */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', minWidth: 0 }}>
                             <div style={iconBox}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                             </div>
-                            <div>
-                                <p style={statLabel}>Monthly Performance Output Report</p>
+                            <div style={{ minWidth: 0 }}>
                                 <h1 style={{ fontWeight: 700, fontSize: '1.4rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>MPOR</h1>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+
+                        {/* Right: controls */}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
                             {/* Month navigator */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--admin-border-strong)', borderRadius: 10, padding: '0.4rem 0.65rem', background: 'var(--admin-bg-secondary)' }}>
                                 <button onClick={() => navMonth(-1)} style={navBtn}>‹</button>
-                                <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', minWidth: 110, textAlign: 'center' }}>{monthLabel}</span>
+                                <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', minWidth: bp === 'mobile' ? 72 : 110, textAlign: 'center' }}>{bp === 'mobile' ? monthLabel.replace(' ', '\u00A0') : monthLabel}</span>
                                 <button onClick={() => navMonth(1)} style={navBtn}>›</button>
                             </div>
-                            <a href={`/stage-two/forms/mpor-excel?month=${month}`} style={{ ...btnSecondary, textDecoration: 'none' }}>
+
+                            {/* Export Excel — icon-only on mobile/tablet */}
+                            <a
+                                href={`/stage-two/forms/mpor-excel?month=${month}`}
+                                style={{ ...btnSecondary, textDecoration: 'none', border: '1px solid #16a34a', color: '#16a34a' }}
+                                title="Export Excel"
+                            >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                Export Excel
+                                {bp !== 'mobile' && bp !== 'tablet' && <span>Export Excel</span>}
                             </a>
-                            {canSubmit && (
-                                <button onClick={handleSubmit} disabled={submitting} style={{ ...btnPrimary, opacity: submitting ? 0.7 : 1 }}>
+
+                            {/* Submit / Status */}
+                            {canSubmit ? (
+                                <button onClick={handleSubmit} disabled={submitting} style={{ ...btnPrimary, opacity: submitting ? 0.7 : 1 }} title="Submit MPOR">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                                    {submitting ? 'Submitting…' : 'Submit MPOR'}
+                                    {bp !== 'mobile' && bp !== 'tablet' && <span>{submitting ? 'Submitting…' : 'Submit MPOR'}</span>}
                                 </button>
-                            )}
-                            {mpor && !canSubmit && <StatusBadge status={mpor.status} />}
+                            ) : mpor ? (
+                                <StatusBadge status={mpor.status} />
+                            ) : null}
                         </div>
                     </div>
                 </div>
