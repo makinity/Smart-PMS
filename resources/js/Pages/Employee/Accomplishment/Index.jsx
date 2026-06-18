@@ -222,7 +222,7 @@ export default function Index() {
                 </div>
 
                 {/* ── SMPOR + IPCR summary cards ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
                     {/* SMPOR */}
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>

@@ -132,16 +132,16 @@ export default function MporShow() {
                             Back to QAR
                         </a>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1, minWidth: 0 }}>
                             <Avatar name={employee?.name} src={employee?.avatar} size={isMobile?44:52} />
-                            <div>
+                            <div style={{ minWidth: 0 }}>
                                 <p style={statLabel}>MPOR Detail (Read-only)</p>
                                 <h1 style={{ fontWeight: 700, fontSize: isMobile?'1.1rem':'1.3rem', color: 'var(--admin-text-primary)', lineHeight: 1.15 }}>{employee?.name}</h1>
                                 <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{employee?.position}</div>
                             </div>
                         </div>
-                        <div style={{ padding: '0.4rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>{monthLabel}</div>
+                        <div style={{ padding: '0.4rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', fontSize: '0.88rem', fontWeight: 700, color: 'var(--admin-text-primary)', flexShrink: 0 }}>{monthLabel}</div>
                     </div>
                 </div>
 

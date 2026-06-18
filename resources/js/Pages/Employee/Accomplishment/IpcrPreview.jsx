@@ -259,7 +259,7 @@ export default function IpcrPreview() {
 
                 {/* Header card */}
                 <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)', padding: '1.1rem 1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: '0.85rem' }}>
                         <div>
                             <button onClick={() => router.visit('/employee/accomplishment')}
                                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.85rem', padding: 0, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -267,11 +267,10 @@ export default function IpcrPreview() {
                             </button>
                             <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--admin-text-primary)', marginBottom: 2 }}>IPCR Accomplishment</h2>
                             <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>
-                                {employee?.name} · {employee?.office} · {period?.name}
+                                {employee?.name}
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center',
-                            ...(bp === 'compact' ? { width: '100%', justifyContent: 'space-between' } : {}) }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
                             {score > 0 && (
                                 <div style={{ textAlign: 'center' }}>
                                     <div style={{ fontSize: '1.3rem', fontWeight: 800, color: scoreColor, lineHeight: 1 }}>{score.toFixed(2)}</div>
@@ -282,7 +281,8 @@ export default function IpcrPreview() {
                                 style={{ padding: '0.45rem 0.9rem', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600,
                                     background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)',
                                     color: '#10b981', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <i className="bi bi-file-earmark-excel" /> Export
+                                <i className="bi bi-file-earmark-arrow-down" />
+                                {bp !== 'compact' && ' Export'}
                             </a>
                         </div>
                     </div>

@@ -164,15 +164,11 @@ export default function Index() {
 
                 {/* Header */}
                 <div style={card}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                            <div>
-                                <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>
-                                    QAR — {period?.name ?? 'No Active Period'}
-                                </h1>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                        <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1, margin: 0, flex: 1, minWidth: 0 }}>
+                            QAR — {period?.name ?? 'No Active Period'}
+                        </h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
                             {qarHeader && <StatusBadge status={qarHeader.status} />}
                             {annexRows.length > 0 && (
                                 <a href={`/stage-two/forms/qar-export?q=${q}`} style={{ ...btnExport, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">

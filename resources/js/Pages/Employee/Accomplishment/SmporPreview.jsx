@@ -59,7 +59,7 @@ export default function SmporPreview() {
                             </button>
                             <h2 style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--admin-text-primary)', marginBottom: 2 }}>SMPOR</h2>
                             <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>
-                                {employee?.name} · {employee?.office} · {period?.name}
+                                {employee?.name}
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

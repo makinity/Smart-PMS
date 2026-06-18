@@ -192,6 +192,7 @@ function ActionPanel({ qar }) {
     const [loading, setLoading]                = useState(null);
     const toast   = useToast();
     const confirm = useConfirm();
+    const bp      = useBreakpoint();
 
     function post(action, data = {}) {
         setLoading(action);
@@ -238,7 +239,7 @@ function ActionPanel({ qar }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
                         </svg>
-                        Return to Dept Head
+                        {bp === 'mobile' ? 'Return' : 'Return to Dept Head'}
                     </button>
                     <button onClick={async () => { if (await confirm('Approve this QAR?')) post('approve'); }}
                         disabled={!!loading} style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
