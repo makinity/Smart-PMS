@@ -509,14 +509,7 @@ export default function Show() {
                 )}
 
                 {/* Score + data source summary */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                    <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                        <div style={{ marginBottom: '0.65rem' }}><div style={sectionLabel}>IPCR Score</div></div>
-                        {ipcrMeta ? <ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /> : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>No IPCR data.</div>}
-                        <button onClick={() => setActiveTab('ipcr')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.65rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <i className="bi bi-clipboard2-data" /> View IPCR
-                        </button>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
                             <div style={sectionLabel}>SMPOR</div>
@@ -528,6 +521,13 @@ export default function Show() {
                         </div>
                         <button onClick={() => setActiveTab('smpor')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-table" /> View SMPOR
+                        </button>
+                    </div>
+                    <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+                        <div style={{ marginBottom: '0.65rem' }}><div style={sectionLabel}>IPCR Score</div></div>
+                        {ipcrMeta ? <ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /> : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>No IPCR data.</div>}
+                        <button onClick={() => setActiveTab('ipcr')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.65rem', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <i className="bi bi-clipboard2-data" /> View IPCR
                         </button>
                     </div>
                 </div>
