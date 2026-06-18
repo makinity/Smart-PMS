@@ -337,12 +337,24 @@ export default function Editor() {
             {/* ── Tablet: same two-row tab nav as mobile ── */}
             {bp === 'tablet' && (
                 <div style={{ position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
-                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
                         {functions.map(fn => (
-                            <button key={fn.id} style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
-                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
-                                {fn.name}
-                            </button>
+                            <div key={fn.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0, borderRight: '1px solid var(--admin-border)' }}>
+                                <button style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}), borderBottom: 'none' }}
+                                    onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                                    {fn.name}
+                                </button>
+                                {uwp?.editable && (
+                                    <>
+                                        <button style={{ ...s.fnActionBtn, padding: '0.35rem 0.3rem' }} onClick={() => setFnModal({ fn })} title="Edit function">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
+                                        <button style={{ ...s.fnActionBtn, color: '#ef4444', padding: '0.35rem 0.3rem', marginRight: '0.25rem' }} onClick={() => handleDeleteFunction(fn.id)} title="Delete function">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         ))}
                     </div>
                     <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', whiteSpace: 'nowrap' }}>
@@ -360,13 +372,24 @@ export default function Editor() {
             {bp === 'mobile' && (
                 <div style={{ position: 'sticky', top: '4.35rem', zIndex: 35, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)' }}>
                     {/* Function selector row */}
-                    <div style={{ display: 'flex', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', scrollbarWidth: 'none', borderBottom: '1px solid var(--admin-border)' }}>
                         {functions.map(fn => (
-                            <button key={fn.id}
-                                style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}) }}
-                                onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
-                                {fn.name}
-                            </button>
+                            <div key={fn.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0, borderRight: '1px solid var(--admin-border)' }}>
+                                <button style={{ ...s.tab, ...(activeFnId === fn.id ? s.tabActive : {}), borderBottom: 'none' }}
+                                    onClick={() => { setActiveFnId(fn.id); setActiveMfoId(fn.mfos?.[0]?.id ?? null); }}>
+                                    {fn.name}
+                                </button>
+                                {uwp?.editable && (
+                                    <>
+                                        <button style={{ ...s.fnActionBtn, padding: '0.35rem 0.3rem' }} onClick={() => setFnModal({ fn })} title="Edit function">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
+                                        <button style={{ ...s.fnActionBtn, color: '#ef4444', padding: '0.35rem 0.3rem', marginRight: '0.25rem' }} onClick={() => handleDeleteFunction(fn.id)} title="Delete function">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         ))}
                     </div>
                     {/* MFO tabs for active function */}
@@ -389,7 +412,7 @@ export default function Editor() {
                     <aside style={s.leftPanel} className="uwp-left">
                         <EditorLeftNav
                             functions={functions} activeFnId={activeFnId} activeMfoId={activeMfoId}
-                            editable={uwp?.editable}
+                            editable={uwp?.editable} bp={bp}
                             setActiveFnId={setActiveFnId} setActiveMfoId={setActiveMfoId}
                             setFnModal={setFnModal} setAddMfoCtx={setAddMfoCtx}
                             handleDeleteFunction={handleDeleteFunction} activeFn={activeFn}
@@ -530,7 +553,8 @@ function StatusBadge({ status }) {
     );
 }
 
-function EditorLeftNav({ functions, activeFnId, activeMfoId, editable, setActiveFnId, setActiveMfoId, setFnModal, setAddMfoCtx, handleDeleteFunction, activeFn }) {
+function EditorLeftNav({ functions, activeFnId, activeMfoId, editable, bp, setActiveFnId, setActiveMfoId, setFnModal, setAddMfoCtx, handleDeleteFunction, activeFn }) {
+    const alwaysVisible = bp !== 'desktop';
     return (
         <div style={{ padding: '0.5rem 0' }}>
             <div style={s.panelLabel}>MFOs / PPAs</div>
@@ -543,7 +567,7 @@ function EditorLeftNav({ functions, activeFnId, activeMfoId, editable, setActive
                             <span style={{ flex: 1, textAlign: 'left' }}>{fn.name}</span>
                         </button>
                         {editable && (
-                            <div className="fn-actions">
+                            <div className="fn-actions" style={alwaysVisible ? { opacity: 1 } : undefined}>
                                 <button style={s.fnActionBtn} onClick={() => setFnModal({ fn })} title="Edit">
                                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -591,15 +615,20 @@ function MfoGroup({ mfo, fnId, editable, bp, onEditMfo, onDeleteMfo, onEditQet, 
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={s.indicatorBadge}>{count} {count === 1 ? 'Indicator' : 'Indicators'}</span>
-                    {editable && bp === 'mobile' && (
-                        <button type="button" style={s.mfoInlineBtn} onClick={() => onEditMfo(mfo)} title="Edit MFO">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                        </button>
+                    {editable && bp !== 'desktop' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <button type="button" style={s.fnActionBtn} onClick={() => onEditMfo(mfo)} title="Edit MFO">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                            </button>
+                            <button type="button" style={{ ...s.fnActionBtn, color: '#ef4444' }} onClick={() => onDeleteMfo(mfo.id)} title="Delete MFO">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            </button>
+                        </div>
                     )}
-                    {editable && bp !== 'mobile' && (
+                    {editable && bp === 'desktop' && (
                         <div className="mfo-actions">
                             <button style={s.fnActionBtn} title="Edit MFO" onClick={() => onEditMfo(mfo)}>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
