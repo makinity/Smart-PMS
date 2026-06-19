@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pmt;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentSubmission;
+use App\Models\DevelopmentPlan;
 use App\Models\Ipcr;
 use App\Models\OrsEntry;
 use App\Models\User;
@@ -98,6 +99,7 @@ class AccomplishmentReviewController extends Controller
         $this->notifyEmployee($accomplishment, 'released_by_pmt',
             "Your final rating has been approved and released by PMT: {$adjectival} ({$score}).");
         $this->notifyDeptHead($accomplishment, "{$adjectival} ({$score})");
+        $this->autoInitiateIdp($accomplishment, $score, $adjectival);
 
         return back()->with('success', 'Accomplishment released.');
     }
@@ -124,6 +126,7 @@ class AccomplishmentReviewController extends Controller
         $this->notifyEmployee($accomplishment, 'released_by_pmt',
             "PMT adjusted your score. Your final rating is now {$data['final_adjectival_rating']} ({$data['final_rating']}).");
         $this->notifyDeptHead($accomplishment, "{$data['final_adjectival_rating']} ({$data['final_rating']})");
+        $this->autoInitiateIdp($accomplishment, (float) $data['final_rating'], $data['final_adjectival_rating']);
 
         return back()->with('success', 'Accomplishment calibrated and released.');
     }
@@ -323,6 +326,47 @@ class AccomplishmentReviewController extends Controller
         }
 
         return ['months' => $months, 'sections' => $result];
+    }
+
+    private function autoInitiateIdp(AccomplishmentSubmission $s, float $score, string $adjectival): void
+    {
+        if (! in_array($adjectival, ['Poor', 'Unsatisfactory'], true)) {
+            return;
+        }
+
+        $ipcr = Ipcr::where('employee_id', $s->employee_id)
+            ->where('performance_period_id', $s->performance_period_id)
+            ->first();
+
+        if (! $ipcr) {
+            return;
+        }
+
+        // Idempotent — skip if already exists
+        $exists = DevelopmentPlan::where('ipcr_id', $ipcr->id)->exists();
+        if ($exists) {
+            return;
+        }
+
+        DevelopmentPlan::create([
+            'ipcr_id'               => $ipcr->id,
+            'employee_id'           => $s->employee_id,
+            'office_id'             => $s->employee?->office_id,
+            'performance_period_id' => $s->performance_period_id,
+            'source_score'          => $score,
+            'source_rating'         => $adjectival,
+            'status'                => DevelopmentPlan::STATUS_PENDING_DETAILS,
+            'prepared_by_name'      => $s->employee?->name,
+            'created_by'            => auth()->id(),
+            'updated_by'            => auth()->id(),
+        ]);
+
+        $s->employee?->notify(new WorkflowEventNotification(
+            type: 'warning',
+            event: 'development_plan.assigned_to_employee',
+            message: "Your performance score ({$adjectival}) requires an Individual Development Plan. Please fill it out in your IDP page.",
+            url: '/employee/idp',
+        ));
     }
 
     private function buildIpcrSections(Ipcr $ipcr, $period): array

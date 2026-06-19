@@ -11,9 +11,10 @@ class DevelopmentPlan extends Model
     use RecordsActivity;
 
     public const STATUS_DRAFT = 'draft';
-
     public const STATUS_PENDING_DETAILS = 'pending_details';
-
+    public const STATUS_SUBMITTED = 'submitted';
+    public const STATUS_SUPERVISOR_RECOMMENDED = 'supervisor_recommended';
+    public const STATUS_RETURNED = 'returned';
     public const STATUS_SUBMITTED_TO_LD = 'submitted_to_ld';
 
     public const LND_SYNC_NOT_SENT = 'not_sent';
@@ -25,9 +26,9 @@ class DevelopmentPlan extends Model
     public const LND_SYNC_FAILED = 'failed';
 
     protected $fillable = [
-        'ipcr_id', 'employee_id', 'office_id', 'performance_period_id',
+        'ipcr_id', 'employee_id', 'supervisor_id', 'office_id', 'performance_period_id',
         'source_score', 'source_rating',
-        'status', 'pmt_remarks', 'idp_rows',
+        'status', 'pmt_remarks', 'supervisor_remarks', 'supervisor_action_at', 'idp_rows',
         'prepared_by_name', 'recommended_by_name', 'approved_by_name',
         'lnd_sync_status', 'lnd_reference_id', 'lnd_synced_at', 'lnd_last_error',
         'submitted_to_ld_at', 'created_by', 'updated_by',
@@ -38,7 +39,13 @@ class DevelopmentPlan extends Model
         'source_score' => 'decimal:2',
         'lnd_synced_at' => 'datetime',
         'submitted_to_ld_at' => 'datetime',
+        'supervisor_action_at' => 'datetime',
     ];
+
+    public function supervisor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
 
     public function ipcr(): BelongsTo
     {

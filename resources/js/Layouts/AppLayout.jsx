@@ -29,6 +29,10 @@ const EVENT_ROUTE = {
     'ors.rated_by_supervisor':               '/employee/ors',
     'opcra.employee_rated':                  '/employee/accomplishment',
     'ipcr.final_score_ready':                '/employee/history',
+    'development_plan.assigned_to_employee': '/employee/idp',
+    'development_plan.submitted_to_supervisor': '/supervisor/idp',
+    'development_plan.supervisor_recommended': '/employee/idp',
+    'development_plan.returned_by_supervisor': '/employee/idp',
 };
 
 export default function AppLayout({ children, title, description }) {

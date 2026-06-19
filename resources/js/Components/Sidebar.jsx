@@ -22,6 +22,10 @@ const EVENT_ROUTE = {
     'ors.rated_by_supervisor':               '/employee/ors',
     'opcra.employee_rated':                  '/employee/accomplishment',
     'ipcr.final_score_ready':                '/employee/history',
+    'development_plan.assigned_to_employee': '/employee/idp',
+    'development_plan.submitted_to_supervisor': '/supervisor/idp',
+    'development_plan.supervisor_recommended': '/employee/idp',
+    'development_plan.returned_by_supervisor': '/employee/idp',
 };
 
 const roleLinks = {
@@ -59,6 +63,7 @@ const roleLinks = {
         { href: '/supervisor/uwp', label: 'UWP', icon: 'bi-kanban-fill' },
         { href: '/supervisor/mpor', label: 'MPOR', icon: 'bi-file-text-fill' },
         { href: '/supervisor/accomplishment', label: 'Accomplishment', icon: 'bi-award-fill' },
+        { href: '/supervisor/idp', label: 'Team IDP', icon: 'bi-journal-bookmark-fill' },
         { href: '/supervisor/team-tasks', label: 'Team Tasks', icon: 'bi-people-fill' },
         { href: '/supervisor/ors-monitoring', label: 'ORS Monitoring', icon: 'bi-activity' },
         { href: '/supervisor/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
@@ -70,6 +75,7 @@ const roleLinks = {
         { href: '/employee/mpor', label: 'MPOR', icon: 'bi-file-text-fill' },
         { href: '/employee/my-tasks', label: 'My Tasks', icon: 'bi-check2-square' },
         { href: '/employee/ors', label: 'ORS', icon: 'bi-activity' },
+        { href: '/employee/idp', label: 'My IDP', icon: 'bi-journal-bookmark-fill' },
         { href: '/employee/history', label: 'History', icon: 'bi-clock-history' },
         { href: '/employee/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],

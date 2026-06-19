@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GovHR Portal - My IDP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#c2c6d6",
+                    "on-surface": "#dee2f2",
+                    "on-primary-fixed-variant": "#004395",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-container": "#00a572",
+                    "on-secondary-container": "#a2b6db",
+                    "secondary-fixed-dim": "#b3c7ed",
+                    "on-error": "#690005",
+                    "on-secondary": "#1c314f",
+                    "on-secondary-fixed-variant": "#334767",
+                    "surface-bright": "#343946",
+                    "surface-variant": "#303541",
+                    "secondary-fixed": "#d5e3ff",
+                    "on-tertiary": "#003824",
+                    "primary-fixed-dim": "#adc6ff",
+                    "inverse-primary": "#005ac2",
+                    "on-secondary-fixed": "#031c39",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "background": "#0e131e",
+                    "surface": "#0e131e",
+                    "outline": "#8c909f",
+                    "on-primary-container": "#00285d",
+                    "surface-dim": "#0e131e",
+                    "surface-container-high": "#252a36",
+                    "primary-fixed": "#d8e2ff",
+                    "surface-container-lowest": "#090e19",
+                    "on-primary-fixed": "#001a42",
+                    "surface-container-low": "#171b27",
+                    "primary-container": "#4d8eff",
+                    "on-background": "#dee2f2",
+                    "on-primary": "#002e6a",
+                    "on-tertiary-fixed": "#002113",
+                    "inverse-surface": "#dee2f2",
+                    "inverse-on-surface": "#2b303c",
+                    "secondary": "#b3c7ed",
+                    "surface-container-highest": "#303541",
+                    "tertiary": "#4edea3",
+                    "error-container": "#93000a",
+                    "on-tertiary-container": "#00311f",
+                    "primary": "#adc6ff",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#adc6ff",
+                    "surface-container": "#1b1f2b",
+                    "outline-variant": "#424754",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "secondary-container": "#334767",
+                    "tertiary-fixed": "#6ffbbe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "20px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "md": "16px",
+                    "margin-desktop": "40px",
+                    "xl": "32px",
+                    "base": "4px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(27, 31, 43, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(140, 171, 214, 0.12);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #424754; border-radius: 10px; }
+        .score-ring {
+            background: conic-gradient(#ffb4ab calc(68 * 1%), transparent 0);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm flex items-center justify-between px-margin-desktop h-20">
+<div class="flex items-center gap-8">
+<span class="font-display text-headline-md text-primary uppercase tracking-tight">GovHR Portal</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Personnel</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Payroll</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">IDP</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200" href="#">Benefits</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer active:opacity-70">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer active:opacity-70">settings</span>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a Hispanic man with short dark hair and a friendly expression, wearing a sharp business casual outfit. He is positioned against a clean, modern corporate office background with soft bokeh lighting in a dark-themed UI style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAloDL2Z2nCni_7pUWbb--t10RKZgHUPkcjZ9v_sMybATjlRjV5mS-qC7WRrUF1Tw_qGG2YUmWHaQZi44ELsslhQotOQK2uKacDEoLujFy_-j7scCKeec4AY0qixCAYl25F_zPNJSnJysn-eQQsDSjNjtSp5Yyax9CibMMt5UWGKpfMJRjWnn76UHStTc73w5ZxaFuvoUFGyD1wkV_NfYqAIXZe-u6CF9tTZl2p2AsLp_YxLfB9h-bEdoVAZb7FCfy5btK2jVaoiXU"/>
+</div>
+</div>
+</header>
+<main class="mt-24 max-w-[1280px] mx-auto px-margin-desktop space-y-lg">
+<!-- Page Header -->
+<div class="flex items-end justify-between py-md">
+<div>
+<h1 class="font-headline-md text-[1.4rem] leading-tight font-bold text-on-surface">My IDP</h1>
+<p class="text-on-surface-variant font-body-sm mt-1">Individual Development Plan · Jan–Jun 2026</p>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border border-primary text-primary rounded-lg font-medium hover:bg-primary/10 transition-all">
+<i class="bi bi-file-earmark-spreadsheet"></i>
+                Export to Excel
+            </button>
+</div>
+<!-- Employee Info Card -->
+<section class="bg-[#0f1724] border-l-[3px] border-error rounded-xl p-6 relative overflow-hidden shadow-lg">
+<div class="flex items-center justify-between gap-8 relative z-10">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full border-2 border-outline-variant/30 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Corporate headshot of Carlos Mendoza, an HR professional, looking confident and approachable. The lighting is dramatic and cool-toned to match a high-performance dark mode dashboard. Minimalist artistic flair with deep shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl5eQjTBLuCff6byjgTJRe5vcEJv56xzBeqNe2eF3nGdD8D7x8PDz1P0kWAWbzc-4srGW9W9wOOaYnQjdOmfV_eEXYPzGLly_g_gfRHPCTTCh32QNo24-hy7jXcXXD1R5ECdDQIFY94Rr2v1_NWIruaM9LAN7jeRC26drQ8cODVc3ypn5klgDCIrNnbrnaGYVm036Of8-wX4zswt9hX7wqg5gp6sfk9FiC4YaYhrUIgY9c3tSCKgr-wilDKMJRQQ3tiRHHWBvZfgI"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Carlos Mendoza</h2>
+<span class="text-on-surface-variant font-body-sm">HR Assistant II</span>
+</div>
+</div>
+<div class="flex items-center gap-12">
+<div class="text-center">
+<span class="block text-label-caps text-on-surface-variant mb-2">PERFORMANCE SCORE</span>
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-4 border-surface-container"></div>
+<div class="absolute inset-0 rounded-full border-4 border-transparent score-ring"></div>
+<span class="text-sm font-bold text-error">0.68</span>
+</div>
+<span class="bg-error/15 text-error px-3 py-1 rounded-full font-label-sm uppercase tracking-wide">Poor</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Remarks Bar -->
+<div class="mt-6 bg-[#ffb04920] border border-[#ffb04940] rounded-lg p-3 flex items-center gap-3">
+<span class="material-symbols-outlined text-[#ffb049]">warning</span>
+<p class="text-[#ffb049] font-body-sm">
+<span class="font-bold">PMT Remarks:</span> Please fill out your IDP based on your performance gaps this period.
+                </p>
+</div>
+</section>
+<!-- Development Goals Header -->
+<div class="pt-xl">
+<div class="flex items-center gap-4">
+<h3 class="font-label-caps text-on-surface-variant whitespace-nowrap">DEVELOPMENT GOALS</h3>
+<hr class="w-full border-outline-variant/20"/>
+</div>
+<p class="text-on-surface-variant font-body-sm mt-2 opacity-70">Add one goal per performance gap to bridge the competency requirements for your current role.</p>
+</div>
+<!-- Goal Cards Section -->
+<div class="space-y-lg pb-10">
+<!-- Goal #1 -->
+<div class="glass-card rounded-xl p-md">
+<div class="flex items-center justify-between mb-lg">
+<h4 class="font-headline-md text-body-lg font-bold text-primary">Goal #1</h4>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-error transition-colors">delete</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+<!-- Left Column -->
+<div class="space-y-md">
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Performance Gap</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[100px] resize-none" placeholder="Enter the identified performance gap...">Lack of proficiency in financial reporting systems and advanced Excel reconciliation methods leading to minor audit delays.</textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Support Needed</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="What resources or training do you need?"></textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Support from Supervisor</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="How can your supervisor help?"></textarea>
+</div>
+</div>
+<!-- Right Column -->
+<div class="space-y-md">
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Developmental Activities</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[100px] resize-none" placeholder="What actions will you take?">Attend online course on Advanced Financial Reporting. Participate in peer-led workshop on Excel automation.</textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Expected Date</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="date" value="2026-09-30"/>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Results</label>
+<div class="space-y-1">
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="What are the expected outcomes?"></textarea>
+<span class="text-[11px] italic text-on-surface-variant/60">Briefly describe the tangible output or improvement expected.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Goal #2 -->
+<div class="glass-card rounded-xl p-md opacity-90">
+<div class="flex items-center justify-between mb-lg">
+<h4 class="font-headline-md text-body-lg font-bold text-primary">Goal #2</h4>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-error transition-colors">delete</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-xl">
+<!-- Left Column -->
+<div class="space-y-md">
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Performance Gap</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[100px] resize-none" placeholder="Enter the identified performance gap..."></textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Support Needed</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="What resources or training do you need?"></textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Support from Supervisor</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="How can your supervisor help?"></textarea>
+</div>
+</div>
+<!-- Right Column -->
+<div class="space-y-md">
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Developmental Activities</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[100px] resize-none" placeholder="What actions will you take?"></textarea>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Expected Date</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none" type="date"/>
+</div>
+<div>
+<label class="block font-label-sm text-on-surface-variant mb-2">Results</label>
+<div class="space-y-1">
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-3 text-on-surface font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none min-h-[80px] resize-none" placeholder="What are the expected outcomes?"></textarea>
+<span class="text-[11px] italic text-on-surface-variant/60">Briefly describe the tangible output or improvement expected.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Add Goal Button -->
+<button class="w-full h-12 border-2 border-dashed border-primary/40 rounded-xl flex items-center justify-center gap-2 text-primary font-bold hover:bg-primary/5 hover:border-primary transition-all">
+<span class="material-symbols-outlined">add</span>
+                Add Development Goal
+            </button>
+</div>
+</main>
+<!-- Sticky Bottom Bar -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/20 h-20 z-50 px-margin-desktop flex items-center justify-between">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-xl">lock</span>
+<span class="font-body-sm">Submitted forms cannot be edited</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 border border-outline-variant text-on-surface rounded-lg font-medium hover:bg-surface-variant transition-colors">
+                Save Draft
+            </button>
+<button class="px-6 py-2.5 bg-primary text-on-primary rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform active:scale-95">
+                Submit IDP
+                <i class="bi bi-arrow-right"></i>
+</button>
+</div>
+</footer>
+<script>
+        // Micro-interaction for input focus effects
+        document.querySelectorAll('textarea, input').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.querySelector('label').classList.add('text-primary');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.querySelector('label').classList.remove('text-primary');
+            });
+        });
+    </script>
+</body></html>

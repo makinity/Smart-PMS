@@ -191,6 +191,10 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::get('/ors-monitoring', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'index'])->name('ors-monitoring.index');
     Route::post('/ors-monitoring/{orsEntry}/rate', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'rate'])->name('ors-monitoring.rate');
     Route::get('/team-tasks', [\App\Http\Controllers\StageTwo\Monitoring\TeamTasksController::class, 'index'])->name('team-tasks.index');
+    Route::get('/idp', [\App\Http\Controllers\Supervisor\IdpController::class, 'index'])->name('idp.index');
+    Route::get('/idp/{idp}', [\App\Http\Controllers\Supervisor\IdpController::class, 'show'])->name('idp.show');
+    Route::post('/idp/{idp}/recommend', [\App\Http\Controllers\Supervisor\IdpController::class, 'recommend'])->name('idp.recommend');
+    Route::post('/idp/{idp}/return', [\App\Http\Controllers\Supervisor\IdpController::class, 'return'])->name('idp.return');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Supervisor/Profile'))->name('profile');
 });
 
@@ -215,6 +219,10 @@ Route::prefix('employee')->middleware(['auth', 'role:employee'])->name('employee
     Route::get('/history', [\App\Http\Controllers\Employee\HistoryController::class, 'index'])->name('history.index');
     Route::get('/history/ipcr/{ipcr}', [\App\Http\Controllers\Employee\HistoryController::class, 'showIpcr'])->name('history.ipcr');
     Route::get('/history/ipcr/{ipcr}', [\App\Http\Controllers\Employee\HistoryController::class, 'showIpcr'])->name('history.ipcr');
+    Route::get('/idp', [\App\Http\Controllers\Employee\IdpController::class, 'index'])->name('idp.index');
+    Route::patch('/idp/{idp}', [\App\Http\Controllers\Employee\IdpController::class, 'update'])->name('idp.update');
+    Route::post('/idp/{idp}/submit', [\App\Http\Controllers\Employee\IdpController::class, 'submit'])->name('idp.submit');
+    Route::get('/idp/{idp}/export', [\App\Http\Controllers\Employee\IdpExcelExportController::class, 'export'])->name('idp.export');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Employee/Profile'))->name('profile');
 });
 
