@@ -34,7 +34,6 @@ function ScoreCircle({ score, rating, label = 'Performance Score' }) {
     );
 }
 
-// ── Skill Gaps card ─────────────────────────────────────────────────────────────
 function SkillGapsCard({ skillGaps, employeeName }) {
     const dims = skillGaps?.weak_dimensions ?? [];
     const outputs = skillGaps?.weak_outputs ?? [];
@@ -52,7 +51,6 @@ function SkillGapsCard({ skillGaps, employeeName }) {
         <div style={{ ...card, padding: '1.1rem 1.25rem', borderLeft: '3px solid #f59e0b' }}>
             <div style={sectionLabel}><i className="bi bi-exclamation-triangle" style={{ marginRight: 5 }} />Why Development Is Needed</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, marginBottom: dims.length || outputs.length ? '0.9rem' : 0 }}>{narrative}</div>
-
             {dims.length > 0 && (
                 <div style={{ marginBottom: outputs.length ? '0.9rem' : 0 }}>
                     <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', marginBottom: '0.45rem' }}>Weakest Dimensions</div>
@@ -65,7 +63,6 @@ function SkillGapsCard({ skillGaps, employeeName }) {
                     </div>
                 </div>
             )}
-
             {outputs.length > 0 && (
                 <div>
                     <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', marginBottom: '0.45rem' }}>Lowest-Scoring Outputs</div>
@@ -83,7 +80,6 @@ function SkillGapsCard({ skillGaps, employeeName }) {
     );
 }
 
-// ── History timeline ────────────────────────────────────────────────────────────
 function HistoryTimeline({ periods, activeIpcrId, onSelect }) {
     if (!periods?.length) return null;
     return (
@@ -111,7 +107,6 @@ function HistoryTimeline({ periods, activeIpcrId, onSelect }) {
     );
 }
 
-// ── Main Page ───────────────────────────────────────────────────────────────────
 export default function Show() {
     const { employee, current, periods, skillGaps } = usePage().props;
     const [activeIpcrId, setActiveIpcrId] = useState(current.ipcr_id);

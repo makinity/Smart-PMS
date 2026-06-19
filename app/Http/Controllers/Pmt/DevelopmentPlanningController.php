@@ -260,6 +260,13 @@ class DevelopmentPlanningController extends Controller
         return back()->with('success', 'Development plan submitted to L&D.');
     }
 
+    public function savePmtRemarks(Request $request, DevelopmentPlan $plan)
+    {
+        $data = $request->validate(['pmt_remarks' => ['nullable', 'string', 'max:2000']]);
+        $plan->update(['pmt_remarks' => $data['pmt_remarks'], 'updated_by' => auth()->id()]);
+        return back()->with('success', 'Remarks saved.');
+    }
+
     private function statusLabel(?string $status): string
     {
         return match ($status) {
@@ -273,20 +280,22 @@ class DevelopmentPlanningController extends Controller
     private function formatPlan(DevelopmentPlan $plan): array
     {
         return [
-            'id' => $plan->id,
-            'status' => $plan->status,
-            'status_label' => $this->statusLabel($plan->status),
-            'pmt_remarks' => $plan->pmt_remarks ?? '',
-            'idp_rows' => $plan->idp_rows ?? [],
-            'lnd_sync_status' => $plan->lnd_sync_status,
-            'lnd_reference_id' => $plan->lnd_reference_id,
-            'lnd_synced_at' => $plan->lnd_synced_at?->toIso8601String(),
-            'lnd_last_error' => $plan->lnd_last_error ?? '',
-            'submitted_to_ld_at' => $plan->submitted_to_ld_at?->toIso8601String(),
-            'prepared_by_name' => $plan->prepared_by_name,
+            'id'                  => $plan->id,
+            'status'              => $plan->status,
+            'status_label'        => $this->statusLabel($plan->status),
+            'pmt_remarks'         => $plan->pmt_remarks ?? '',
+            'supervisor_remarks'  => $plan->supervisor_remarks ?? '',
+            'dept_head_remarks'   => $plan->dept_head_remarks ?? '',
+            'idp_rows'            => $plan->idp_rows ?? [],
+            'lnd_sync_status'     => $plan->lnd_sync_status,
+            'lnd_reference_id'    => $plan->lnd_reference_id,
+            'lnd_synced_at'       => $plan->lnd_synced_at?->toIso8601String(),
+            'lnd_last_error'      => $plan->lnd_last_error ?? '',
+            'submitted_to_ld_at'  => $plan->submitted_to_ld_at?->toIso8601String(),
+            'prepared_by_name'    => $plan->prepared_by_name,
             'recommended_by_name' => $plan->recommended_by_name,
-            'approved_by_name' => $plan->approved_by_name,
-            'updated_at' => $plan->updated_at?->toIso8601String(),
+            'approved_by_name'    => $plan->approved_by_name,
+            'updated_at'          => $plan->updated_at?->toIso8601String(),
         ];
     }
 }

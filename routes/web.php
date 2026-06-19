@@ -118,7 +118,12 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::get('/development-planning', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'index'])->name('development-planning.index');
     Route::get('/development-planning/{ipcr}', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'show'])->name('development-planning.show');
     Route::post('/development-planning/{ipcr}', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'storeOrUpdate'])->name('development-planning.save');
+    Route::patch('/development-planning/{plan}/remarks', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'savePmtRemarks'])->name('development-planning.remarks');
     Route::post('/development-planning/{plan}/submit-to-ld', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'submitToLd'])->name('development-planning.submit-to-ld');
+    Route::get('/idp', [\App\Http\Controllers\Pmt\IdpController::class, 'index'])->name('idp.index');
+    Route::get('/idp/{idp}', [\App\Http\Controllers\Pmt\IdpController::class, 'show'])->name('idp.show');
+    Route::patch('/idp/{idp}/remarks', [\App\Http\Controllers\Pmt\IdpController::class, 'savePmtRemarks'])->name('idp.remarks');
+    Route::post('/idp/bulk-submit', [\App\Http\Controllers\Pmt\IdpController::class, 'bulkSubmitToLd'])->name('idp.bulk-submit');
     Route::get('/top-performers', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'index'])->name('top-performers.index');
     Route::get('/top-performers/{user}', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'show'])->name('top-performers.show');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Pmt/Profile'))->name('profile');
