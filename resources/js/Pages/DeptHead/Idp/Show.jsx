@@ -9,9 +9,9 @@ import useBreakpoint from '@/Components/useBreakpoint';
 const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#f97316' };
 
 const STATUS_CFG = {
-    submitted:              { label: 'Pending Review',   c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
+    supervisor_recommended: { label: 'Pending Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
     returned:               { label: 'Returned',         c: '#f87171', bg: 'rgba(239,68,68,0.12)',  bc: 'rgba(239,68,68,0.3)' },
-    supervisor_recommended: { label: 'Recommended',      c: '#60a5fa', bg: 'rgba(59,130,246,0.12)', bc: 'rgba(59,130,246,0.3)' },
+    approved:               { label: 'Approved',         c: '#10b981', bg: 'rgba(16,185,129,0.12)', bc: 'rgba(16,185,129,0.3)' },
     submitted_to_ld:        { label: 'Submitted to L&D', c: '#4ade80', bg: 'rgba(74,222,128,0.12)', bc: 'rgba(74,222,128,0.3)' },
 };
 
@@ -86,7 +86,7 @@ function ReturnModal({ planId, onClose }) {
     function submit() {
         if (!remarks.trim()) return;
         setSubmitting(true);
-        router.post(`/supervisor/idp/${planId}/return`, { remarks }, {
+        router.post(`/dept-head/idp/${planId}/return`, { remarks }, {
             preserveScroll: true,
             onSuccess: () => { toast?.('IDP returned to employee.', 'success'); onClose(); },
             onError:   () => { toast?.('Failed.', 'error'); setSubmitting(false); },
@@ -146,25 +146,26 @@ export default function Show() {
     const [loading, setLoading]       = useState(false);
 
     const ratingColor = RATING_COLOR[plan.source_rating] ?? '#ef4444';
-    const statusCfg   = STATUS_CFG[plan.status] ?? STATUS_CFG.submitted;
-    const isActioned  = !['submitted'].includes(plan.status);
+    const statusCfg   = STATUS_CFG[plan.status] ?? STATUS_CFG.supervisor_recommended;
+    const isActioned  = !['supervisor_recommended'].includes(plan.status);
 
-    const handleRecommend = async () => {
-        const ok = await confirm?.('Recommend this IDP? The employee will be notified.');
+    const handleApprove = async () => {
+        const ok = await confirm?.('Approve this IDP? The employee will be notified.');
         if (!ok) return;
         setLoading(true);
-        router.post(`/supervisor/idp/${plan.id}/recommend`, {}, {
+        router.post(`/dept-head/idp/${plan.id}/approve`, {}, {
             preserveScroll: true,
-            onSuccess: () => toast?.('IDP recommended.', 'success'),
+            onSuccess: () => toast?.('IDP approved.', 'success'),
             onError:   () => toast?.('Failed.', 'error'),
             onFinish:  () => setLoading(false),
         });
     };
 
     return (
-        <AppLayout title="Review IDP" description={`${employee.name}'s Individual Development Plan`}>
+        <AppLayout title="Approve IDP" description={`${employee.name}'s Individual Development Plan`}>
             <div style={{ paddingBottom: isActioned ? '1rem' : '5rem' }}>
-                {/* Employee info card — contains back, export, employee details */}
+
+                {/* Header card with back, export, employee info */}
                 <div style={{ background: 'var(--admin-card)', borderLeft: `3px solid ${ratingColor}`,
                     border: '1px solid var(--admin-border)', borderLeftWidth: 3,
                     borderRadius: 'var(--admin-radius)', padding: isMobile ? '1rem' : '1.25rem 1.5rem',
@@ -172,11 +173,11 @@ export default function Show() {
 
                     {/* Back + Export row */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <button onClick={() => router.visit('/supervisor/idp')}
+                        <button onClick={() => router.visit('/dept-head/idp')}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                                 background: 'none', border: 'none', cursor: 'pointer',
                                 color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0 }}>
-                            <i className="bi bi-arrow-left" /> Back to Team IDPs
+                            <i className="bi bi-arrow-left" /> Back to IDP Approvals
                         </button>
                         <a href={`/employee/idp/${plan.id}/export`} style={{
                             display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
@@ -188,6 +189,8 @@ export default function Show() {
                             {!isMobile && 'Export Excel'}
                         </a>
                     </div>
+
+                    {/* Employee details */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                             <img src={avatarSrc(employee.avatar)} alt={employee.name} onError={onAvatarError}
@@ -217,6 +220,7 @@ export default function Show() {
                         </div>
                     </div>
 
+                    {/* Remarks banners */}
                     {plan.pmt_remarks && (
                         <div style={{ marginTop: '0.9rem', background: 'rgba(245,158,11,0.08)',
                             border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8,
@@ -227,14 +231,23 @@ export default function Show() {
                             </p>
                         </div>
                     )}
-
-                    {isActioned && plan.supervisor_remarks && (
-                        <div style={{ marginTop: '0.75rem', background: 'rgba(59,130,246,0.07)',
+                    {plan.supervisor_remarks && (
+                        <div style={{ marginTop: '0.6rem', background: 'rgba(59,130,246,0.07)',
                             border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8,
                             padding: '0.55rem 0.85rem', display: 'flex', gap: '0.5rem' }}>
-                            <i className="bi bi-chat-left-text" style={{ color: 'var(--admin-accent)', flexShrink: 0, marginTop: 1 }} />
+                            <i className="bi bi-person-check" style={{ color: 'var(--admin-accent)', flexShrink: 0, marginTop: 1 }} />
                             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--admin-text-secondary)', lineHeight: 1.5 }}>
-                                <strong>Your Remarks:</strong> {plan.supervisor_remarks}
+                                <strong>Supervisor Remarks:</strong> {plan.supervisor_remarks}
+                            </p>
+                        </div>
+                    )}
+                    {isActioned && plan.dept_head_remarks && (
+                        <div style={{ marginTop: '0.6rem', background: 'rgba(16,185,129,0.07)',
+                            border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8,
+                            padding: '0.55rem 0.85rem', display: 'flex', gap: '0.5rem' }}>
+                            <i className="bi bi-check-circle" style={{ color: '#10b981', flexShrink: 0, marginTop: 1 }} />
+                            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--admin-text-secondary)', lineHeight: 1.5 }}>
+                                <strong>Your Remarks:</strong> {plan.dept_head_remarks}
                             </p>
                         </div>
                     )}
@@ -267,15 +280,15 @@ export default function Show() {
                             <i className="bi bi-arrow-counterclockwise" style={{ marginRight: 5 }} />
                             Return to Employee
                         </button>
-                        <button onClick={handleRecommend} disabled={loading} style={{
+                        <button onClick={handleApprove} disabled={loading} style={{
                             padding: '0.55rem 1.5rem', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem',
                             cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
-                            background: 'var(--admin-accent)', border: 'none', color: '#fff',
+                            background: '#10b981', border: 'none', color: '#fff',
                             display: 'flex', alignItems: 'center', gap: '0.4rem',
-                            boxShadow: '0 4px 14px rgba(59,130,246,0.35)',
+                            boxShadow: '0 4px 14px rgba(16,185,129,0.35)',
                         }}>
                             <i className="bi bi-check-lg" />
-                            {loading ? 'Recommending…' : 'Recommend IDP'}
+                            {loading ? 'Approving…' : 'Approve IDP'}
                         </button>
                     </div>
                 )}

@@ -9,9 +9,13 @@ import useBreakpoint from '@/Components/useBreakpoint';
 const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#f97316' };
 
 const STATUS_CFG = {
-    pending_details: { label: 'Pending Fill-up', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
-    draft:           { label: 'Draft',            c: '#94a3b8', bg: 'rgba(100,116,139,0.12)', bc: 'rgba(100,116,139,0.3)' },
-    submitted_to_ld: { label: 'Submitted',        c: '#10b981', bg: 'rgba(16,185,129,0.12)',  bc: 'rgba(16,185,129,0.3)' },
+    pending_details:        { label: 'Pending Fill-up',        c: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  bc: 'rgba(245,158,11,0.3)' },
+    draft:                  { label: 'Draft',                  c: '#94a3b8', bg: 'rgba(100,116,139,0.12)', bc: 'rgba(100,116,139,0.3)' },
+    submitted:              { label: 'Under Review',           c: '#60a5fa', bg: 'rgba(59,130,246,0.12)',  bc: 'rgba(59,130,246,0.3)' },
+    supervisor_recommended: { label: 'Supervisor Recommended', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)',  bc: 'rgba(139,92,246,0.3)' },
+    returned:               { label: 'Returned — Please Revise', c: '#f87171', bg: 'rgba(239,68,68,0.12)', bc: 'rgba(239,68,68,0.3)' },
+    approved:               { label: 'Approved',               c: '#10b981', bg: 'rgba(16,185,129,0.12)',  bc: 'rgba(16,185,129,0.3)' },
+    submitted_to_ld:        { label: 'Submitted to L&D',       c: '#4ade80', bg: 'rgba(74,222,128,0.12)',  bc: 'rgba(74,222,128,0.3)' },
 };
 
 const EMPTY_ROW = () => ({
@@ -193,7 +197,7 @@ export default function IdpIndex() {
     const [saving, setSaving]     = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const isSubmitted  = plan?.status === 'submitted_to_ld';
+    const isSubmitted  = ['submitted', 'supervisor_recommended', 'approved', 'submitted_to_ld'].includes(plan?.status);
     const ratingColor  = RATING_COLOR[plan?.source_rating] ?? '#ef4444';
     const statusCfg    = STATUS_CFG[plan?.status] ?? STATUS_CFG.pending_details;
 
@@ -334,7 +338,7 @@ export default function IdpIndex() {
                             </div>
                         )}
 
-                        {isSubmitted && (
+                        {isSubmitted && plan.status !== 'returned' && (
                             <div style={{
                                 marginTop: '0.75rem', background: 'rgba(16,185,129,0.08)',
                                 border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8,
@@ -342,8 +346,30 @@ export default function IdpIndex() {
                             }}>
                                 <i className="bi bi-check-circle-fill" style={{ color: '#10b981', flexShrink: 0 }} />
                                 <span style={{ fontSize: '0.82rem', color: '#10b981' }}>
-                                    Submitted on {plan.submitted_to_ld_at}. This IDP is locked for review.
+                                    {plan.status === 'approved' ? 'Your IDP has been approved.' :
+                                     plan.status === 'submitted_to_ld' ? 'Submitted to L&D.' :
+                                     plan.status === 'supervisor_recommended' ? 'Recommended by supervisor. Awaiting dept-head approval.' :
+                                     'Submitted. Awaiting supervisor review.'}
                                 </span>
+                            </div>
+                        )}
+                        {plan.status === 'returned' && (
+                            <div style={{
+                                marginTop: '0.75rem', background: 'rgba(239,68,68,0.08)',
+                                border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8,
+                                padding: '0.6rem 0.85rem', display: 'flex', gap: '0.6rem',
+                            }}>
+                                <i className="bi bi-exclamation-circle-fill" style={{ color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
+                                <div style={{ fontSize: '0.82rem', lineHeight: 1.5 }}>
+                                    <div style={{ color: '#ef4444', fontWeight: 700, marginBottom: 2 }}>
+                                        IDP Returned — Please revise and resubmit.
+                                    </div>
+                                    {(plan.supervisor_remarks || plan.dept_head_remarks) && (
+                                        <div style={{ color: 'var(--admin-text-secondary)' }}>
+                                            {plan.dept_head_remarks || plan.supervisor_remarks}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>

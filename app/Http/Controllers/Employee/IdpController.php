@@ -37,6 +37,7 @@ class IdpController extends Controller
         abort_if(in_array($idp->status, [
             DevelopmentPlan::STATUS_SUBMITTED,
             DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
+            DevelopmentPlan::STATUS_APPROVED,
             DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
         ]), 403, 'This IDP has already been submitted.');
 
@@ -115,15 +116,17 @@ class IdpController extends Controller
     private function formatPlan(DevelopmentPlan $plan): array
     {
         return [
-            'id'               => $plan->id,
-            'status'           => $plan->status,
-            'source_score'     => $plan->source_score ? round((float) $plan->source_score, 2) : null,
-            'source_rating'    => $plan->source_rating,
-            'pmt_remarks'      => $plan->pmt_remarks,
-            'idp_rows'         => $plan->idp_rows ?? [],
-            'period'           => $plan->performancePeriod?->name,
-            'submitted_to_ld_at' => $plan->submitted_to_ld_at?->format('M d, Y'),
-            'updated_at'       => $plan->updated_at?->format('M d, Y g:i A'),
+            'id'                  => $plan->id,
+            'status'              => $plan->status,
+            'source_score'        => $plan->source_score ? round((float) $plan->source_score, 2) : null,
+            'source_rating'       => $plan->source_rating,
+            'pmt_remarks'         => $plan->pmt_remarks,
+            'supervisor_remarks'  => $plan->supervisor_remarks,
+            'dept_head_remarks'   => $plan->dept_head_remarks,
+            'idp_rows'            => $plan->idp_rows ?? [],
+            'period'              => $plan->performancePeriod?->name,
+            'submitted_to_ld_at'  => $plan->submitted_to_ld_at?->format('M d, Y'),
+            'updated_at'          => $plan->updated_at?->format('M d, Y g:i A'),
         ];
     }
 }

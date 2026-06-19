@@ -12,6 +12,8 @@ class IdpController extends Controller
 {
     private const LOCKED = [
         DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
+        DevelopmentPlan::STATUS_RETURNED,
+        DevelopmentPlan::STATUS_APPROVED,
         DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
     ];
 
@@ -82,11 +84,18 @@ class IdpController extends Controller
         abort_unless($idp->supervisor_id === auth()->id(), 403);
         abort_if(in_array($idp->status, self::LOCKED), 403, 'Already actioned.');
 
+        // Resolve dept_head_id from AccomplishmentSubmission
+        $deptHeadId = \App\Models\AccomplishmentSubmission::where('employee_id', $idp->employee_id)
+            ->where('performance_period_id', $idp->performance_period_id)
+            ->whereNotNull('dept_head_id')
+            ->value('dept_head_id');
+
         $idp->update([
             'status'               => DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
             'supervisor_remarks'   => $request->input('remarks'),
             'supervisor_action_at' => now(),
             'recommended_by_name'  => auth()->user()->name,
+            'dept_head_id'         => $deptHeadId,
             'updated_by'           => auth()->id(),
         ]);
 
@@ -96,6 +105,17 @@ class IdpController extends Controller
             message: 'Your IDP has been reviewed and recommended by your supervisor.',
             url: '/employee/idp',
         ));
+
+        // Notify dept-head
+        if ($deptHeadId) {
+            $deptHead = \App\Models\User::find($deptHeadId);
+            $deptHead?->notify(new WorkflowEventNotification(
+                type: 'info',
+                event: 'development_plan.submitted_to_dept_head',
+                message: $idp->employee?->name . "'s Individual Development Plan has been recommended by their supervisor and is awaiting your approval.",
+                url: '/dept-head/idp',
+            ));
+        }
 
         return back()->with('success', 'IDP recommended.');
     }

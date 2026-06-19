@@ -33,6 +33,9 @@ const EVENT_ROUTE = {
     'development_plan.submitted_to_supervisor': '/supervisor/idp',
     'development_plan.supervisor_recommended': '/employee/idp',
     'development_plan.returned_by_supervisor': '/employee/idp',
+    'development_plan.submitted_to_dept_head': '/dept-head/idp',
+    'development_plan.approved':               '/employee/idp',
+    'development_plan.returned_by_dept_head':  '/employee/idp',
 };
 
 export default function AppLayout({ children, title, description }) {

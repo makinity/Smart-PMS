@@ -144,6 +144,10 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
     Route::get('/opcr-accomplishment', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'index'])->name('opcr-accomplishment.index');
     Route::post('/opcr-accomplishment/submit', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'submit'])->name('opcr-accomplishment.submit');
+    Route::get('/idp', [\App\Http\Controllers\DeptHead\IdpController::class, 'index'])->name('idp.index');
+    Route::get('/idp/{idp}', [\App\Http\Controllers\DeptHead\IdpController::class, 'show'])->name('idp.show');
+    Route::post('/idp/{idp}/approve', [\App\Http\Controllers\DeptHead\IdpController::class, 'approve'])->name('idp.approve');
+    Route::post('/idp/{idp}/return', [\App\Http\Controllers\DeptHead\IdpController::class, 'return'])->name('idp.return');
     Route::get('/profile', fn () => \Inertia\Inertia::render('DeptHead/Profile'))->name('profile');
 });
 

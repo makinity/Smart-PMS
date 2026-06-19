@@ -17,6 +17,8 @@ class DevelopmentPlan extends Model
     public const STATUS_RETURNED = 'returned';
     public const STATUS_SUBMITTED_TO_LD = 'submitted_to_ld';
 
+    public const STATUS_APPROVED = 'approved';
+
     public const LND_SYNC_NOT_SENT = 'not_sent';
 
     public const LND_SYNC_SENT = 'sent';
@@ -26,9 +28,10 @@ class DevelopmentPlan extends Model
     public const LND_SYNC_FAILED = 'failed';
 
     protected $fillable = [
-        'ipcr_id', 'employee_id', 'supervisor_id', 'office_id', 'performance_period_id',
+        'ipcr_id', 'employee_id', 'supervisor_id', 'dept_head_id', 'office_id', 'performance_period_id',
         'source_score', 'source_rating',
-        'status', 'pmt_remarks', 'supervisor_remarks', 'supervisor_action_at', 'idp_rows',
+        'status', 'pmt_remarks', 'supervisor_remarks', 'supervisor_action_at',
+        'dept_head_remarks', 'dept_head_action_at', 'idp_rows',
         'prepared_by_name', 'recommended_by_name', 'approved_by_name',
         'lnd_sync_status', 'lnd_reference_id', 'lnd_synced_at', 'lnd_last_error',
         'submitted_to_ld_at', 'created_by', 'updated_by',
@@ -40,7 +43,13 @@ class DevelopmentPlan extends Model
         'lnd_synced_at' => 'datetime',
         'submitted_to_ld_at' => 'datetime',
         'supervisor_action_at' => 'datetime',
+        'dept_head_action_at'  => 'datetime',
     ];
+
+    public function deptHead(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'dept_head_id');
+    }
 
     public function supervisor(): BelongsTo
     {
