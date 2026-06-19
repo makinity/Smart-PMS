@@ -29,6 +29,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const [mlData, setMlData]           = useState(null);
     const [allMlData, setAllMlData]     = useState({}); // indicatorId → recommendations
     const [mlLoading, setMlLoading]     = useState(false);
+    const [saving, setSaving]           = useState(false);
 
     useEffect(() => {
         setMlData(null);
@@ -112,8 +113,13 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
         setWarning(null);
     }
 
-    function handleSave() {
-        onSave(indicator.id, employees.filter(e => selected.has(e.id)));
+    async function handleSave() {
+        setSaving(true);
+        try {
+            await onSave(indicator.id, employees.filter(e => selected.has(e.id)));
+        } finally {
+            setSaving(false);
+        }
     }
 
     const riskColors = {
@@ -184,6 +190,8 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const safeRec = mlOnline && recommended && recommended._ai.successProb >= 50 && recommended._ai.risk !== 'High';
 
     return (
+        <>
+        <style>{`@keyframes assignSpin { to { transform: rotate(360deg); } }`}</style>
         <div style={s.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
             <div style={s.modal}>
                 <div style={s.header}>
@@ -310,15 +318,19 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button style={s.btnOutline} onClick={onClose}>Cancel</button>
-                        <button style={s.btnPrimary} onClick={handleSave}>
-                            Assign Selected
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        <button style={s.btnPrimary} onClick={handleSave} disabled={saving}>
+                            {saving ? 'Assigning…' : 'Assign Selected'}
+                            {saving
+                                ? <svg style={{ animation: 'assignSpin 0.8s linear infinite' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                            }
                         </button>
                     </div>
                 </div>
                 </>}
             </div>
         </div>
+        </>
     );
 }
 
