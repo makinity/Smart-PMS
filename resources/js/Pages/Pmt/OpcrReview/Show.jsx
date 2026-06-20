@@ -49,8 +49,8 @@ export default function Show() {
     const activeFn       = fns?.find(f => f.id === activeFnId);
     const activeFnForMfo = fns?.find(f => f.mfos?.some(m => m.id === activeMfoId));
     const canAct         = status === 'submitted';
-    const allApproved    = uwps.length > 0 && uwps.every(u => u.status === 'approved');
-    const approvedCount  = uwps.filter(u => u.status === 'approved').length;
+    const allApproved    = uwps.length > 0 && uwps.every(u => u.status === 'approved' || u.status === 'pmt_approved');
+    const approvedCount  = uwps.filter(u => u.status === 'approved' || u.status === 'pmt_approved').length;
 
     const displayFn  = bp === 'desktop' ? activeFn : (activeFnForMfo ?? activeFn);
     const mfosToShow = (displayFn?.mfos ?? [])

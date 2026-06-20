@@ -150,7 +150,7 @@ export default function Index() {
         router.post('/dept-head/qar/submit', { q }, {
             preserveScroll: true,
             onSuccess: () => toast('QAR submitted to PMT successfully.', 'submitted'),
-            onError:   () => toast('Failed to submit QAR.', 'error'),
+            onError:   (errors) => toast(errors?.message ?? Object.values(errors ?? {})[0] ?? 'Failed to submit QAR.', 'error'),
             onFinish:  () => setEndorsing(false),
         });
     }

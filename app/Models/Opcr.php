@@ -25,4 +25,13 @@ class Opcr extends Model
     {
         return $this->belongsToMany(UnitWorkPlan::class, 'opcr_unit_work_plan', 'opcr_id', 'unit_work_plan_id')->withTimestamps();
     }
+
+    /**
+     * Returns the UnitWorkPlans linked to this OPCR via the pivot table.
+     * Used by IpcrGeneratorService and AdminReportService.
+     */
+    public function sourceUnitWorkPlans()
+    {
+        return $this->uwps()->get();
+    }
 }

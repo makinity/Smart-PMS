@@ -17,8 +17,8 @@ class UwpSampleSeeder extends Seeder
     public function run(): void
     {
         $office = Office::firstOrCreate(['name' => 'Human Resource Management Office']);
-        $period = PerformancePeriod::current()
-            ?? PerformancePeriod::create(['name' => 'Jan-Jun 2026', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => false]);
+        $period = PerformancePeriod::where('name', 'Jan-Jun 2026')->first()
+            ?? PerformancePeriod::create(['name' => 'Jan-Jun 2026', 'start_date' => '2026-01-01', 'end_date' => '2026-06-30', 'is_active' => true]);
         $supervisor = User::where('role', 'supervisor')->where('office_id', $office->id)->first()
             ?? User::where('role', 'supervisor')->first();
 
@@ -381,5 +381,62 @@ class UwpSampleSeeder extends Seeder
 
         $total = UwpSuccessIndicator::whereHas('uwpMfo.uwpFunction', fn($q) => $q->where('unit_work_plan_id', $uwp->id))->count();
         $this->command->info("UWP seeded: ID {$uwp->id} | {$office->name} | {$total} indicators with full QET standards");
+
+        // ── CBO UWP — draft, same structure, no assignments (test original flow) ──
+        $cbo = Office::firstOrCreate(['code' => 'CBO'], ['name' => 'City Budget Office']);
+        $cboSupervisor = User::where('role', 'supervisor')->where('office_id', $cbo->id)->first();
+
+        UnitWorkPlan::where('office_id', $cbo->id)->each(fn($u) => $u->delete());
+
+        $cboUwp = UnitWorkPlan::create([
+            'office_id'             => $cbo->id,
+            'performance_period_id' => $period->id,
+            'created_by'            => $cboSupervisor?->id,
+            'status'                => 'draft',
+        ]);
+
+        foreach ($data as $sort => $fnData) {
+            $fn = UwpFunction::create([
+                'unit_work_plan_id' => $cboUwp->id,
+                'name'              => $fnData['name'],
+                'function_type'     => $fnData['function_type'],
+                'weight_percent'    => $fnData['weight_percent'],
+                'sort_order'        => $sort + 1,
+            ]);
+
+            foreach ($fnData['mfos'] as $mSort => $mfoData) {
+                $mfo = UwpMfo::create([
+                    'uwp_function_id' => $fn->id,
+                    'title'           => $mfoData['title'],
+                    'weight_percent'  => 0,
+                    'sort_order'      => $mSort + 1,
+                ]);
+
+                foreach ($mfoData['indicators'] as $iSort => $siData) {
+                    $si = UwpSuccessIndicator::create([
+                        'uwp_mfo_id'      => $mfo->id,
+                        'indicator_text'  => $siData['text'],
+                        'target_quantity' => $siData['qty'],
+                        'target_timeline' => $siData['timeline'],
+                        'allotted_budget' => $siData['budget'],
+                        'sort_order'      => $iSort + 1,
+                    ]);
+
+                    foreach ($siData['qet'] as $dimension => $ratings) {
+                        foreach ($ratings as $rating => $text) {
+                            UwpQetStandard::create([
+                                'uwp_success_indicator_id' => $si->id,
+                                'dimension'                => $dimension,
+                                'rating'                   => $rating,
+                                'standard_text'            => $text,
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        $cboTotal = UwpSuccessIndicator::whereHas('uwpMfo.uwpFunction', fn($q) => $q->where('unit_work_plan_id', $cboUwp->id))->count();
+        $this->command->info("UWP seeded: ID {$cboUwp->id} | {$cbo->name} | {$cboTotal} indicators (draft, no assignments)");
     }
 }

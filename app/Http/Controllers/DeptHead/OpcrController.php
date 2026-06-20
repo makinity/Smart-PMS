@@ -27,7 +27,7 @@ class OpcrController extends Controller
         // Fetch all approved UWPs for this office grouped by period
         $uwps = UnitWorkPlan::with(['performancePeriod', 'creator'])
             ->where('office_id', $user->office_id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', UnitWorkPlan::STATUS_PMT_APPROVED])
             ->latest()
             ->get();
 
@@ -41,7 +41,7 @@ class OpcrController extends Controller
                 'period' => $o->period?->name ?? '—',
                 'status' => $o->status,
                 'uwp_count' => $o->uwps->count(),
-                'approved_count' => $o->uwps->where('status', 'approved')->count(),
+                'approved_count' => $o->uwps->whereIn('status', [UnitWorkPlan::STATUS_PMT_APPROVED, 'approved'])->count(),
                 'updated_at' => $o->updated_at?->format('M d, Y'),
             ]);
 

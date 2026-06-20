@@ -93,6 +93,30 @@ class QarController extends Controller
         $q = (int) $request->input('q', 1);
         abort_unless($q >= 1 && $q <= 2, 422, 'Invalid quarter.');
 
+        // Rule: every office employee must have an approved MPOR for each month in the quarter
+        $quarterMonthStrings = array_map(fn ($m) => $m->format('Y-m'), $this->qar->quarterMonths($period, $q));
+        $employeeIds = User::where('office_id', $user->office_id)
+            ->where('role', 'employee')
+            ->pluck('id');
+
+        $missing = [];
+        foreach ($employeeIds as $empId) {
+            foreach ($quarterMonthStrings as $month) {
+                $exists = Mpor::where('employee_id', $empId)
+                    ->where('month', $month)
+                    ->where('status', 'approved')
+                    ->exists();
+                if (! $exists) {
+                    $missing[] = $month;
+                }
+            }
+        }
+        $missing = array_values(array_unique($missing));
+        if (! empty($missing)) {
+            return back()->withErrors(['message' => 'Cannot submit QAR: missing approved MPORs for month(s): ' . implode(', ', $missing) . '.']);
+        }
+
+
         $consolidated = $this->qar->consolidate($user->office_id, $period, $q);
         abort_if(empty($consolidated['rows']), 422, 'No approved MPORs found for this quarter.');
 

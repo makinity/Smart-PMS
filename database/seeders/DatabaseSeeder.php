@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Database\Seeders\UwpSampleSeeder;
+use Database\Seeders\SpmsFullSeeder;
 use Illuminate\Support\Facades\Http;
 
 class DatabaseSeeder extends Seeder
@@ -39,7 +40,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             UwpSampleSeeder::class,
-            OrsSampleSeeder::class,
+            SpmsFullSeeder::class,
+            // OrsSampleSeeder::class, // replaced by SpmsFullSeeder
             // MlTrainingDataSeeder::class,
         ]);
 

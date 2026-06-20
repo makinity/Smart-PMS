@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useToast } from '@/Components/Snackbar';
 import AppLayout from '@/Layouts/AppLayout';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -163,6 +164,7 @@ export default function Index() {
     const [files,      setFiles]      = useState([]);
     const [showConfirm, setShowConfirm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const toast = useToast();
     const fileRef = useRef(null);
 
     const status  = submission?.status ?? 'draft';
@@ -183,8 +185,8 @@ export default function Index() {
         router.post('/employee/accomplishment/submit', fd, {
             forceFormData: true,
             preserveScroll: true,
-            onSuccess: () => { setSubmitting(false); setShowConfirm(false); setFiles([]); },
-            onError:   () => setSubmitting(false),
+            onSuccess: () => { setSubmitting(false); setShowConfirm(false); setFiles([]); toast('Accomplishment submitted successfully.', 'success'); },
+            onError:   (errors) => { setSubmitting(false); setShowConfirm(false); toast(errors?.message ?? Object.values(errors ?? {})[0] ?? 'Failed to submit.', 'error'); },
         });
     }
 

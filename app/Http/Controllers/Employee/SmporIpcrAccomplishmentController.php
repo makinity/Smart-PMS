@@ -147,8 +147,45 @@ class SmporIpcrAccomplishmentController extends Controller
         ]);
 
         // Resolve MPORs
+        // Rule: every month from period start up to (not including) current month must have an approved MPOR
+        $periodStart  = $period->start_date->copy()->startOfMonth();
+        $currentMonth = now()->startOfMonth();
+        $requiredMonths = [];
+        for ($m = $periodStart->copy(); $m->lt($currentMonth); $m->addMonth()) {
+            if ($m->gt($period->end_date)) break;
+            $requiredMonths[] = $m->format('Y-m');
+        }
+
+        $missingMonths = [];
+        foreach ($requiredMonths as $month) {
+            $exists = \App\Models\Mpor::where('employee_id', $user->id)
+                ->where('month', $month)
+                ->where('status', 'approved')
+                ->exists();
+            if (! $exists) {
+                $missingMonths[] = $month;
+            }
+        }
+        if (! empty($missingMonths)) {
+            return back()->withErrors(['message' => 'Cannot submit: missing approved MPOR for month(s): ' . implode(', ', $missingMonths) . '.']);
+        }
+
         $mporResult = $this->resolveMpors($user, $period, null);
         abort_if(empty($mporResult['ids']), 422, 'No eligible MPORs found for this period.');
+
+        // Rule: both Q1 and Q2 QARs must be pmt_approved before submitting accomplishment
+        $approvedQars = QarHeader::where('office_id', $user->office_id)
+            ->where('performance_period_id', $period->id)
+            ->where('pmt_status', 'validated')
+            ->pluck('quarter_key');
+
+        $year = $period->start_date->year;
+        $missingQars = [];
+        if (! $approvedQars->contains("{$year}-Q1")) $missingQars[] = 'Q1';
+        if (! $approvedQars->contains("{$year}-Q2")) $missingQars[] = 'Q2';
+        if (! empty($missingQars)) {
+            return back()->withErrors(['message' => 'Cannot submit: QAR ' . implode(' and ', $missingQars) . ' must be PMT-approved first.']);
+        }
 
         // Handle file uploads
         $attachments = [];
@@ -209,7 +246,7 @@ class SmporIpcrAccomplishmentController extends Controller
         // Level 2: PMT-approved QAR
         $qar = QarHeader::where('office_id', $user->office_id)
             ->where('performance_period_id', $period->id)
-            ->where('pmt_status', 'pmt_approved')
+            ->where('pmt_status', 'validated')
             ->first();
 
         if ($qar) {
