@@ -124,7 +124,12 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::get('/idp/{idp}', [\App\Http\Controllers\Pmt\IdpController::class, 'show'])->name('idp.show');
     Route::patch('/idp/{idp}/remarks', [\App\Http\Controllers\Pmt\IdpController::class, 'savePmtRemarks'])->name('idp.remarks');
     Route::post('/idp/bulk-submit', [\App\Http\Controllers\Pmt\IdpController::class, 'bulkSubmitToLd'])->name('idp.bulk-submit');
-    Route::get('/top-performers', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'index'])->name('top-performers.index');
+    // Performance Overview (merged Top Performers + Development Planning list)
+    Route::get('/performance-overview', [\App\Http\Controllers\Pmt\PerformanceOverviewController::class, 'index'])->name('performance-overview.index');
+    // Keep old index URLs working via redirect
+    Route::redirect('/top-performers', '/pmt/performance-overview');
+    Route::redirect('/development-planning', '/pmt/performance-overview');
+    // Keep old show/action routes (they still render their own Show pages)
     Route::get('/top-performers/{user}', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'show'])->name('top-performers.show');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Pmt/Profile'))->name('profile');
 });

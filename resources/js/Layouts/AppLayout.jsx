@@ -19,7 +19,7 @@ const EVENT_ROUTE = {
     'opcr.submitted':                        '/pmt/opcr-review',
     'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
     'qar.submitted_to_pmt':                  '/pmt/qar',
-    'development_plan.submitted_to_ld':      '/pmt/development-planning',
+    'development_plan.submitted_to_ld':      '/pmt/performance-overview',
     'mpor.approved':                         '/employee/mpor',
     'mpor.returned_to_employee':             '/employee/mpor',
     'accomplishment.returned_to_employee':   '/employee/accomplishment',
