@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentSubmission;
 use App\Models\DevelopmentPlan;
 use App\Models\Ipcr;
+use App\Models\Opcr;
+use App\Models\OpcraAccomplishmentSubmission;
 use App\Models\OrsEntry;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
+use App\Services\OpcrOfficeRatingService;
 use App\Services\PerformanceRatingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -100,6 +103,7 @@ class AccomplishmentReviewController extends Controller
             "Your final rating has been approved and released by PMT: {$adjectival} ({$score}).");
         $this->notifyDeptHead($accomplishment, "{$adjectival} ({$score})");
         $this->autoInitiateIdp($accomplishment, $score, $adjectival);
+        $this->refreshOfficeOpcr($accomplishment);
 
         return back()->with('success', 'Accomplishment released.');
     }
@@ -127,6 +131,7 @@ class AccomplishmentReviewController extends Controller
             "PMT adjusted your score. Your final rating is now {$data['final_adjectival_rating']} ({$data['final_rating']}).");
         $this->notifyDeptHead($accomplishment, "{$data['final_adjectival_rating']} ({$data['final_rating']})");
         $this->autoInitiateIdp($accomplishment, (float) $data['final_rating'], $data['final_adjectival_rating']);
+        $this->refreshOfficeOpcr($accomplishment);
 
         return back()->with('success', 'Accomplishment calibrated and released.');
     }
@@ -187,6 +192,31 @@ class AccomplishmentReviewController extends Controller
         }
 
         return round($score, 2);
+    }
+
+    private function refreshOfficeOpcr(AccomplishmentSubmission $accomplishment): void
+    {
+        $opcr = Opcr::with(['period', 'office', 'uwps.uwpFunctions.mfos.successIndicators.assignments.employee'])
+            ->where('office_id', $accomplishment->office_id)
+            ->where('performance_period_id', $accomplishment->performance_period_id)
+            ->where('status', 'approved')
+            ->first();
+
+        if (! $opcr) {
+            return;
+        }
+
+        $rating = app(OpcrOfficeRatingService::class)->calculate($opcr);
+
+        $submission = OpcraAccomplishmentSubmission::where('office_id', $accomplishment->office_id)
+            ->where('performance_period_id', $accomplishment->performance_period_id)
+            ->first();
+
+        if ($submission && $submission->status !== 'released') {
+            $submission->update([
+                'computed_office_rating' => $rating['overall_score'],
+            ]);
+        }
     }
 
     private function notifyEmployee(AccomplishmentSubmission $s, string $event, string $message): void

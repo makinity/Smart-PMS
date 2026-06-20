@@ -57,6 +57,11 @@ export default function Index() {
         });
     }
 
+    function resetForReview() {
+        if (!window.confirm('Reset this OPCR accomplishment to PMT review? This clears the released state.')) return;
+        router.post('/dept-head/opcr-accomplishment/reset', {}, { preserveScroll: true });
+    }
+
     if (!period) return (
         <AppLayout title="OPCR Accomplishment">
             <div style={{ ...card, padding:'3rem', textAlign:'center', color:'var(--admin-text-muted)' }}>
@@ -75,7 +80,22 @@ export default function Index() {
                         <div style={{ fontWeight:700, fontSize:'1rem', color:'var(--admin-text-primary)' }}>OPCR Accomplishment</div>
                         <div style={{ fontSize:'0.75rem', color:'var(--admin-text-muted)' }}>{period.name}</div>
                     </div>
-                    <span style={{ padding:'3px 12px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        {released && (
+                            <button type="button"
+                                onClick={resetForReview}
+                                style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 0.9rem', borderRadius:6, border:'1px solid #ef4444', background:'rgba(239,68,68,0.08)', color:'#ef4444', fontSize:'0.8rem', fontWeight:600 }}>
+                                <i className="bi bi-arrow-counterclockwise" /> Reset for PMT Review
+                            </button>
+                        )}
+                        {released && (
+                            <a href="/dept-head/opcr-accomplishment/export"
+                               style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 0.9rem', borderRadius:6, background:'#16a34a', color:'#fff', fontSize:'0.8rem', fontWeight:600, textDecoration:'none' }}>
+                                <i className="bi bi-file-earmark-excel" /> Export Official OPCR
+                            </a>
+                        )}
+                        <span style={{ padding:'3px 12px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
+                    </div>
                 </div>
 
                 {/* OPCR status banner */}

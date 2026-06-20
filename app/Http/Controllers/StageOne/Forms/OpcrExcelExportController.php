@@ -313,8 +313,9 @@ class OpcrExcelExportController extends Controller
                         $ws->setCellValue("C{$r}", ($si['budget'] && $si['budget'] > 0) ? number_format($si['budget'], 2) : '');
                         $ws->setCellValue("D{$r}", $si['accountable']);
                         $ws->setCellValue("E{$r}", '');
-                        $ws->setCellValue("F{$r}", ''); $ws->setCellValue("G{$r}", '');
-                        $ws->setCellValue("H{$r}", ''); $ws->setCellValue("I{$r}", '');
+                        $scores = $request->input('_accomplishment_scores.' . $mfoTitle . '||' . $si['text'], ['q' => 0, 'e' => 0, 't' => 0, 'a' => 0]);
+                        $ws->setCellValue("F{$r}", $scores['q'] ?? ''); $ws->setCellValue("G{$r}", $scores['e'] ?? '');
+                        $ws->setCellValue("H{$r}", $scores['t'] ?? ''); $ws->setCellValue("I{$r}", $scores['a'] ?? '');
                         $ws->setCellValue("J{$r}", '');
                         $ws->setCellValue("K{$r}", $si['std'][5]);
                         $ws->setCellValue("L{$r}", $si['std'][4]);
@@ -350,15 +351,88 @@ class OpcrExcelExportController extends Controller
         }
 
         // ── Footer summary rows ────────────────────────────────────────────────
+        $accScores   = $request->input('_accomplishment_scores', []);
+        $officialOfficeRating = $request->input('_official_office_rating', []);
+        $coreScores   = [];
+        $supportScores = [];
+        foreach ($accScores as $s) {
+            $rating = $s['a'] ?? null;
+            if (!is_numeric($rating)) {
+                continue;
+            }
+
+            $functionType = strtolower(trim((string) ($s['function_type'] ?? '')));
+            if ($functionType === 'support') {
+                $supportScores[] = (float) $rating;
+            } else {
+                $coreScores[] = (float) $rating;
+            }
+        }
+
+        $coreAvg = !empty($coreScores) ? round(array_sum($coreScores) / count($coreScores), 2) : null;
+        $suppAvg = !empty($supportScores) ? round(array_sum($supportScores) / count($supportScores), 2) : null;
+        $coreWeight = (float) ($typeWeights['core'] ?? 0);
+        $suppWeight = (float) ($typeWeights['support'] ?? 0);
+        $coreWeighted = $coreAvg !== null ? round($coreAvg * ($coreWeight / 100), 2) : null;
+        $suppWeighted = $suppAvg !== null ? round($suppAvg * ($suppWeight / 100), 2) : null;
+        $officialOverall = is_numeric($officialOfficeRating['final_office_rating'] ?? null)
+            ? round((float) $officialOfficeRating['final_office_rating'], 2)
+            : null;
+        $officialAdjectival = trim((string) ($officialOfficeRating['final_adjectival_rating'] ?? ''));
+
+        if ($officialOverall !== null) {
+            if ($coreWeighted === null && $suppWeighted === null) {
+                $coreWeighted = round($officialOverall * ($coreWeight / 100), 2);
+                $suppWeighted = round($officialOverall * ($suppWeight / 100), 2);
+            } elseif ($coreWeighted === null) {
+                $coreWeighted = round(max(0, $officialOverall - (float) $suppWeighted), 2);
+            } elseif ($suppWeighted === null) {
+                $suppWeighted = round(max(0, $officialOverall - (float) $coreWeighted), 2);
+            }
+
+            if ($coreWeighted !== null && $suppWeighted !== null) {
+                // Keep the displayed breakdown aligned with the official total.
+                $suppWeighted = round(max(0, $officialOverall - (float) $coreWeighted), 2);
+            }
+        }
+
+        $overallRating = null;
+        if ($coreWeighted !== null || $suppWeighted !== null) {
+            $overallRating = round(($coreWeighted ?? 0) + ($suppWeighted ?? 0), 2);
+        }
+        if ($officialOverall !== null) {
+            $overallRating = $officialOverall;
+        }
+
+        if ($officialAdjectival !== '') {
+            $adjectivalRating = $officialAdjectival;
+        } else {
+            $adjectivalRating = $overallRating !== null
+                ? ($overallRating >= 4.5 ? 'Outstanding' : ($overallRating >= 3.5 ? 'Very Satisfactory' : ($overallRating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory')))
+                : '';
+        }
+
+        $coreWeighted = $coreWeighted ?? 0.00;
+        $suppWeighted = $suppWeighted ?? 0.00;
+        $overallRating = $overallRating ?? round($coreWeighted + $suppWeighted, 2);
+
         foreach ([
             'Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)',
             'Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)',
             'OVERALL RATING',
             'ADJECTIVAL RATING',
-        ] as $label) {
+        ] as $idx => $label) {
+            $value = match($idx) {
+                0 => $coreWeighted,
+                1 => $suppWeighted,
+                2 => $overallRating,
+                3 => $adjectivalRating,
+                default => null,
+            };
             $ws->mergeCells("A{$r}:E{$r}");
             $ws->mergeCells("F{$r}:{$lastCol}{$r}");
             $ws->setCellValue("A{$r}", $label);
+            if ($value !== null && $value !== '') $ws->setCellValue("F{$r}", $value);
             $ws->getStyle("A{$r}:E{$r}")->applyFromArray([
                 'font'      => ['size' => 8, 'italic' => true],
                 'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::BG_FOOT]],
@@ -366,7 +440,9 @@ class OpcrExcelExportController extends Controller
                 'borders'   => $this->border(self::BDR_BLACK),
             ]);
             $ws->getStyle("F{$r}:{$lastCol}{$r}")->applyFromArray([
+                'font'      => ['bold' => $idx !== 3, 'size' => 9],
                 'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::BG_FOOT]],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER, 'indent' => 1],
                 'borders' => $this->border(self::BDR_BLACK),
             ]);
             $ws->getRowDimension($r)->setRowHeight(14);

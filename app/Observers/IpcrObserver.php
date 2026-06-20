@@ -4,9 +4,17 @@ namespace App\Observers;
 
 use App\Models\EmployeePerformanceSnapshot;
 use App\Models\Ipcr;
+use App\Models\Opcr;
+use App\Models\OpcraAccomplishmentSubmission;
+use App\Services\OpcrOfficeRatingService;
 
 class IpcrObserver
 {
+    public function __construct(
+        private readonly OpcrOfficeRatingService $officeRatingService
+    ) {
+    }
+
     /**
      * Populate snapshot rows when PMT releases an IPCR.
      * Each ipcr_item becomes one snapshot row (one row per indicator per employee per period).
@@ -94,6 +102,26 @@ class IpcrObserver
                     'feasibility_label'           => self::toFeasibilityLabel($finalScore),
                 ]
             );
+        }
+
+        $opcr = Opcr::with(['period', 'office', 'uwps.uwpFunctions.mfos.successIndicators.assignments.employee'])
+            ->where('id', $ipcr->opcr_id)
+            ->first();
+
+        if (! $opcr) {
+            return;
+        }
+
+        $rating = $this->officeRatingService->calculate($opcr);
+
+        $submission = OpcraAccomplishmentSubmission::where('office_id', $opcr->office_id)
+            ->where('performance_period_id', $opcr->performance_period_id)
+            ->first();
+
+        if ($submission && $submission->status !== 'released') {
+            $submission->update([
+                'computed_office_rating' => $rating['overall_score'],
+            ]);
         }
     }
 

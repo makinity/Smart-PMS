@@ -16,7 +16,15 @@ class OpcrOfficeRatingService
 
     public function calculate(Opcr $opcr, ?array $outputs = null): array
     {
-        $rows = $outputs ?? [];
+        $rows = $outputs;
+
+        if ($rows === null) {
+            $scoreMap = $this->ratingService->buildConsolidatedOfficeOutputRatings($opcr);
+            $rows = array_values(array_map(static fn (array $row) => [
+                'actual_avg' => $row['a'] ?? null,
+                'function_type' => $row['function_type'] ?? null,
+            ], $scoreMap));
+        }
 
         return $this->calculateFromOutputs($rows);
     }
@@ -27,8 +35,8 @@ class OpcrOfficeRatingService
         $supportRatings = [];
 
         foreach ($outputs as $output) {
-            $rating = $output['actual_avg'] ?? null;
-            if (!is_numeric($rating) || (float) $rating <= 0) {
+            $rating = $output['actual_avg'] ?? $output['a'] ?? null;
+            if (!is_numeric($rating)) {
                 continue;
             }
 
@@ -40,8 +48,8 @@ class OpcrOfficeRatingService
             }
         }
 
-        $hasCoreRows = !empty($coreRatings);
-        $hasSupportRows = !empty($supportRatings);
+        $hasCoreRows = count($coreRatings) > 0;
+        $hasSupportRows = count($supportRatings) > 0;
 
         $coreAverage = $hasCoreRows ? round(array_sum($coreRatings) / count($coreRatings), 2) : 0.0;
         $supportAverage = $hasSupportRows ? round(array_sum($supportRatings) / count($supportRatings), 2) : 0.0;

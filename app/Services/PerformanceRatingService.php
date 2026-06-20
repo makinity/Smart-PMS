@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Ipcr;
 use App\Models\IpcrItem;
 use App\Models\OrsEntry;
+use App\Models\Opcr;
+use App\Models\AccomplishmentSubmission;
 use App\Models\PerformancePeriod;
 use App\Models\UwpFunction;
 use Illuminate\Support\Carbon;
@@ -237,6 +239,133 @@ class PerformanceRatingService
         return [$ratingsByOutput, $ratingsByIndicator];
     }
 
+    /**
+     * Build consolidated office-level ratings for all OPCR outputs using the
+     * employee IPCRs linked to the supplied OPCR.
+     */
+    public function buildConsolidatedOfficeOutputRatings(Opcr $opcr): array
+    {
+        $opcr->loadMissing('uwps.uwpFunctions.mfos.successIndicators.assignments.employee');
+
+        $indicatorMeta = [];
+        foreach ($opcr->uwps as $uwp) {
+            foreach ($uwp->uwpFunctions as $fn) {
+                $functionType = strtolower((string) ($fn->function_type ?? 'core'));
+                $weightPercent = is_numeric($fn->weight_percent) ? (float) $fn->weight_percent : null;
+
+                foreach ($fn->mfos as $mfo) {
+                    $outputTitle = trim((string) $mfo->title);
+                    if ($outputTitle === '') {
+                        continue;
+                    }
+
+                    foreach ($mfo->successIndicators as $si) {
+                        $indicatorText = trim((string) $si->indicator_text);
+                        if ($indicatorText === '') {
+                            continue;
+                        }
+
+                        $key = $outputTitle . '||' . $indicatorText;
+                        $indicatorMeta[$key] ??= [
+                            'function_type' => $functionType,
+                            'weight_percent' => $weightPercent,
+                            'output_title' => $outputTitle,
+                            'indicator_text' => $indicatorText,
+                            'assigned' => $si->assignments->isNotEmpty(),
+                        ];
+                    }
+                }
+            }
+        }
+
+        $scoreTotals = [];
+
+        $submissions = AccomplishmentSubmission::query()
+            ->with([
+                'ipcr.items.indicator.uwpMfo.uwpFunction',
+                'ipcr.performancePeriod',
+            ])
+            ->where('office_id', $opcr->office_id)
+            ->where('performance_period_id', $opcr->performance_period_id)
+            ->where('status', 'released_by_pmt')
+            ->get();
+
+        if ($submissions->isEmpty()) {
+            return [];
+        }
+
+        foreach ($submissions as $submission) {
+            $ipcr = $submission->ipcr;
+            if (! $ipcr) {
+                continue;
+            }
+
+            [, $ratingsByIndicator] = $this->buildRatedIpcrPerformanceMaps($ipcr);
+
+            foreach ($ratingsByIndicator as $lookupKey => $ratings) {
+                $qty = (float) ($ratings['qty'] ?? 0);
+                if ($qty <= 0) {
+                    continue;
+                }
+
+                $scoreTotals[$lookupKey] ??= [
+                    'qty' => 0.0,
+                    'q_points' => 0.0,
+                    't_points' => 0.0,
+                    'target_qty' => 0.0,
+                ];
+
+                $scoreTotals[$lookupKey]['qty'] += $qty;
+                $scoreTotals[$lookupKey]['q_points'] += $qty * (float) ($ratings['q'] ?? 0);
+                $scoreTotals[$lookupKey]['t_points'] += $qty * (float) ($ratings['t'] ?? 0);
+                $scoreTotals[$lookupKey]['target_qty'] += (float) ($ratings['target_qty'] ?? 0);
+            }
+        }
+
+        $result = [];
+
+        foreach ($indicatorMeta as $lookupKey => $meta) {
+            $totals = $scoreTotals[$lookupKey] ?? [
+                'qty' => 0.0,
+                'q_points' => 0.0,
+                't_points' => 0.0,
+                'target_qty' => 0.0,
+            ];
+            $qty = (float) $totals['qty'];
+            $targetQty = (float) $totals['target_qty'];
+
+            if ($qty <= 0 || $targetQty <= 0) {
+                $result[$lookupKey] = [
+                    ...$meta,
+                    'qty' => 0.0,
+                    'target_qty' => $targetQty,
+                    'q' => 0,
+                    'e' => 0,
+                    't' => 0,
+                    'a' => 0,
+                ];
+                continue;
+            }
+
+            $q = round(((float) $totals['q_points']) / $qty, 2);
+            $t = round(((float) $totals['t_points']) / $qty, 2);
+            $e = round(min(5.0, 5.0 * ($qty / $targetQty)), 2);
+            $a = round(($q + $e + $t) / 3, 2);
+
+            $result[$lookupKey] = [
+                ...$meta,
+                'qty' => round($qty, 2),
+                'target_qty' => round($targetQty, 2),
+                'q' => $q,
+                'e' => $e,
+                't' => $t,
+                'a' => $a,
+            ];
+        }
+
+        return $result;
+    }
+
     private function buildPerformanceRatings(float $qty, float $qPoints, float $tPoints, mixed $targetQty): ?array
     {
         if ($qty <= 0) return null;
@@ -254,7 +383,7 @@ class PerformanceRatingService
         
         $a = $e !== null && $t !== null ? ($q !== null ? round(($q + $e + $t) / 3, 2) : round(($e + $t) / 2, 2)) : null;
 
-        return ['qty' => $qty, 'q' => $q, 'e' => $e, 't' => $t, 'a' => $a];
+        return ['qty' => $qty, 'target_qty' => $resolvedTarget, 'q' => $q, 'e' => $e, 't' => $t, 'a' => $a];
     }
 
     private function resolveScoringPeriodWindow(Ipcr $ipcr): array
