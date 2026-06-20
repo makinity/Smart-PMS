@@ -17,14 +17,18 @@ class PerformanceRatingService
      */
     public function calculateAndSaveFinalScore(Ipcr $ipcr): float
     {
-        [$finalScore, $finalRating] = $this->getResolvedScoreAndRating($ipcr);
-        
+        // Always recompute — do not use cached final_score
+        $score  = $ipcr->pmt_adjusted_score > 0
+            ? (float) $ipcr->pmt_adjusted_score
+            : $this->calculateComputedScore($ipcr);
+        $rating = $this->resolveAdjectivalRating($score);
+
         $ipcr->update([
-            'final_score' => $finalScore,
-            'adjectival_rating' => $finalRating,
+            'final_score'      => $score,
+            'adjectival_rating' => $rating,
         ]);
 
-        return $finalScore;
+        return $score;
     }
 
     /**
@@ -50,20 +54,47 @@ class PerformanceRatingService
 
     /**
      * Calculate the weighted computed score for an IPCR.
+     * Uses per-quarter averaging: Q1 score and Q2 score are averaged equally.
      */
     public function calculateComputedScore(Ipcr $ipcr): float
     {
-        [$ratingsByOutput, $ratingsByIndicator] = $this->buildRatedIpcrPerformanceMaps($ipcr);
+        $period = $ipcr->performancePeriod;
+        if (!$period) {
+            return $this->computeScoreForWindow($ipcr, null, null);
+        }
+
+        $year = $period->start_date->year;
+
+        // Q1: months 1-3, Q2: months 4-6 of the period
+        $q1Start = Carbon::create($year, $period->start_date->month, 1)->startOfDay();
+        $q1End   = $q1Start->copy()->addMonths(2)->endOfMonth()->endOfDay();
+        $q2Start = $q1End->copy()->addDay()->startOfDay();
+        $q2End   = Carbon::parse($period->end_date)->endOfDay();
+
+        $q1Score = $this->computeScoreForWindow($ipcr, $q1Start, $q1End);
+        $q2Score = $this->computeScoreForWindow($ipcr, $q2Start, $q2End);
+
+        // If only one quarter has data, use that quarter's score
+        if ($q1Score <= 0) return round($q2Score, 2);
+        if ($q2Score <= 0) return round($q1Score, 2);
+
+        return round(($q1Score + $q2Score) / 2, 2);
+    }
+
+    /**
+     * Compute weighted score for a specific date window.
+     */
+    private function computeScoreForWindow(Ipcr $ipcr, ?Carbon $start, ?Carbon $end): float
+    {
+        [$ratingsByOutput] = $this->buildRatedIpcrPerformanceMaps($ipcr, $start, $end);
 
         if (empty($ratingsByOutput)) {
             return 0.0;
         }
 
-        // Resolve functions + output titles via indicator → mfo → function relationship
         $ipcr->loadMissing('items.indicator.uwpMfo.uwpFunction');
 
-        // Build: function_id → [weight, [output_title, ...]]
-        $functionMap = []; // [fId => ['weight' => x, 'titles' => [title => true]]]
+        $functionMap = [];
         foreach ($ipcr->items as $item) {
             $fn = $item->indicator?->uwpMfo?->uwpFunction;
             if (!$fn) continue;
@@ -76,15 +107,12 @@ class PerformanceRatingService
             $functionMap[$fId]['titles'][$title] = true;
         }
 
-        if (empty($functionMap)) {
-            return 0.0;
-        }
+        if (empty($functionMap)) return 0.0;
 
         $totalWeightedScore = 0.0;
         foreach ($functionMap as $fData) {
             $weight = $fData['weight'];
             if ($weight <= 0) continue;
-
             $outputRatings = [];
             foreach (array_keys($fData['titles']) as $title) {
                 if (isset($ratingsByOutput[$title])) {
@@ -92,7 +120,6 @@ class PerformanceRatingService
                     if ($a !== null) $outputRatings[] = (float) $a;
                 }
             }
-
             if (!empty($outputRatings)) {
                 $functionAvg = array_sum($outputRatings) / count($outputRatings);
                 $totalWeightedScore += $functionAvg * ($weight / 100);
@@ -101,7 +128,6 @@ class PerformanceRatingService
 
         return round($totalWeightedScore, 2);
     }
-
     /**
      * Resolve adjectival rating label based on numeric score.
      */
@@ -117,9 +143,11 @@ class PerformanceRatingService
     /**
      * Build performance maps (Output and Indicator levels) from ORS entries.
      */
-    public function buildRatedIpcrPerformanceMaps(Ipcr $ipcr): array
+    public function buildRatedIpcrPerformanceMaps(Ipcr $ipcr, ?Carbon $windowStart = null, ?Carbon $windowEnd = null): array
     {
-        [$startDate, $endDate] = $this->resolveScoringPeriodWindow($ipcr);
+        [$startDate, $endDate] = $windowStart && $windowEnd
+            ? [$windowStart, $windowEnd]
+            : $this->resolveScoringPeriodWindow($ipcr);
         $targetQuantityByOutput = $this->buildTargetQuantityByOutput($ipcr);
         $targetPayloadByIndicator = $this->buildTargetPayloadByIndicatorLookup($ipcr);
         

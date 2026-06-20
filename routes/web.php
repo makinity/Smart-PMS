@@ -85,6 +85,7 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::post('/ml/train-sql', [\App\Http\Controllers\Admin\MachineLearningController::class, 'trainSql'])->name('ml.train-sql');
     Route::post('/ml/train-csv', [\App\Http\Controllers\Admin\MachineLearningController::class, 'trainCsv'])->name('ml.train-csv');
     Route::get('/ml/logs', [\App\Http\Controllers\Admin\MachineLearningController::class, 'logs'])->name('ml.logs');
+    Route::post('/ml/settings', [\App\Http\Controllers\Admin\MachineLearningController::class, 'updateMlUrl'])->name('ml.settings');
 });
 
 // PMT

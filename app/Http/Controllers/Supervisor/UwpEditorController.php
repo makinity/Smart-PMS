@@ -237,7 +237,7 @@ class UwpEditorController extends Controller
             'feasibility_probability' => $prediction->feasibility_probability,
             'risk_level'              => $prediction->risk_level,
             'recommendations'         => json_decode($prediction->recommendations, true) ?? [],
-            'ml_online'               => false,
+            'ml_online'               => true,
         ]);
     }
 }

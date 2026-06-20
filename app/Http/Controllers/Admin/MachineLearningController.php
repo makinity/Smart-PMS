@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -10,11 +11,9 @@ use Inertia\Inertia;
 
 class MachineLearningController extends Controller
 {
-    private string $fastapiUrl;
-
-    public function __construct()
+    private function fastapiUrl(): string
     {
-        $this->fastapiUrl = env('FASTAPI_URL', 'http://127.0.0.1:8000');
+        return AppSetting::get('fastapi_url', env('FASTAPI_URL', 'http://127.0.0.1:8000'));
     }
 
     public function index()
@@ -35,13 +34,22 @@ class MachineLearningController extends Controller
             'modelExists' => $modelExists,
             'lastTrained' => $lastSuccess?->trained_at,
             'rowCount'    => DB::table('employee_performance_snapshots')->count(),
+            'mlUrl'       => $this->fastapiUrl(),
         ]);
+    }
+
+    public function updateMlUrl(Request $request)
+    {
+        $request->validate(['url' => 'required|url|max:500']);
+        AppSetting::set('fastapi_url', rtrim($request->url, '/'));
+
+        return back()->with('success', 'ML API URL updated successfully.');
     }
 
     public function trainSql()
     {
         try {
-            $response = Http::timeout(5)->post("{$this->fastapiUrl}/ml/train-sql");
+            $response = Http::timeout(5)->post("{$this->fastapiUrl()}/ml/train-sql");
             if ($response->failed()) {
                 return back()->with('error', 'Failed to trigger SQL training.');
             }
@@ -61,7 +69,7 @@ class MachineLearningController extends Controller
         try {
             $response = Http::timeout(10)
                 ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
-                ->post("{$this->fastapiUrl}/ml/train-csv");
+                ->post("{$this->fastapiUrl()}/ml/train-csv");
 
             if ($response->failed()) {
                 return back()->with('error', 'Failed to trigger CSV training.');

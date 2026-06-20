@@ -243,19 +243,19 @@ class SmporIpcrAccomplishmentController extends Controller
             return ['ids' => $submission->mpors->pluck('id')->toArray(), 'source' => $submission->dataset_source, 'qar_header_id' => $submission->qar_header_id];
         }
 
-        // Level 2: PMT-approved QAR
-        $qar = QarHeader::where('office_id', $user->office_id)
+        // Level 2: PMT-approved QARs (collect from all validated QARs for the period)
+        $qars = QarHeader::where('office_id', $user->office_id)
             ->where('performance_period_id', $period->id)
             ->where('pmt_status', 'validated')
-            ->first();
+            ->get();
 
-        if ($qar) {
-            $ids = QarMporLink::where('qar_header_id', $qar->id)
+        if ($qars->isNotEmpty()) {
+            $ids = QarMporLink::whereIn('qar_header_id', $qars->pluck('id'))
                 ->whereHas('mpor', fn ($q) => $q->where('employee_id', $user->id))
                 ->pluck('mpor_id')
                 ->toArray();
             if (! empty($ids)) {
-                return ['ids' => $ids, 'source' => 'qar_official', 'qar_header_id' => $qar->id];
+                return ['ids' => $ids, 'source' => 'qar_official', 'qar_header_id' => $qars->first()->id];
             }
         }
 

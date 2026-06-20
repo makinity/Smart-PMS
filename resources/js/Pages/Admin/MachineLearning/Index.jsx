@@ -31,7 +31,7 @@ function StatusPill({ status }) {
     );
 }
 
-export default function Index({ logs: initialLogs, modelExists, lastTrained, rowCount }) {
+export default function Index({ logs: initialLogs, modelExists, lastTrained, rowCount, mlUrl: initialMlUrl }) {
     const toast   = useToast();
     const bp      = useBreakpoint();
     const isMobile = bp === 'mobile';
@@ -41,9 +41,16 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
     const [dragging, setDragging]     = useState(false);
     const fileRef = useRef(null);
 
-    const csvForm = useForm({ file: null });
+    const urlForm = useForm({ url: initialMlUrl ?? '' });
+    function handleUrlSave(e) {
+        e.preventDefault();
+        urlForm.post('/administrator/ml/settings', {
+            onSuccess: () => toast('ML API URL updated.', 'success'),
+            onError:   () => toast('Invalid URL.', 'error'),
+        });
+    }
 
-    // Poll logs every 5s when a job may be running
+    const csvForm = useForm({ file: null });
     const pollLogs = useCallback(async () => {
         try {
             const { data } = await axios.get('/administrator/ml/logs');
@@ -119,6 +126,33 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
                             <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-accent)' }}>{rowCount?.toLocaleString() ?? '—'}</div>
                         </div>
                     </div>
+                </div>
+
+                {/* ── ML API URL ── */}
+                <div style={card}>
+                    <form onSubmit={handleUrlSave} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.6rem' }}>
+                        <i className="bi bi-link-45deg" style={{ color: 'var(--admin-accent)', fontSize: '1rem', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 220 }}>
+                            <div style={{ ...label, marginBottom: '0.25rem' }}>ML API URL</div>
+                            <input
+                                type="url"
+                                value={urlForm.data.url}
+                                onChange={e => urlForm.setData('url', e.target.value)}
+                                placeholder="http://127.0.0.1:8000"
+                                style={{
+                                    width: '100%', padding: '0.45rem 0.75rem', borderRadius: 8,
+                                    border: '1px solid var(--admin-border-strong)',
+                                    background: 'var(--admin-bg-secondary)',
+                                    color: 'var(--admin-text-primary)', fontSize: '0.85rem',
+                                    fontFamily: 'monospace',
+                                }}
+                            />
+                            {urlForm.errors.url && <div style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.25rem' }}>{urlForm.errors.url}</div>}
+                        </div>
+                        <button type="submit" disabled={urlForm.processing} style={{ ...btnPrimary, alignSelf: 'flex-end', opacity: urlForm.processing ? 0.7 : 1 }}>
+                            <i className="bi bi-floppy-fill" /> Save
+                        </button>
+                    </form>
                 </div>
 
                 {/* ── Tabs ── */}
