@@ -148,6 +148,16 @@ class OpcrAccomplishmentExportTest extends TestCase
             ->assertSee('No approved OPCR found for the active performance period.');
     }
 
+    public function test_dept_head_page_does_not_show_the_computed_rating_card(): void
+    {
+        $fixture = $this->makeOfficeFixture();
+
+        $this->actingAs($fixture['dept_head'])
+            ->get('/dept-head/opcr-accomplishment')
+            ->assertOk()
+            ->assertDontSee('Computed Rating');
+    }
+
     private function makeOfficeFixture(): array
     {
         $office = Office::create([

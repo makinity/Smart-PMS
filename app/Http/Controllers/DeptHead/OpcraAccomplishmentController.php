@@ -25,7 +25,6 @@ class OpcraAccomplishmentController extends Controller
                 'period' => null,
                 'submission' => null,
                 'employees' => [],
-                'computedRating' => null,
                 'stats' => ['released' => 0, 'total' => 0],
             ]);
         }
@@ -68,11 +67,6 @@ class OpcraAccomplishmentController extends Controller
             ->first();
 
         $released = $employeeData->where('released', true)->count();
-        $computedRating = null;
-        if ($approvedOpcr && (! $submission || $submission->status !== 'released')) {
-            $officeRating = app(OpcrOfficeRatingService::class)->calculate($approvedOpcr);
-            $computedRating = $officeRating['is_ready'] ? (float) $officeRating['overall_score'] : null;
-        }
 
         return Inertia::render('DeptHead/OpcraAccomplishment/Index', [
             'period' => ['id' => $period->id, 'name' => $period->name],
@@ -88,7 +82,6 @@ class OpcraAccomplishmentController extends Controller
                 'submitted_at' => $submission->submitted_at?->toIso8601String(),
             ] : null,
             'employees' => $employeeData,
-            'computedRating' => $computedRating,
             'stats' => ['released' => $released, 'total' => $employeeData->count()],
             'hasApprovedOpcr' => (bool) $approvedOpcr,
             'approvedOpcrId' => $approvedOpcr?->id,

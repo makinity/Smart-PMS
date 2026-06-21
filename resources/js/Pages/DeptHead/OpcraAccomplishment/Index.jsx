@@ -31,7 +31,7 @@ function ScoreRing({ score, size = 64 }) {
 }
 
 export default function Index() {
-    const { period, submission, employees, computedRating, stats, hasApprovedOpcr, approvedOpcrId } = usePage().props;
+    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId } = usePage().props;
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
@@ -159,14 +159,6 @@ export default function Index() {
                         </div>
                         <div style={{ fontSize:'0.68rem', color:'var(--admin-text-muted)', marginTop:4 }}>
                             {stats.total - stats.released > 0 ? `${stats.total - stats.released} pending PMT review` : 'All employees released ✓'}
-                        </div>
-                    </div>
-                    <div style={{ ...card, padding:'1.1rem 1.25rem', display:'flex', alignItems:'center', gap:'0.75rem' }}>
-                        <ScoreRing score={computedRating ?? 0} size={64} />
-                        <div>
-                            <div style={lbl}>Computed Rating</div>
-                            <div style={{ fontWeight:700, color:'var(--admin-text-primary)' }}>{adjLabel(computedRating)}</div>
-                            <div style={{ fontSize:'0.68rem', color:'var(--admin-text-muted)', marginTop:2 }}>Based on {stats.released} released</div>
                         </div>
                     </div>
                 </div>

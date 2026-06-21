@@ -31,7 +31,10 @@ class OpcrExcelExportController extends BaseExport
         $ratingService = app(PerformanceRatingService::class);
         $scoreMap = $ratingService->buildConsolidatedOfficeOutputRatings($opcr);
 
-        $request->merge(['_accomplishment_scores' => $scoreMap]);
+        $request->merge([
+            '_accomplishment_scores' => $scoreMap,
+            '_accomplishment_scores_by_indicator' => $scoreMap,
+        ]);
         $request->merge([
             '_official_office_rating' => [
                 'final_office_rating' => $submission?->final_office_rating,

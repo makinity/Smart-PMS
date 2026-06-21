@@ -200,17 +200,23 @@ class PerformanceRatingService
             $totalsByOutput[$outputTitle]['q_points'] += $qualityPoints;
             $totalsByOutput[$outputTitle]['t_points'] += $timelinessPoints;
 
-            $indicatorText = trim((string) ($entry->ipcrItem?->indicator_text
-                ?? $entry->ipcrItem?->indicator?->indicator_text
-                ?? ''));
-            if ($indicatorText !== '') {
-                $lookupKey = $outputTitle . '||' . $indicatorText;
-                if (!isset($totalsByIndicator[$lookupKey])) {
-                    $totalsByIndicator[$lookupKey] = ['output' => $outputTitle, 'qty' => 0.0, 'q_points' => 0.0, 't_points' => 0.0];
+            $indicatorId = (int) ($entry->ipcrItem?->uwp_success_indicator_id ?? 0);
+            if ($indicatorId > 0) {
+                if (!isset($totalsByIndicator[$indicatorId])) {
+                    $totalsByIndicator[$indicatorId] = [
+                        'indicator_id' => $indicatorId,
+                        'output' => $outputTitle,
+                        'indicator_text' => trim((string) ($entry->ipcrItem?->indicator?->indicator_text
+                            ?? $entry->ipcrItem?->indicator_text
+                            ?? '')),
+                        'qty' => 0.0,
+                        'q_points' => 0.0,
+                        't_points' => 0.0,
+                    ];
                 }
-                $totalsByIndicator[$lookupKey]['qty'] += $quantity;
-                $totalsByIndicator[$lookupKey]['q_points'] += $qualityPoints;
-                $totalsByIndicator[$lookupKey]['t_points'] += $timelinessPoints;
+                $totalsByIndicator[$indicatorId]['qty'] += $quantity;
+                $totalsByIndicator[$indicatorId]['q_points'] += $qualityPoints;
+                $totalsByIndicator[$indicatorId]['t_points'] += $timelinessPoints;
             }
         }
 
@@ -226,14 +232,21 @@ class PerformanceRatingService
         }
 
         $ratingsByIndicator = [];
-        foreach ($totalsByIndicator as $lookupKey => $totals) {
+        foreach ($totalsByIndicator as $indicatorId => $totals) {
             $ratings = $this->buildPerformanceRatings(
                 (float) $totals['qty'],
                 (float) $totals['q_points'],
                 (float) $totals['t_points'],
-                $targetPayloadByIndicator[$lookupKey]['target_quantity'] ?? null
+                $targetPayloadByIndicator[$indicatorId]['target_quantity'] ?? null
             );
-            if ($ratings) $ratingsByIndicator[$lookupKey] = $ratings;
+            if ($ratings) {
+                $ratingsByIndicator[$indicatorId] = [
+                    ...$ratings,
+                    'indicator_id' => (int) $indicatorId,
+                    'output_title' => $totals['output'] ?? null,
+                    'indicator_text' => $totals['indicator_text'] ?? null,
+                ];
+            }
         }
 
         return [$ratingsByOutput, $ratingsByIndicator];
@@ -261,12 +274,14 @@ class PerformanceRatingService
 
                     foreach ($mfo->successIndicators as $si) {
                         $indicatorText = trim((string) $si->indicator_text);
-                        if ($indicatorText === '') {
+                        $indicatorId = (int) $si->id;
+                        if ($indicatorId <= 0) {
                             continue;
                         }
 
-                        $key = $outputTitle . '||' . $indicatorText;
-                        $indicatorMeta[$key] ??= [
+                        $indicatorMeta[$indicatorId] ??= [
+                            'indicator_id' => $indicatorId,
+                            'lookup_key' => $outputTitle . '||' . $indicatorText,
                             'function_type' => $functionType,
                             'weight_percent' => $weightPercent,
                             'output_title' => $outputTitle,
@@ -302,30 +317,35 @@ class PerformanceRatingService
 
             [, $ratingsByIndicator] = $this->buildRatedIpcrPerformanceMaps($ipcr);
 
-            foreach ($ratingsByIndicator as $lookupKey => $ratings) {
+            foreach ($ratingsByIndicator as $indicatorId => $ratings) {
+                $indicatorId = (int) ($ratings['indicator_id'] ?? $indicatorId);
+                if ($indicatorId <= 0) {
+                    continue;
+                }
+
                 $qty = (float) ($ratings['qty'] ?? 0);
                 if ($qty <= 0) {
                     continue;
                 }
 
-                $scoreTotals[$lookupKey] ??= [
+                $scoreTotals[$indicatorId] ??= [
                     'qty' => 0.0,
                     'q_points' => 0.0,
                     't_points' => 0.0,
                     'target_qty' => 0.0,
                 ];
 
-                $scoreTotals[$lookupKey]['qty'] += $qty;
-                $scoreTotals[$lookupKey]['q_points'] += $qty * (float) ($ratings['q'] ?? 0);
-                $scoreTotals[$lookupKey]['t_points'] += $qty * (float) ($ratings['t'] ?? 0);
-                $scoreTotals[$lookupKey]['target_qty'] += (float) ($ratings['target_qty'] ?? 0);
+                $scoreTotals[$indicatorId]['qty'] += $qty;
+                $scoreTotals[$indicatorId]['q_points'] += $qty * (float) ($ratings['q'] ?? 0);
+                $scoreTotals[$indicatorId]['t_points'] += $qty * (float) ($ratings['t'] ?? 0);
+                $scoreTotals[$indicatorId]['target_qty'] += (float) ($ratings['target_qty'] ?? 0);
             }
         }
 
         $result = [];
 
-        foreach ($indicatorMeta as $lookupKey => $meta) {
-            $totals = $scoreTotals[$lookupKey] ?? [
+        foreach ($indicatorMeta as $indicatorId => $meta) {
+            $totals = $scoreTotals[$indicatorId] ?? [
                 'qty' => 0.0,
                 'q_points' => 0.0,
                 't_points' => 0.0,
@@ -335,7 +355,7 @@ class PerformanceRatingService
             $targetQty = (float) $totals['target_qty'];
 
             if ($qty <= 0 || $targetQty <= 0) {
-                $result[$lookupKey] = [
+                $result[$indicatorId] = [
                     ...$meta,
                     'qty' => 0.0,
                     'target_qty' => $targetQty,
@@ -352,7 +372,7 @@ class PerformanceRatingService
             $e = round(min(5.0, 5.0 * ($qty / $targetQty)), 2);
             $a = round(($q + $e + $t) / 3, 2);
 
-            $result[$lookupKey] = [
+            $result[$indicatorId] = [
                 ...$meta,
                 'qty' => round($qty, 2),
                 'target_qty' => round($targetQty, 2),
@@ -418,13 +438,14 @@ class PerformanceRatingService
             $indicator = $item->indicator;
             $mfo = $indicator?->uwpMfo;
             if (!$mfo || !$indicator) continue;
-            $outputTitle = trim((string) $mfo->title);
-            $text = trim((string) ($indicator->indicator_text ?? ''));
-            if ($outputTitle !== '' && $text !== '') {
-                $targets[$outputTitle . '||' . $text] = [
-                    'target_quantity' => is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : 0.0,
-                ];
+            $indicatorId = (int) $indicator->id;
+            if ($indicatorId <= 0) {
+                continue;
             }
+            $targets[$indicatorId] ??= [
+                'target_quantity' => 0.0,
+            ];
+            $targets[$indicatorId]['target_quantity'] += is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : 0.0;
         }
         return $targets;
     }

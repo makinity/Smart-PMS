@@ -261,10 +261,10 @@ class OpcrExcelExportController extends Controller
                     }
                     foreach ($mfo->successIndicators as $si) {
                         $std = [5 => '', 4 => '', 3 => '', 2 => '', 1 => ''];
-                        foreach ($si->qetStandards as $q) {
-                            $prefix = strtoupper(substr($q->dimension, 0, 1)) . ': ';
-                            $std[$q->rating] = ($std[$q->rating] ? $std[$q->rating] . "\n" : '') . $prefix . $q->standard_text;
-                        }
+                    foreach ($si->qetStandards as $q) {
+                        $prefix = strtoupper(substr($q->dimension, 0, 1)) . ': ';
+                        $std[$q->rating] = ($std[$q->rating] ? $std[$q->rating] . "\n" : '') . $prefix . $q->standard_text;
+                    }
                         // Use assigned employees, fallback to UWP creator
                         $assignedNames = $si->assignments
                             ->map(fn($a) => $a->employee?->name)
@@ -273,6 +273,7 @@ class OpcrExcelExportController extends Controller
                         $accountable = $assignedNames ?: ($uwp->creator?->name ?? '');
 
                         $byType[$type][$mfoKey][$mfoTitle][] = [
+                            'indicator_id' => (int) $si->id,
                             'text'        => $si->indicator_text,
                             'budget'      => $si->allotted_budget,
                             'accountable' => $accountable,
@@ -313,7 +314,10 @@ class OpcrExcelExportController extends Controller
                         $ws->setCellValue("C{$r}", ($si['budget'] && $si['budget'] > 0) ? number_format($si['budget'], 2) : '');
                         $ws->setCellValue("D{$r}", $si['accountable']);
                         $ws->setCellValue("E{$r}", '');
-                        $scores = $request->input('_accomplishment_scores.' . $mfoTitle . '||' . $si['text'], ['q' => 0, 'e' => 0, 't' => 0, 'a' => 0]);
+                        $scores = $request->input('_accomplishment_scores_by_indicator.' . $si['indicator_id']);
+                        if (!is_array($scores)) {
+                            $scores = $request->input('_accomplishment_scores.' . $mfoTitle . '||' . $si['text'], ['q' => 0, 'e' => 0, 't' => 0, 'a' => 0]);
+                        }
                         $ws->setCellValue("F{$r}", $scores['q'] ?? ''); $ws->setCellValue("G{$r}", $scores['e'] ?? '');
                         $ws->setCellValue("H{$r}", $scores['t'] ?? ''); $ws->setCellValue("I{$r}", $scores['a'] ?? '');
                         $ws->setCellValue("J{$r}", '');
