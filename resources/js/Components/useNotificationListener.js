@@ -10,19 +10,20 @@ import { useEffect, useRef } from 'react';
  */
 export function useNotificationListener(userId, onNotification) {
     const soundRef = useRef(null);
-    const unlockedRef = useRef(false);
 
-    // Unlock audio on first user gesture
+    // Pre-load audio immediately (no gesture required for loading, only for playing)
     useEffect(() => {
         if (!userId) return;
+        soundRef.current = new Audio('/sounds/notifications/new-notification.wav');
+        soundRef.current.load();
 
+        // Unlock on first gesture so subsequent plays never get blocked
         const unlock = () => {
-            if (unlockedRef.current) return;
-            soundRef.current = new Audio('/sounds/notifications/new-notification.wav');
-            soundRef.current.load();
-            unlockedRef.current = true;
+            soundRef.current?.play().then(() => {
+                soundRef.current.pause();
+                soundRef.current.currentTime = 0;
+            }).catch(() => {});
         };
-
         window.addEventListener('pointerdown', unlock, { once: true });
         window.addEventListener('keydown', unlock, { once: true });
         window.addEventListener('touchstart', unlock, { once: true });
@@ -67,7 +68,7 @@ export function useNotificationListener(userId, onNotification) {
                     console.info('[PMS RT] 🔔 Notification received:', payload);
                     setTimeout(() => {
                         onNotification(payload);
-                        if (unlockedRef.current && soundRef.current) {
+                        if (soundRef.current) {
                             soundRef.current.currentTime = 0;
                             soundRef.current.play().catch(() => {});
                         }
