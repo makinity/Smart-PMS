@@ -38,7 +38,7 @@ class UserSeeder extends Seeder
             ['role' => 'dept-head', 'name' => 'Patricia Gomez',      'email' => 'depthead2@pms.test',  'office' => $cbo,  'position' => 'CBO Department Head'],
             ['role' => 'supervisor','name' => 'Eduardo Lim',         'email' => 'supervisor2@pms.test','office' => $cbo,  'position' => 'Budget Supervisor'],
             ['role' => 'employee',  'name' => 'Rowena Castro',       'email' => 'employee5@pms.test',  'office' => $cbo,  'position' => 'Budget Analyst'],
-            ['role' => 'employee',  'name' => 'Denji Kun',       'email' => 'employee6@pms.test',  'office' => $cbo,  'position' => '69  Position'],
+            // ['role' => 'employee',  'name' => 'Denji Kun',       'email' => 'employee6@pms.test',  'office' => $cbo,  'position' => '69  Position'],
             // Pending activation (test account)
             ['role' => 'employee',  'name' => 'Mark Juntilla',        'email' => 'denjikun1004@gmail.com', 'office' => $hrmo, 'position' => 'HR Staff', 'inactive' => true],
         ];

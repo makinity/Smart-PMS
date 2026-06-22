@@ -12,7 +12,7 @@ function Breadcrumb({ title, description }) {
 
     return (
         <nav className="tb-breadcrumb" aria-label="breadcrumb">
-            <Link href="/" className="tb-bc-item tb-bc-link">
+            <Link href="/" className="tb-bc-item tb-bc-link tb-bc-home">
                 <i className="bi bi-house-door" style={{ fontSize: '0.72rem' }} />
                 <span>Home</span>
             </Link>
@@ -261,8 +261,20 @@ export default function Topbar({ title, description, darkMode, onToggleDarkMode,
                     .tb-hamburger { display: flex; }
                     .tb-root { padding: 0.4rem 0.85rem; }
                     .tb-info { display: none; }
+                    .tb-bc-home { display: none; }
                     .tb-bc-past { display: none; }
                     .tb-bc-sep { display: none; }
+                    .tb-breadcrumb {
+                        min-width: 0;
+                        max-width: 100%;
+                    }
+                    .tb-bc-current {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 40vw;
+                        display: block;
+                    }
                 }
             `}</style>
         </header>
