@@ -40,7 +40,7 @@ const STYLES = {
 function ToastContainer({ toasts, onDismiss }) {
     if (!toasts.length) return null;
     return (
-        <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '0.5rem', pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '0.5rem', pointerEvents: 'none' }}>
             {toasts.map(t => <Toast key={t.id} toast={t} onDismiss={onDismiss} />)}
         </div>
     );
@@ -66,7 +66,7 @@ function Toast({ toast, onDismiss }) {
                 minWidth: 220, maxWidth: 360, cursor: 'pointer',
                 pointerEvents: 'all',
                 opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0)' : 'translateY(12px)',
+                transform: visible ? 'translateY(0)' : 'translateY(-12px)',
                 transition: 'opacity 0.2s, transform 0.2s',
             }}
         >
