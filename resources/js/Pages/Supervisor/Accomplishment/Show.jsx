@@ -86,7 +86,7 @@ function ScoreCircle({ score, rating }) {
                 </div>
             </div>
             <div>
-                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>Performance Score</div>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>IPCR SCORE</div>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>{rating ?? '—'}</div>
             </div>
         </div>

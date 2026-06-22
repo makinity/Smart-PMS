@@ -74,7 +74,7 @@ function PipelineStepper({ status }) {
 }
 
 // ── Score Circle ──────────────────────────────────────────────────────────────
-function ScoreCircle({ score, rating, label = 'Performance Score' }) {
+function ScoreCircle({ score, rating, label = 'IPCR SCORE' }) {
     const pct = Math.min((score / 5) * 100, 100);
     const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
     const r = 28;
