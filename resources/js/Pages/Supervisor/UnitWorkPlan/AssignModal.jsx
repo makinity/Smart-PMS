@@ -280,7 +280,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                                 {isExpanded && (
                                     <div style={{ background: 'rgba(59,130,246,0.04)', borderBottom: '1px solid var(--admin-border)', borderLeft: `3px solid ${top?.fitColor ?? 'var(--admin-accent)'}`, padding: '0.85rem 1.25rem' }}>
                                         <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.6rem' }}>
-                                            Suggested Success Indicators &mdash; {emp.name}
+                                            Recommened Success Indicators &mdash; {emp.name}
                                         </div>
                                         {sugg.length === 0 && (
                                             <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>No indicators available in this UWP.</div>
