@@ -37,6 +37,9 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
     const isMobile = bp === 'mobile';
     const [tab, setTab]   = useState('train');
     const [logs, setLogs] = useState(initialLogs ?? []);
+    const [headerStatus, setHeaderStatus] = useState(modelExists ? 'success' : 'failed');
+    const [headerLastTrained, setHeaderLastTrained] = useState(lastTrained);
+    const [headerRowCount, setHeaderRowCount]       = useState(rowCount);
     const [sqlLoading, setSqlLoading] = useState(false);
     const [dragging, setDragging]     = useState(false);
     const fileRef = useRef(null);
@@ -55,6 +58,18 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
         try {
             const { data } = await axios.get('/administrator/ml/logs');
             setLogs(data);
+            // Sync header stats from logs
+            const running = data.find(l => l.status === 'running');
+            const latest  = data.find(l => l.status === 'success');
+            if (running) {
+                setHeaderStatus('running');
+            } else if (latest) {
+                setHeaderStatus('success');
+                if (latest.trained_at) setHeaderLastTrained(latest.trained_at);
+                if (latest.row_count)  setHeaderRowCount(latest.row_count);
+            } else if (data.length > 0 && data[0].status === 'failed') {
+                setHeaderStatus('failed');
+            }
         } catch {}
     }, []);
 
@@ -113,17 +128,17 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
                     <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                         <div>
                             <div style={label}>Model Status</div>
-                            <StatusPill status={modelExists ? 'success' : 'failed'} />
+                            <StatusPill status={headerStatus} />
                         </div>
                         <div>
                             <div style={label}>Last Trained</div>
                             <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>
-                                {lastTrained ? new Date(lastTrained).toLocaleString() : '—'}
+                                {headerLastTrained ? new Date(headerLastTrained).toLocaleString() : '—'}
                             </div>
                         </div>
                         <div>
                             <div style={label}>Dataset Rows</div>
-                            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-accent)' }}>{rowCount?.toLocaleString() ?? '—'}</div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-accent)' }}>{headerRowCount?.toLocaleString() ?? '—'}</div>
                         </div>
                     </div>
                 </div>
