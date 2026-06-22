@@ -255,12 +255,22 @@ export default function Editor() {
     // Assign
     async function handleSaveAssign(siId, emps) {
         const modal = assignModal;
+        // Find the actual fn/mfo that owns this indicator (may differ from modal's fn/mfo for quick-assigns)
+        let fnId = modal.fnId, mfoId = modal.mfoId;
+        outer: for (const fn of functions) {
+            for (const mfo of fn.mfos ?? []) {
+                if ((mfo.successIndicators ?? []).some(si => si.id === siId)) {
+                    fnId = fn.id; mfoId = mfo.id; break outer;
+                }
+            }
+        }
         try {
             const { data } = await axios.put(apiUrl(`indicators/${siId}/assign`), {
                 employee_ids: emps.map(e => e.id),
             });
-            patchIndicator(modal.fnId, modal.mfoId, siId, { assignments: data.assignments });
-            setAssignModal(null);
+            patchIndicator(fnId, mfoId, siId, { assignments: data.assignments });
+            // Only close the modal if this was the modal's own indicator (not a quick-assign to another indicator)
+            if (siId === modal.indicator?.id) setAssignModal(null);
             toast(`${emps.length} employee${emps.length !== 1 ? 's' : ''} assigned.`, 'success');
         } catch {
             toast('Failed to assign employees.', 'error');

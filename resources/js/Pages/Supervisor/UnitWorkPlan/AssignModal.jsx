@@ -30,6 +30,8 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const [allMlData, setAllMlData]     = useState({});
     const [mlLoading, setMlLoading]     = useState(true);
     const [saving, setSaving]           = useState(false);
+    const [pendingConfirm, setPendingConfirm] = useState(null); // { emp, suggestion }
+    const [quickAssigning, setQuickAssigning] = useState(false);
 
     useEffect(() => {
         setMlData(null);
@@ -283,23 +285,63 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
                                         {sugg.length === 0 && (
                                             <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>No indicators available in this UWP.</div>
                                         )}
-                                        {sugg.map((s2, idx) => (
-                                            <div key={s2.id ?? idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.5rem',
-                                                padding: '0.5rem 0.65rem', borderRadius: 6,
-                                                background: s2.id === indicator.id ? 'rgba(59,130,246,0.08)' : 'var(--admin-card)',
-                                                border: `1px solid ${s2.id === indicator.id ? 'rgba(59,130,246,0.3)' : 'var(--admin-border)'}` }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: s2.fitColor, minWidth: 36 }}>{s2.fitScore}%</div>
-                                                <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-primary)', lineHeight: 1.3 }}>
-                                                        {s2.indicator_text?.slice(0, 80)}{s2.indicator_text?.length > 80 ? '...' : ''}
+                                        {sugg.map((s2, idx) => {
+                                            const isPending = pendingConfirm?.emp.id === emp.id && pendingConfirm?.suggestion.id === s2.id;
+                                            return (
+                                            <div key={s2.id ?? idx}>
+                                                <div
+                                                    onClick={() => !isPending && s2.id !== indicator.id && setPendingConfirm({ emp, suggestion: s2 })}
+                                                    style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginBottom: isPending ? 0 : '0.5rem',
+                                                        padding: '0.5rem 0.65rem', borderRadius: isPending ? '6px 6px 0 0' : 6,
+                                                        background: isPending ? 'rgba(59,130,246,0.12)' : s2.id === indicator.id ? 'rgba(59,130,246,0.08)' : 'var(--admin-card)',
+                                                        border: `1px solid ${isPending ? 'rgba(59,130,246,0.4)' : s2.id === indicator.id ? 'rgba(59,130,246,0.3)' : 'var(--admin-border)'}`,
+                                                        cursor: s2.id === indicator.id ? 'default' : 'pointer',
+                                                        transition: 'background 0.12s',
+                                                    }}>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: s2.fitColor, minWidth: 36 }}>{s2.fitScore}%</div>
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-primary)', lineHeight: 1.3 }}>
+                                                            {s2.indicator_text?.slice(0, 80)}{s2.indicator_text?.length > 80 ? '...' : ''}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
+                                                            {s2.mfo_title} &bull; {s2.fitLabel}
+                                                            {s2.id === indicator.id && <span style={{ marginLeft: 6, color: 'var(--admin-accent)', fontWeight: 700 }}>(current)</span>}
+                                                        </div>
                                                     </div>
-                                                    <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
-                                                        {s2.mfo_title} &bull; {s2.fitLabel}
-                                                        {s2.id === indicator.id && <span style={{ marginLeft: 6, color: 'var(--admin-accent)', fontWeight: 700 }}>(current)</span>}
-                                                    </div>
+                                                    {s2.id !== indicator.id && !isPending && (
+                                                        <span style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)', flexShrink: 0, marginTop: 2 }}>click to assign →</span>
+                                                    )}
                                                 </div>
+                                                {isPending && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.65rem', marginBottom: '0.5rem', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.4)', borderTop: 'none', borderRadius: '0 0 6px 6px' }}>
+                                                        <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary)' }}>
+                                                            Assign <strong>{emp.name}</strong> to this indicator?
+                                                        </span>
+                                                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                                                            <button onClick={() => setPendingConfirm(null)} style={{ padding: '0.25rem 0.6rem', borderRadius: 6, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-muted)', fontSize: '0.72rem', cursor: 'pointer' }}>
+                                                                Cancel
+                                                            </button>
+                                                            <button
+                                                                disabled={quickAssigning}
+                                                                onClick={async () => {
+                                                                    setQuickAssigning(true);
+                                                                    try {
+                                                                        await onSave(s2.id, [emp]);
+                                                                        setPendingConfirm(null);
+                                                                        setExpandedEmp(null);
+                                                                    } finally {
+                                                                        setQuickAssigning(false);
+                                                                    }
+                                                                }}
+                                                                style={{ padding: '0.25rem 0.6rem', borderRadius: 6, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', opacity: quickAssigning ? 0.7 : 1 }}>
+                                                                {quickAssigning ? 'Assigning…' : 'Confirm ✓'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                         <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>
                                             * Prototype ranking. FastAPI /suggest-indicators will use real IPCR history.
                                         </div>
