@@ -4,14 +4,35 @@ const ConfirmCtx = createContext(null);
 
 export function ConfirmProvider({ children }) {
     const [state, setState] = useState(null); // { message, resolve }
+    const [confirming, setConfirming] = useState(false);
 
-    const confirm = useCallback((message) => new Promise(resolve => {
-        setState({ message, resolve });
+    // confirm(message) → returns Promise<bool>
+    // confirm(message, asyncFn) → shows loading until asyncFn resolves, then closes
+    const confirm = useCallback((message, asyncFn = null) => new Promise(resolve => {
+        setState({ message, resolve, asyncFn });
+        setConfirming(false);
     }), []);
 
-    function handleResponse(result) {
-        state?.resolve(result);
+    function handleCancel() {
+        state?.resolve(false);
         setState(null);
+    }
+
+    async function handleConfirm() {
+        if (state?.asyncFn) {
+            setConfirming(true);
+            try { await state.asyncFn(); } finally { setConfirming(false); }
+            state?.resolve(true);
+            setState(null);
+        } else {
+            setConfirming(true);
+            // Brief visual feedback before resolving
+            setTimeout(() => {
+                state?.resolve(true);
+                setState(null);
+                setConfirming(false);
+            }, 300);
+        }
     }
 
     return (
@@ -22,12 +43,22 @@ export function ConfirmProvider({ children }) {
                     <div style={s.dialog}>
                         <p style={s.message}>{state.message}</p>
                         <div style={s.actions}>
-                            <button style={s.cancel} onClick={() => handleResponse(false)}>Cancel</button>
-                            <button style={s.confirm} onClick={() => handleResponse(true)}>Confirm</button>
+                            <button style={{ ...s.cancel, opacity: confirming ? 0.5 : 1, cursor: confirming ? 'not-allowed' : 'pointer' }}
+                                onClick={handleCancel} disabled={confirming}>
+                                Cancel
+                            </button>
+                            <button style={{ ...s.confirm, opacity: confirming ? 0.75 : 1, cursor: confirming ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 90, justifyContent: 'center' }}
+                                onClick={handleConfirm} disabled={confirming}>
+                                {confirming
+                                    ? <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'cd-spin 0.7s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Processing…</>
+                                    : 'Confirm'
+                                }
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
+            <style>{`@keyframes cd-spin { to { transform: rotate(360deg); } }`}</style>
         </ConfirmCtx.Provider>
     );
 }

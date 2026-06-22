@@ -3,6 +3,7 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 import { useToast } from '@/Components/Snackbar';
+import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import AssigneesModal from '@/Components/AssigneesModal';
 
@@ -35,6 +36,7 @@ function StatusBadge({ status }) {
 export default function Show() {
     const { opcr, uwps = [], functions: fns = [] } = usePage().props;
     const toast = useToast();
+    const confirm = useConfirm();
     const bp    = useBreakpoint();
 
     const [status,      setStatus]      = useState(opcr?.status ?? 'submitted');
@@ -63,7 +65,8 @@ export default function Show() {
         }))
         .filter(mfo => mfo.successIndicators.length > 0);
 
-    function handleApprove() {
+    async function handleApprove() {
+        if (!await confirm('Approve this OPCR? This action will notify the department head.')) return;
         setLoading('approve');
         router.patch(`/pmt/opcr-review/${opcr.id}/approve`, {}, {
             onSuccess: () => { setStatus('approved'); toast('OPCR approved.', 'success'); },

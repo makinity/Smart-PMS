@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
+import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import AssigneesModal from '@/Components/AssigneesModal';
 
@@ -35,6 +36,7 @@ function StatusBadge({ status }) {
 export default function Show() {
     const { uwp, functions: fns } = usePage().props;
     const toast = useToast();
+    const confirm = useConfirm();
     const bp    = useBreakpoint();
 
     const [status,     setStatus]     = useState(uwp?.status ?? 'submitted');
@@ -48,7 +50,8 @@ export default function Show() {
     const activeFnForMfo = fns?.find(f => f.mfos?.some(m => m.id === activeMfoId));
     const canAct         = status === 'submitted';
 
-    function handleApprove() {
+    async function handleApprove() {
+        if (!await confirm('Approve this UWP? The supervisor will be notified.')) return;
         setLoading('approve');
         router.patch(`/dept-head/uwp/${uwp.id}/approve`, {}, {
             onSuccess: () => { setStatus('approved'); toast('UWP approved.', 'success'); },

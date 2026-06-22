@@ -3,6 +3,7 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import ReturnRemarksBanner from '@/Components/ReturnRemarksBanner';
 import { useToast } from '@/Components/Snackbar';
+import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import AssigneeReviewModal from '@/Components/AssigneeReviewModal';
 
@@ -36,6 +37,7 @@ function StatusBadge({ status }) {
 export default function Show() {
     const { opcr, uwps = [], functions: fns = [] } = usePage().props;
     const toast = useToast();
+    const confirm = useConfirm();
     const bp    = useBreakpoint();
 
     const [status,      setStatus]      = useState(opcr?.status ?? 'draft');
@@ -51,7 +53,8 @@ export default function Show() {
     const approvedCount  = uwps.filter(u => u.status === 'approved' || u.status === 'pmt_approved').length;
     const canSubmit      = status === 'draft' && allApproved;
 
-    function handleSubmit() {
+    async function handleSubmit() {
+        if (!await confirm('Submit this OPCR to PMT? You will not be able to edit it after submission.')) return;
         setSubmitting(true);
         router.patch(`/dept-head/opcr/${opcr.id}/submit`, {}, {
             onSuccess: () => { setStatus('submitted'); toast('OPCR submitted to PMT.', 'success'); },

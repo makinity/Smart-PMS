@@ -238,7 +238,7 @@ export default function Index() {
             {/* ── Top bar ── */}
             <div style={{ ...s.topbar }} className="ipcr-topbar">
                 {/* Left: meta info + status */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                         <div style={s.period}>{period?.name ?? 'Performance Period'}</div>
                         <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }} className="ipcr-status-pill">
@@ -250,7 +250,7 @@ export default function Index() {
                 </div>
 
                 {/* Right: actions */}
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
                     <a href="/stage-one/forms/ipcr-excel" style={{ ...s.exportBtn, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         {bp !== 'compact' && 'Export Excel'}
@@ -260,7 +260,8 @@ export default function Index() {
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                             {bp !== 'compact' && (committing ? 'Committing…' : 'Commit IPCR')}
                         </button>
-                    )}                </div>
+                    )}
+                </div>
             </div>
 
             {/* ── Three info cards ── */}
@@ -434,11 +435,7 @@ const s = {
 // ── Responsive CSS ─────────────────────────────────────────────────────────────
 const css = `
     @media (max-width: 640px) {
-        .ipcr-topbar { flex-direction: column; align-items: stretch !important; }
-        .ipcr-topbar > div { width: 100%; }
         .ipcr-col-headers { display: none !important; }
         .ipcr-info-cards { flex-direction: column; }
-        .ipcr-status-pill { position: absolute; top: 0.75rem; right: 1rem; width: auto !important; }
-        .ipcr-topbar { padding-right: 7rem; }
     }
 `;

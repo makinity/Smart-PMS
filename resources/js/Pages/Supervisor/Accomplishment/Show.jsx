@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import AppLayout from '@/Layouts/AppLayout';
+import { useToast } from '@/Components/Snackbar';
+import { useConfirm } from '@/Components/ConfirmDialog';
 
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
@@ -280,6 +282,8 @@ function ReturnModal({ submissionId, onClose }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Show() {
     const { submission, smporTable, ipcrSections, ipcrMeta } = usePage().props;
+    const toast = useToast();
+    const confirm = useConfirm();
     const [showReturn, setShowReturn] = useState(false);
     const [endorsing,  setEndorsing]  = useState(false);
     const [activeTab,  setActiveTab]  = useState('smpor');
@@ -288,7 +292,8 @@ export default function Show() {
     const sc     = STATUS_CFG[status] ?? { label: status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
     const canAct = status === 'submitted_to_supervisor';
 
-    function handleEndorse() {
+    async function handleEndorse() {
+        if (!await confirm('Endorse this accomplishment to the Department Head?')) return;
         setEndorsing(true);
         router.post(`/supervisor/accomplishment/${submission.id}/endorse`, {}, {
             preserveScroll: true,
