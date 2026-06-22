@@ -27,8 +27,8 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const [warning, setWarning]         = useState(null);
     const [expandedEmp, setExpandedEmp] = useState(null);
     const [mlData, setMlData]           = useState(null);
-    const [allMlData, setAllMlData]     = useState({}); // indicatorId → recommendations
-    const [mlLoading, setMlLoading]     = useState(false);
+    const [allMlData, setAllMlData]     = useState({});
+    const [mlLoading, setMlLoading]     = useState(true);
     const [saving, setSaving]           = useState(false);
 
     useEffect(() => {

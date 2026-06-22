@@ -14,9 +14,10 @@ const RISK_COLOR = {
 function probColor(p) { return p >= 75 ? '#4ade80' : p >= 50 ? '#facc15' : '#f87171'; }
 
 export default function AssigneesModal({ assignees = [], title = 'Assigned Employees', subtitle, onClose, indicatorId, periodId = 1, suggestionsUrl = '/supervisor/uwp/suggestions' }) {
-    const [search, setSearch]   = useState('');
-    const [recMap, setRecMap]   = useState({});
+    const [search, setSearch]     = useState('');
+    const [recMap, setRecMap]     = useState({});
     const [mlOnline, setMlOnline] = useState(false);
+    const [mlLoading, setMlLoading] = useState(!!indicatorId);
 
     useEffect(() => {
         if (!indicatorId) return;
@@ -26,7 +27,8 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                 (data.recommendations ?? []).forEach(r => { map[r.employee_id] = r; });
                 setRecMap(map);
                 setMlOnline(data.ml_online === true);
-            }).catch(() => {});
+            }).catch(() => {})
+            .finally(() => setMlLoading(false));
     }, [indicatorId, periodId]);
 
     const employees = assignees.map(a => a.employee ?? a).filter(Boolean);
@@ -51,9 +53,17 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                 <div style={s.aiBanner}>
                     <span style={{ color: mlOnline ? 'var(--admin-accent)' : '#f87171', fontSize: '0.78rem' }}>●</span>
                     <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
-                        {mlOnline ? 'AI WORKLOAD INSIGHTS' : 'AI OFFLINE — No predictions available'}
+                        {mlLoading ? 'Analyzing with AI…' : mlOnline ? 'AI WORKLOAD INSIGHTS' : 'AI OFFLINE — No predictions available'}
                     </span>
                 </div>
+
+                {mlLoading ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', padding: '2.5rem', color: 'var(--admin-text-muted)', fontSize: '0.875rem' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'pms-spin 0.7s linear infinite', flexShrink: 0 }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        Analyzing with AI…
+                        <style>{`@keyframes pms-spin{to{transform:rotate(360deg)}}`}</style>
+                    </div>
+                ) : (<>
 
                 {/* Search — only when there are enough rows to warrant it */}
                 {employees.length > 4 && (
@@ -112,6 +122,7 @@ export default function AssigneesModal({ assignees = [], title = 'Assigned Emplo
                     </span>
                     <button style={s.btnPrimary} onClick={onClose}>Close</button>
                 </div>
+                </>)}
             </div>
         </div>
     );
