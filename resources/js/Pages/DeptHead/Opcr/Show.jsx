@@ -80,13 +80,9 @@ export default function Show() {
                     {approvedCount}/{uwps.length} UWPs
                 </span>
             )}
-            <a href={`/stage-one/forms/opcr-excel?opcr_id=${opcr?.id}`} style={s.exportBtn}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                {bp === 'mobile' ? 'Excel' : 'Export Excel'}
-            </a>
-            <a href={`/stage-three/forms/opcr-excel?opcr_id=${opcr?.id}`} style={{ ...s.exportBtn, background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.28)', color: '#60a5fa' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                {bp === 'mobile' ? 'Accomplishment' : 'Export Accomplishment'}
+            <a href={`/dept-head/opcr/${opcr?.id}/export-excel?opcr_id=${opcr?.id}`} style={s.exportBtn} title="Export OPCR">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {bp === 'desktop' && 'Export OPCR'}
             </a>
             {canSubmit && (
                 <button style={s.submitBtn} onClick={handleSubmit} disabled={submitting}>
@@ -118,15 +114,6 @@ export default function Show() {
                                         {opcr?.period ?? 'OPCR'}
                                     </span>
                                     <StatusBadge status={status} />
-                                    {bp !== 'desktop' && (
-                                        <button style={s.contribBtn} onClick={() => setContribOpen(true)}>
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                            Contributors
-                                            <span style={{ ...s.contribCount, background: allApproved ? 'rgba(74,222,128,0.2)' : 'rgba(234,179,8,0.2)', color: allApproved ? '#4ade80' : '#facc15' }}>
-                                                {approvedCount}/{uwps.length}
-                                            </span>
-                                        </button>
-                                    )}
                                 </div>
                                 <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {opcr?.office ?? ''}
@@ -134,6 +121,14 @@ export default function Show() {
                             </div>
                         </div>
                         {bp !== 'mobile' && <Actions />}
+                        {bp !== 'desktop' && (
+                            <button style={s.contribIconBtn} onClick={() => setContribOpen(true)} title={`Contributors ${approvedCount}/${uwps.length}`}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <span style={{ ...s.contribCount, background: allApproved ? 'rgba(74,222,128,0.2)' : 'rgba(234,179,8,0.2)', color: allApproved ? '#4ade80' : '#facc15' }}>
+                                    {approvedCount}/{uwps.length}
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -419,6 +414,7 @@ const s = {
     tabActive:    { color: 'var(--admin-accent)', borderBottomColor: 'var(--admin-accent)', fontWeight: 700 },
     contribBtn:   { display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: 'auto', marginRight: '0.5rem', flexShrink: 0, padding: '0.35rem 0.75rem', borderRadius: 99, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-secondary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
     contribCount: { padding: '0.1rem 0.45rem', borderRadius: 99, fontSize: '0.65rem', fontWeight: 700 },
+    contribIconBtn: { display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, padding: '0.35rem 0.5rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'none', color: 'var(--admin-text-secondary)', cursor: 'pointer' },
 
     mfoGroup:     { marginBottom: '2.5rem' },
     mfoHeader:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--admin-border)', marginBottom: '1rem' },

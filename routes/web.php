@@ -145,6 +145,7 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::patch('/uwp/{id}/return', [\App\Http\Controllers\DeptHead\UnitWorkPlanController::class, 'returnUwp'])->name('uwp.return');
     Route::get('/opcr', [\App\Http\Controllers\DeptHead\OpcrController::class, 'index'])->name('opcr.index');
     Route::get('/opcr/{id}', [\App\Http\Controllers\DeptHead\OpcrController::class, 'show'])->name('opcr.show');
+    Route::get('/opcr/{id}/export-excel', [\App\Http\Controllers\StageThree\Forms\OpcrExcelExportController::class, 'export'])->name('opcr.export-excel');
     Route::patch('/opcr/{id}/submit', [\App\Http\Controllers\DeptHead\OpcrController::class, 'submit'])->name('opcr.submit');
     Route::get('/qar', [\App\Http\Controllers\DeptHead\QarController::class, 'index'])->name('qar.index');
     Route::get('/qar/mpor/{mpor}', [\App\Http\Controllers\DeptHead\QarController::class, 'mporShow'])->name('qar.mpor.show');
