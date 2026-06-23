@@ -164,7 +164,7 @@ export default function Index({ logs: initialLogs, modelExists, lastTrained, row
                             />
                             {urlForm.errors.url && <div style={{ color: '#f87171', fontSize: '0.75rem', marginTop: '0.25rem' }}>{urlForm.errors.url}</div>}
                         </div>
-                        <button type="submit" disabled={urlForm.processing} style={{ ...btnPrimary, alignSelf: 'flex-end', opacity: urlForm.processing ? 0.7 : 1 }}>
+                        <button type="submit" disabled={urlForm.processing} style={{ ...btnPrimary, alignSelf: 'flex-end', marginLeft: 'auto', opacity: urlForm.processing ? 0.7 : 1 }}>
                             <i className="bi bi-floppy-fill" /> Save
                         </button>
                     </form>
