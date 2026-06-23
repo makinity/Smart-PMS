@@ -441,8 +441,8 @@ const s = {
     filterRow: {
         display: 'flex',
         gap: '0.55rem',
-        flexWrap: 'wrap',
         overflowX: 'auto',
+        scrollbarWidth: 'none',
         paddingBottom: '0.15rem',
     },
     filterBtn: {

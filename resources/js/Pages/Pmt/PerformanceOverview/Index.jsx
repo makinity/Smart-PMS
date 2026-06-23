@@ -82,36 +82,30 @@ export default function Index() {
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
                 {/* Search */}
-                <div style={{ ...card, padding:'0.6rem 1rem', display:'flex', alignItems:'center', gap:'0.6rem' }}>
-                    <i className="bi bi-search" style={{ color:'var(--admin-text-muted)', fontSize:'0.9rem', flexShrink:0 }} />
+                <div style={{ position: 'relative', marginBottom: '0.6rem' }}>
+                    <i className="bi bi-search" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', fontSize: '0.78rem', pointerEvents: 'none' }} />
                     <input value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Search by name, position, or office..."
-                        style={{ flex:1, border:'none', outline:'none', background:'transparent', fontSize:'0.9rem', color:'var(--admin-text-primary)' }} />
-                    {search && <button onClick={() => setSearch('')}
-                        style={{ border:'none', background:'none', cursor:'pointer', color:'var(--admin-text-muted)', fontSize:'1rem' }}>×</button>}
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.42rem 0.75rem 0.42rem 2rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem', outline: 'none', fontFamily: 'inherit' }} />
                 </div>
 
                 {/* Filter tabs */}
-                <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
                     {TABS.map(t => {
                         const active = rating === t.key;
-                        const cfg = RATING_CFG[t.key] ?? { color:'var(--admin-accent)', bg:'rgba(59,130,246,0.12)' };
+                        const cfg = RATING_CFG[t.key] ?? { color: 'var(--admin-accent)', bg: 'rgba(59,130,246,0.12)' };
                         const count = t.key === '' ? counts.all : (counts[t.key] ?? 0);
                         return (
-                            <button key={t.key} onClick={() => setRating(t.key)}
-                                style={{ padding:'0.45rem 1rem', borderRadius:99,
-                                    border: active ? `1.5px solid ${cfg.color}` : '1.5px solid var(--admin-border)',
-                                    background: active ? cfg.bg : 'var(--admin-card)',
-                                    color: active ? cfg.color : 'var(--admin-text-muted)',
-                                    cursor:'pointer', fontSize:'0.8rem', fontWeight: active ? 700 : 500,
-                                    display:'flex', alignItems:'center', gap:'0.4rem', transition:'all 0.15s' }}>
-                                {t.iconCls && <i className={`bi ${t.iconCls}`} style={{ fontSize:'0.75rem' }} />}
-                                {t.label}
-                                <span style={{ fontSize:'0.7rem', fontWeight:700, padding:'1px 6px', borderRadius:99,
-                                    background: active ? cfg.color : 'var(--admin-bg-secondary)',
-                                    color: active ? '#fff' : 'var(--admin-text-muted)' }}>
-                                    {count}
-                                </span>
+                            <button key={t.key} onClick={() => setRating(t.key)} style={{
+                                flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',
+                                fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                                borderColor: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-border)',
+                                background: active ? cfg.bg : 'transparent',
+                                color: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-text-muted)',
+                                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                            }}>
+                                {t.iconCls && <i className={`bi ${t.iconCls}`} style={{ fontSize: '0.68rem' }} />}
+                                {t.label} {count}
                             </button>
                         );
                     })}
