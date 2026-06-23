@@ -291,3 +291,7 @@ Route::middleware('auth')->prefix('api/notifications')->name('api.notifications.
     Route::post('/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('read-all');
     Route::post('/{id}/read',[\App\Http\Controllers\NotificationController::class, 'markRead'])->name('read');
 });
+
+Route::middleware('auth')->prefix('api/notify')->name('api.notify.')->group(function () {
+    Route::post('/reminder', [\App\Http\Controllers\NotificationController::class, 'sendReminder'])->name('reminder');
+});

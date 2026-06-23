@@ -7,6 +7,7 @@ import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import QetModal from './QetModal';
 import AssignModal from './AssignModal';
+import ValidationModal from '@/Components/ValidationModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -80,6 +81,7 @@ export default function Editor() {
     const [fnModal, setFnModal]                 = useState(null);
     const [addIndicatorCtx, setAddIndicatorCtx] = useState(null);
     const [addMfoCtx, setAddMfoCtx]             = useState(null);
+    const [weightValidation, setWeightValidation] = useState(null);
     const [saving, setSaving]                   = useState(false);
     const [navOpen, setNavOpen]                 = useState(false);
     const bp = useBreakpoint();
@@ -115,7 +117,14 @@ export default function Editor() {
     async function handleSubmit() {
         const totalWeight = functions.reduce((sum, f) => sum + (parseFloat(f.weight_percent) || 0), 0);
         if (totalWeight !== 100) {
-            toast(`Total function weight must be 100%. Current total: ${totalWeight}%.`, 'error');
+            setWeightValidation({
+                title:       'Cannot Submit UWP',
+                description: `Total function weight must equal 100%. Current total: ${totalWeight}%.`,
+                items: functions.map(f => ({
+                    name:   f.name,
+                    reason: `${parseFloat(f.weight_percent) || 0}% assigned`,
+                })),
+            });
             return;
         }
         if (!await confirm('Submit this UWP for review? You will not be able to edit it after submission.')) return;
@@ -299,6 +308,7 @@ export default function Editor() {
     }, [fnDropOpen, mfoDropOpen]);
 
     return (
+        <>
         <AppLayout title="UWP Editor">
             <style>{css}</style>
 
@@ -545,6 +555,15 @@ export default function Editor() {
                 />
             )}
         </AppLayout>
+        {weightValidation && (
+            <ValidationModal
+                title={weightValidation.title}
+                description={weightValidation.description}
+                items={weightValidation.items}
+                onClose={() => setWeightValidation(null)}
+            />
+        )}
+        </>
     );
 }
 

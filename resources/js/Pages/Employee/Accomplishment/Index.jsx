@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { useToast } from '@/Components/Snackbar';
 import AppLayout from '@/Layouts/AppLayout';
+import useBreakpoint from '@/Components/useBreakpoint';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -76,6 +77,7 @@ function PipelineStepper({ status }) {
 
 // ── Score Circle ──────────────────────────────────────────────────────────────
 function ScoreCircle({ score, rating }) {
+    const bp    = useBreakpoint();
     const pct   = Math.min((score / 5) * 100, 100);
     const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
     const r = 28;
@@ -96,7 +98,7 @@ function ScoreCircle({ score, rating }) {
             <div>
                 <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
                     color: 'var(--admin-text-muted)', marginBottom: 2 }}>IPCR Score</div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>{rating ?? '—'}</div>
+                <div style={{ fontWeight: 700, fontSize: bp === 'mobile' ? '0.72rem' : '0.95rem', color: 'var(--admin-text-primary)', whiteSpace: 'nowrap', maxWidth: 120 }}>{rating ?? '—'}</div>
             </div>
         </div>
     );

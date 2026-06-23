@@ -373,7 +373,7 @@ const s = {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0.7rem 1rem', background: 'var(--admin-bg-alt)',
         borderBottom: '1px solid var(--admin-border)',
-        width: '100%', border: 'none', borderBottom: '1px solid var(--admin-border)',
+        width: '100%', border: 'none',
         cursor: 'pointer', textAlign: 'left',
     },
     mfoTitle: { fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' },

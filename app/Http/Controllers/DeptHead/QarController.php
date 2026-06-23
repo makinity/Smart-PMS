@@ -99,7 +99,7 @@ class QarController extends Controller
             ->where('role', 'employee')
             ->pluck('id');
 
-        $missing = [];
+        $missingItems = [];
         foreach ($employeeIds as $empId) {
             foreach ($quarterMonthStrings as $month) {
                 $exists = Mpor::where('employee_id', $empId)
@@ -107,13 +107,23 @@ class QarController extends Controller
                     ->where('status', 'approved')
                     ->exists();
                 if (! $exists) {
-                    $missing[] = $month;
+                    $emp = \App\Models\User::find($empId);
+                    $missingItems[] = [
+                        'employee_id' => $empId,
+                        'name'        => $emp?->name ?? 'Unknown',
+                        'position'    => $emp?->position ?? '',
+                        'avatar'      => $emp?->avatar ?? null,
+                        'month'       => $month,
+                        'reason'      => \Carbon\Carbon::parse($month . '-01')->format('F Y') . ' — MPOR not approved',
+                    ];
                 }
             }
         }
-        $missing = array_values(array_unique($missing));
-        if (! empty($missing)) {
-            return back()->withErrors(['message' => 'Cannot submit QAR: missing approved MPORs for month(s): ' . implode(', ', $missing) . '.']);
+        if (! empty($missingItems)) {
+            return back()->withErrors([
+                'message'       => 'Cannot submit QAR: missing approved MPORs for some employees.',
+                'missing_mpors' => json_encode($missingItems),
+            ]);
         }
 
 

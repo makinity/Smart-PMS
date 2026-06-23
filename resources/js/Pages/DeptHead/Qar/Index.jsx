@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
+import ValidationModal from '@/Components/ValidationModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -135,6 +136,7 @@ export default function Index() {
     const bp       = useBreakpoint();
     const isMobile = bp === 'mobile';
     const [endorsing, setEndorsing] = useState(false);
+    const [validationError, setValidationError] = useState(null);
     const toast   = useToast();
     const confirm = useConfirm();
 
@@ -150,8 +152,30 @@ export default function Index() {
         router.post('/dept-head/qar/submit', { q }, {
             preserveScroll: true,
             onSuccess: () => toast('QAR submitted to PMT successfully.', 'submitted'),
-            onError:   (errors) => toast(errors?.message ?? Object.values(errors ?? {})[0] ?? 'Failed to submit QAR.', 'error'),
-            onFinish:  () => setEndorsing(false),
+            onError: (errors) => {
+                const missingRaw = errors?.missing_mpors;
+                if (missingRaw) {
+                    try {
+                        const items = JSON.parse(missingRaw).map(m => ({
+                            name:   m.name,
+                            sub:    m.position,
+                            avatar: m.avatar,
+                            reason: m.reason,
+                            notifyPayload: { employee_id: m.employee_id, context: 'qar_missing_mpor', month: m.month },
+                        }));
+                        setValidationError({
+                            title: 'Cannot Submit QAR',
+                            description: `All months in ${quarterKey} must have approved MPORs before submitting to PMT.`,
+                            items,
+                        });
+                    } catch {
+                        toast(errors?.message ?? 'Failed to submit QAR.', 'error');
+                    }
+                } else {
+                    toast(errors?.message ?? Object.values(errors ?? {})[0] ?? 'Failed to submit QAR.', 'error');
+                }
+            },
+            onFinish: () => setEndorsing(false),
         });
     }
 
@@ -159,6 +183,7 @@ export default function Index() {
     const monthsCovered = coveredMonths?.length ?? 0;
 
     return (
+        <>
         <AppLayout title="QAR">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
@@ -336,6 +361,15 @@ export default function Index() {
 
             </div>
         </AppLayout>
+        {validationError && (
+            <ValidationModal
+                title={validationError.title}
+                description={validationError.description}
+                items={validationError.items}
+                onClose={() => setValidationError(null)}
+            />
+        )}
+        </>
     );
 }
 
