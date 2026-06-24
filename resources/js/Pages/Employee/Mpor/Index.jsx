@@ -195,7 +195,6 @@ export default function Index() {
     return (
         <AppLayout title="MPOR">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-
                 {/* Header card */}
                 <div style={card}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>

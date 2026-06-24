@@ -3,20 +3,30 @@ import { router } from '@inertiajs/react';
 
 function CustomSelect({ value, onChange, options, placeholder, disabled, error }) {
     const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const ref = useRef(null);
+    const searchRef = useRef(null);
     const selected = options.find(o => String(o.value) === String(value));
+    const filtered = search ? options.filter(o => o.label.toLowerCase().includes(search.toLowerCase())) : options;
 
     useEffect(() => {
-        const handler = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        const handler = e => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    function handleOpen() {
+        if (disabled) return;
+        setOpen(v => !v);
+        setSearch('');
+        setTimeout(() => searchRef.current?.focus(), 0);
+    }
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             <button type="button"
                 style={{ ...cs.trigger, opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : 'pointer', borderColor: error ? '#f87171' : undefined }}
-                onClick={() => !disabled && setOpen(v => !v)}>
+                onClick={handleOpen}>
                 <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: selected ? 'var(--admin-text-primary)' : 'var(--admin-text-muted)' }}>
                     {selected ? selected.label : placeholder}
                 </span>
@@ -24,15 +34,23 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, error }
             </button>
             {open && (
                 <div style={cs.dropdown}>
-                    {options.map(o => (
-                        <button key={o.value} type="button"
-                            style={{ ...cs.option, background: String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)', color: String(o.value) === String(value) ? 'var(--admin-accent)' : 'var(--admin-text-primary)' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}
-                            onMouseLeave={e => e.currentTarget.style.background = String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)'}
-                            onClick={() => { onChange(o.value); setOpen(false); }}>
-                            {o.label}
-                        </button>
-                    ))}
+                    <div style={cs.searchWrap}>
+                        <i className="bi bi-search" style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', flexShrink: 0 }} />
+                        <input ref={searchRef} type="text" value={search} onChange={e => setSearch(e.target.value)}
+                            placeholder="Search..." style={cs.searchInput} />
+                    </div>
+                    <div style={cs.list}>
+                        {filtered.length === 0 && <div style={cs.empty}>No results</div>}
+                        {filtered.map(o => (
+                            <button key={o.value} type="button"
+                                style={{ ...cs.option, background: String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)', color: String(o.value) === String(value) ? 'var(--admin-accent)' : 'var(--admin-text-primary)' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}
+                                onMouseLeave={e => e.currentTarget.style.background = String(o.value) === String(value) ? 'rgba(59,130,246,0.12)' : 'var(--admin-card)'}
+                                onClick={() => { onChange(o.value); setOpen(false); setSearch(''); }}>
+                                {o.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -40,9 +58,13 @@ function CustomSelect({ value, onChange, options, placeholder, disabled, error }
 }
 
 const cs = {
-    trigger:  { width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--admin-border)', borderRadius: 8, fontSize: '0.9rem', outline: 'none' },
-    dropdown: { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, boxShadow: 'var(--admin-shadow)', zIndex: 10, maxHeight: 220, overflowY: 'auto' },
-    option:   { width: '100%', display: 'block', padding: '0.6rem 0.85rem', textAlign: 'left', fontSize: '0.85rem', border: 'none', background: 'var(--admin-card)', cursor: 'pointer', lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' },
+    trigger:     { width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--admin-border)', borderRadius: 8, fontSize: '0.9rem', outline: 'none' },
+    dropdown:    { position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 8, boxShadow: 'var(--admin-shadow)', zIndex: 10, display: 'flex', flexDirection: 'column' },
+    searchWrap:  { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--admin-border)', flexShrink: 0 },
+    searchInput: { flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '0.82rem', color: 'var(--admin-text-primary)', fontFamily: 'inherit' },
+    list:        { maxHeight: 200, overflowY: 'auto' },
+    option:      { width: '100%', display: 'block', padding: '0.6rem 0.85rem', textAlign: 'left', fontSize: '0.85rem', border: 'none', background: 'var(--admin-card)', cursor: 'pointer', lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' },
+    empty:       { padding: '0.75rem 0.85rem', fontSize: '0.82rem', color: 'var(--admin-text-muted)', textAlign: 'center' },
 };
 
 function formatDate(dateStr) {

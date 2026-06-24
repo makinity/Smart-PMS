@@ -351,6 +351,7 @@ function Legend({ scrollable }) {
     );
 }
 
+// ── Skeleton ──────────────────────────────────────────────────────────────────
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
     const { period, orsGateLocked, orsGateReason, orsOptions, supervisors, calendarEntries, activeEntry: initialActive, stats, mporLockedMonths = [], auth } = usePage().props;
@@ -437,7 +438,6 @@ export default function Index() {
 
     return (
         <AppLayout title="Output Rating Sheet" description={period ? `Performance Period: ${period.name}` : 'No active period'}>
-
             {/* Gate Banner */}
             {orsGateLocked && (
                 <div style={{ marginBottom: '1rem', padding: '0.85rem 1.25rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#f87171' }}>
