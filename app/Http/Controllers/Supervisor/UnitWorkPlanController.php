@@ -118,12 +118,13 @@ class UnitWorkPlanController extends Controller
 
         $employees = User::where('office_id', $user->office_id)
             ->where('role', 'employee')
-            ->select('id', 'name', 'position')
+            ->select('id', 'name', 'position', 'profile_photo_path')
             ->get()
             ->map(fn (User $employee) => [
                 'id' => $employee->id,
                 'name' => $employee->name,
                 'position' => $employee->position,
+                'avatar' => $employee->profile_photo_url,
                 'ai_prediction' => $predictor->predict($employee, ['unit_work_plan_id' => $id]),
             ]);
 
