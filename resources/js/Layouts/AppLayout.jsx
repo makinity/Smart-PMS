@@ -140,7 +140,36 @@ function PageSkeleton({ url }) {
         </>
     );
 
-    // Generic fallback — just a content placeholder
+    // Dashboard — stat cards + charts + module cards
+    if (url.match(/\/(employee|supervisor|dept-head|pmt|admin)\/?$/)) return (
+        <>
+            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
+            {/* 4 stat cards */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.75rem', marginBottom:'0.75rem' }}>
+                {[0,1,2,3].map(i => <div key={i} style={sk}>{sh(10,'55%')}{sh(32,'40%')}{sh(10,'60%',4)}</div>)}
+            </div>
+            {/* 2 chart cards */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem', marginBottom:'0.75rem' }}>
+                <div style={sk}>{sh(14,'40%')}{sh(180,undefined,8)}</div>
+                <div style={sk}>{sh(14,'40%')}{sh(180,undefined,8)}</div>
+            </div>
+            {/* 4 module cards */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.75rem', marginBottom:'0.75rem' }}>
+                {[0,1,2,3].map(i => <div key={i} style={sk}>{sh(28,28,8)}{sh(14,'70%')}{sh(10,'90%')}</div>)}
+            </div>
+            {/* Recent tasks table */}
+            <div style={sk}>
+                {sh(16,'30%')}
+                {[0,1,2,3].map(i => (
+                    <div key={i} style={{ display:'flex', gap:'1rem', padding:'0.6rem 0', borderBottom:'1px solid var(--admin-border)' }}>
+                        {sh(12,'45%')}{sh(20,70,99)}{sh(12,'20%')}
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+
+    // Generic fallback — simple card placeholder
     return (
         <>
             <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
