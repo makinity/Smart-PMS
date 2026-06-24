@@ -593,7 +593,10 @@ function BottomSheet({ entry, onClose, onSaved }) {
 }
 
 // ── QueuePanel ────────────────────────────────────────────────────────────────
-function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount, ratedCount, search, setSearch, statusFilter, setStatusFilter, cardBase }) {
+function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount, ratedCount, search, setSearch, statusFilter, setStatusFilter, monthFilter, setMonthFilter, yearFilter, setYearFilter, cardBase }) {
+    // Derive available years from entries
+    const years = [...new Set(entries.map(e => e.work_date ? new Date(e.work_date).getFullYear() : null).filter(Boolean))].sort((a, b) => b - a);
+
     return (
         <div style={{ ...cardBase, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ padding: '0.9rem 1rem', borderBottom: '1px solid var(--admin-border)', flexShrink: 0 }}>
@@ -619,6 +622,23 @@ function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount
                                 background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
                                 borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem',
                                 outline: 'none', fontFamily: 'inherit' }} />
+                    </div>
+                    {/* Month + Year selects */}
+                    <div style={{ display: 'flex', gap: 4, marginTop: '0.5rem' }}>
+                        <select value={monthFilter} onChange={e => setMonthFilter(e.target.value)}
+                            style={selectStyle}>
+                            <option value="">All Months</option>
+                            {['01','02','03','04','05','06','07','08','09','10','11','12'].map((m, i) => (
+                                <option key={m} value={m}>
+                                    {new Date(2000, i).toLocaleString('en', { month: 'long' })}
+                                </option>
+                            ))}
+                        </select>
+                        <select value={yearFilter} onChange={e => setYearFilter(e.target.value)}
+                            style={selectStyle}>
+                            <option value="">All Years</option>
+                            {years.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
                     </div>
                     <div style={{ display: 'flex', gap: 4, marginTop: '0.6rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
                         {[{ key: 'all', label: 'All' }, { key: 'submitted', label: 'Pending' }, { key: 'rated', label: 'Rated' }].map(({ key, label }) => (
@@ -646,6 +666,12 @@ function QueuePanel({ entries, filtered, selectedId, setSelectedId, pendingCount
     );
 }
 
+const selectStyle = {
+    flex: 1, padding: '0.38rem 0.5rem', borderRadius: 8,
+    border: '1px solid var(--admin-border)', background: 'var(--admin-bg-secondary)',
+    color: 'var(--admin-text-primary)', fontSize: '0.75rem', outline: 'none',
+};
+
 // ── EmptyState ────────────────────────────────────────────────────────────────
 function EmptyState() {
     return (
@@ -667,6 +693,8 @@ export default function Index() {
     const [selectedId,   setSelectedId]   = useState(autoOpenEntryId ?? initialEntries?.[0]?.id ?? null);
     const [search,       setSearch]       = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [monthFilter,  setMonthFilter]  = useState('');
+    const [yearFilter,   setYearFilter]   = useState('');
     const [sheetOpen,    setSheetOpen]    = useState(!!autoOpenEntryId);
 
     const bp = useBreakpoint();
@@ -702,7 +730,11 @@ export default function Index() {
     const filtered = entries.filter(e => {
         const matchStatus = statusFilter === 'all' || e.status === statusFilter;
         const q = search.trim().toLowerCase();
-        return matchStatus && (!q || e.employee_name.toLowerCase().includes(q) || e.indicator_text.toLowerCase().includes(q));
+        const matchSearch = !q || e.employee_name.toLowerCase().includes(q) || e.indicator_text.toLowerCase().includes(q);
+        const d = e.work_date ? new Date(e.work_date) : null;
+        const matchMonth = !monthFilter || (d && String(d.getMonth() + 1).padStart(2, '0') === monthFilter);
+        const matchYear  = !yearFilter  || (d && String(d.getFullYear()) === yearFilter);
+        return matchStatus && matchSearch && matchMonth && matchYear;
     });
 
     const selected = entries.find(e => e.id === selectedId) ?? null;
@@ -727,7 +759,8 @@ export default function Index() {
     };
 
     const queueProps = { entries, filtered, selectedId, setSelectedId: handleCardClick,
-        pendingCount, ratedCount, search, setSearch, statusFilter, setStatusFilter, cardBase };
+        pendingCount, ratedCount, search, setSearch, statusFilter, setStatusFilter,
+        monthFilter, setMonthFilter, yearFilter, setYearFilter, cardBase };
 
     if (entries.length === 0) return (
         <AppLayout title="ORS Monitoring" description="Review and rate submitted task entries">

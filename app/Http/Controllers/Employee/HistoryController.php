@@ -48,13 +48,13 @@ class HistoryController extends Controller
                 'pmt_action_at'    => $s->pmt_action_at?->format('M d, Y'),
             ]);
 
-        $idps = DevelopmentPlan::with('period:id,name')
+        $idps = DevelopmentPlan::with('performancePeriod:id,name')
             ->where('employee_id', $user->id)
             ->orderByDesc('performance_period_id')
             ->get()
             ->map(fn ($d) => [
                 'id'               => $d->id,
-                'period'           => $d->period?->name,
+                'period'           => $d->performancePeriod?->name,
                 'status'           => $d->status,
                 'source_score'     => $d->source_score ? round((float) $d->source_score, 2) : null,
                 'source_rating'    => $d->source_rating,

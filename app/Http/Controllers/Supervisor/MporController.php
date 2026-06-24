@@ -37,7 +37,7 @@ class MporController extends Controller
             $query->where('status', $status);
         }
 
-        $mpors = $query->get()->map(fn ($m) => [
+        $mpors = $query->paginate(15)->through(fn ($m) => [
             'id'           => $m->id,
             'month'        => $m->month,
             'status'       => $m->status,

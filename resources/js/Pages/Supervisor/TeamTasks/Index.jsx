@@ -109,7 +109,9 @@ export default function Index() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [activeEntry, setActiveEntry] = useState(null);
+    const [page, setPage] = useState(1);
     const channelRef = useRef(null);
+    const PER_PAGE = 20;
 
     useEffect(() => {
         const userId = auth?.user?.id;
@@ -132,11 +134,17 @@ export default function Index() {
         };
     }, [auth?.user?.id]);
 
+    // Reset to page 1 when filter/search changes
+    useEffect(() => { setPage(1); }, [search, filter]);
+
     const filtered = entries.filter(e => {
         const matchStatus = filter === 'all' || e.status === filter;
         const q = search.toLowerCase();
         return matchStatus && (!q || e.employee_name.toLowerCase().includes(q) || e.indicator.toLowerCase().includes(q));
     });
+
+    const totalPages = Math.ceil(filtered.length / PER_PAGE);
+    const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
     const countOf = key => key === 'all' ? entries.length : entries.filter(e => e.status === key).length;
     const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
@@ -206,9 +214,34 @@ export default function Index() {
                         No tasks found.
                     </div>
                 ) : (
-                    <div className="task-grid">
-                        {filtered.map(e => <TaskCard key={e.id} entry={e} onClick={() => setActiveEntry(e)} />)}
-                    </div>
+                    <>
+                        <div className="task-grid">
+                            {paginated.map(e => <TaskCard key={e.id} entry={e} onClick={() => setActiveEntry(e)} />)}
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1.25rem' }}>
+                                <button
+                                    disabled={page === 1}
+                                    onClick={() => setPage(p => p - 1)}
+                                    style={pgBtn(false, page === 1)}
+                                    dangerouslySetInnerHTML={{ __html: '&laquo; Previous' }}
+                                />
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                                    <button key={p} onClick={() => setPage(p)}
+                                        style={pgBtn(p === page, false)}>
+                                        {p}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={page === totalPages}
+                                    onClick={() => setPage(p => p + 1)}
+                                    style={pgBtn(false, page === totalPages)}
+                                    dangerouslySetInnerHTML={{ __html: 'Next &raquo;' }}
+                                />
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -233,3 +266,15 @@ const css = `
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; display: inline-block; animation: pulse 1.2s infinite; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 `;
+
+const pgBtn = (active, disabled) => ({
+    borderRadius: 8,
+    border: active ? 'none' : '1px solid var(--admin-border-strong)',
+    padding: '0.35rem 0.85rem',
+    fontSize: '0.82rem',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    background: active ? 'var(--admin-accent)' : 'transparent',
+    color: active ? '#fff' : 'var(--admin-text-primary)',
+    opacity: disabled ? 0.45 : 1,
+    fontWeight: active ? 700 : 400,
+});

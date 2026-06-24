@@ -6,6 +6,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -51,5 +53,18 @@ return Application::configure(basePath: dirname(__DIR__))
                     ? "Too many login attempts. Please try again in {$seconds} second".($seconds === 1 ? '' : 's').'.'
                     : 'Too many login attempts. Please try again later.',
             ]);
+        });
+
+        // Render HTTP errors (404, 403, 419, 429, 500) as Inertia React page.
+        $exceptions->render(function (HttpException $e, Request $request) {
+            $status = $e->getStatusCode();
+
+            if (! in_array($status, [403, 404, 419, 429, 500])) {
+                return null;
+            }
+
+            return Inertia::render('Error', ['status' => $status])
+                ->toResponse($request)
+                ->setStatusCode($status);
         });
     })->create();

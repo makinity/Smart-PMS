@@ -50,6 +50,7 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
     }, [search, month, status]);
 
     const isMobile = bp === 'mobile';
+    const rows = mpors.data ?? mpors;
 
     return (
         <AppLayout title="MPOR Review">
@@ -92,8 +93,8 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                     </div>
                 </div>
 
-                {/* Count */}
-                {mpors.length === 0 ? (
+                {/* List / Table */}
+                {rows.length === 0 ? (
                     <div style={{ ...card, padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.25, margin: '0 auto 0.75rem', display: 'block' }}>
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
@@ -102,9 +103,14 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
                         <p style={{ fontSize: '0.78rem', opacity: 0.65, marginTop: '0.25rem' }}>Employees must submit their MPOR before it appears here.</p>
                     </div>
                 ) : isMobile ? (
-                    <MobileList mpors={mpors} />
+                    <MobileList mpors={rows} />
                 ) : (
-                    <DesktopTable mpors={mpors} />
+                    <DesktopTable mpors={rows} />
+                )}
+
+                {/* Pagination */}
+                {mpors.links?.length > 3 && (
+                    <Pagination links={mpors.links} />
                 )}
             </div>
         </AppLayout>
@@ -202,3 +208,21 @@ const statLabel = { fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-te
 const inputStyle = { padding: '0.55rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' };
 const compactInput = { padding: '0.5rem 0.5rem', fontSize: '0.78rem', borderRadius: 8 };
 const btnView   = { display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.45rem 0.9rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' };
+
+function Pagination({ links }) {
+    if (!links?.length) return null;
+    return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {links.map((link, index) => (
+                <button
+                    key={`${link.label}-${index}`}
+                    type="button"
+                    disabled={!link.url}
+                    onClick={() => { if (!link.url) return; router.get(link.url, {}, { preserveScroll: true, preserveState: true }); }}
+                    style={{ borderRadius: 8, border: link.active ? 'none' : '1px solid var(--admin-border-strong)', padding: '0.35rem 0.85rem', fontSize: '0.82rem', cursor: link.url ? 'pointer' : 'not-allowed', background: link.active ? 'var(--admin-accent)' : 'transparent', color: link.active ? '#fff' : 'var(--admin-text-primary)', opacity: !link.url ? 0.45 : 1, fontWeight: link.active ? 700 : 400 }}
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                />
+            ))}
+        </div>
+    );
+}
