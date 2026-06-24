@@ -81,34 +81,37 @@ export default function Index() {
         <AppLayout title="Performance Overview" description={period?.name}>
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
-                {/* Search */}
-                <div style={{ position: 'relative', marginBottom: '0.6rem' }}>
-                    <i className="bi bi-search" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', fontSize: '0.78rem', pointerEvents: 'none' }} />
-                    <input value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="Search by name, position, or office..."
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.42rem 0.75rem 0.42rem 2rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem', outline: 'none', fontFamily: 'inherit' }} />
-                </div>
+                {/* Search + Filter container */}
+                <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)', padding: '1rem 1.25rem' }}>
+                    {/* Search */}
+                    <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                        <i className="bi bi-search" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', fontSize: '0.78rem', pointerEvents: 'none' }} />
+                        <input value={search} onChange={e => setSearch(e.target.value)}
+                            placeholder="Search by name, position, or office..."
+                            style={{ width: '100%', boxSizing: 'border-box', padding: '0.42rem 0.75rem 0.42rem 2rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.78rem', outline: 'none', fontFamily: 'inherit' }} />
+                    </div>
 
-                {/* Filter tabs */}
-                <div style={{ display: 'flex', gap: 4, marginBottom: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
-                    {TABS.map(t => {
-                        const active = rating === t.key;
-                        const cfg = RATING_CFG[t.key] ?? { color: 'var(--admin-accent)', bg: 'rgba(59,130,246,0.12)' };
-                        const count = t.key === '' ? counts.all : (counts[t.key] ?? 0);
-                        return (
-                            <button key={t.key} onClick={() => setRating(t.key)} style={{
-                                flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',
-                                fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
-                                borderColor: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-border)',
-                                background: active ? cfg.bg : 'transparent',
-                                color: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-text-muted)',
-                                display: 'flex', alignItems: 'center', gap: '0.3rem',
-                            }}>
-                                {t.iconCls && <i className={`bi ${t.iconCls}`} style={{ fontSize: '0.68rem' }} />}
-                                {t.label} {count}
-                            </button>
-                        );
-                    })}
+                    {/* Filter tabs */}
+                    <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                        {TABS.map(t => {
+                            const active = rating === t.key;
+                            const cfg = RATING_CFG[t.key] ?? { color: 'var(--admin-accent)', bg: 'rgba(59,130,246,0.12)' };
+                            const count = t.key === '' ? counts.all : (counts[t.key] ?? 0);
+                            return (
+                                <button key={t.key} onClick={() => setRating(t.key)} style={{
+                                    flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',
+                                    fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                                    borderColor: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-border)',
+                                    background: active ? cfg.bg : 'transparent',
+                                    color: active ? (cfg.color ?? 'var(--admin-accent)') : 'var(--admin-text-muted)',
+                                    display: 'flex', alignItems: 'center', gap: '0.3rem',
+                                }}>
+                                    {t.iconCls && <i className={`bi ${t.iconCls}`} style={{ fontSize: '0.68rem' }} />}
+                                    {t.label} {count}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Results count */}
