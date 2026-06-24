@@ -93,42 +93,48 @@ export default function Show() {
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
                 {/* Header */}
-                <div style={{ ...card, padding:'1.1rem 1.25rem' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:8, marginBottom:'0.5rem' }}>
-                        <div>
-                            <button onClick={() => router.visit('/pmt/opcr-accomplishment')} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--admin-text-muted)', fontSize:'0.82rem', padding:0, marginBottom:4, display:'flex', alignItems:'center', gap:4 }}>
-                                <i className="bi bi-arrow-left" /> Back
-                            </button>
-                            <div style={{ fontWeight:700, fontSize:'1.05rem', color:'var(--admin-text-primary)' }}>{officeInfo.name}</div>
-                            <div style={{ fontSize:'0.75rem', color:'var(--admin-text-muted)' }}>{officeInfo.period} · Dept Head: {officeInfo.dept_head}</div>
-                        </div>
-                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                            {submission.dept_head_flagged_for_calibration && (
-                                <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(167,139,250,0.15)', color:'#a78bfa' }}>
-                                    <i className="bi bi-flag-fill" style={{ marginRight:3 }} />Flagged for Calibration
-                                </span>
-                            )}
-                            <span style={{ padding:'3px 10px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
+                <div style={{ borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'clip', marginBottom: '1rem' }}>
+                    <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)', padding: '0.6rem 1rem' }}>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'0.75rem' }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', minWidth: 0 }}>
+                                <button onClick={() => router.visit('/pmt/opcr-accomplishment')} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--admin-text-primary)', padding:'0.25rem', display:'flex', alignItems:'center', flexShrink:0 }}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                                </button>
+                                <div style={{ width:1, height:28, background:'var(--admin-border-strong)', flexShrink:0 }} />
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontWeight:700, fontSize:'0.95rem', color:'var(--admin-text-primary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{officeInfo.name}</div>
+                                    <div style={{ fontSize:'0.72rem', color:'var(--admin-text-muted)' }}>{officeInfo.period} · {officeInfo.dept_head}</div>
+                                </div>
+                            </div>
+                            <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                                {submission.dept_head_flagged_for_calibration && (
+                                    <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(167,139,250,0.15)', color:'#a78bfa' }}>
+                                        <i className="bi bi-flag-fill" style={{ marginRight:3 }} />Flagged
+                                    </span>
+                                )}
+                                <span style={{ padding:'3px 10px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
+                            </div>
                         </div>
                     </div>
-                    {/* 3-step pipeline */}
-                    <div style={{ display:'flex', alignItems:'center', gap:0, marginTop:'0.75rem' }}>
-                        {[['Draft','bi-pencil-square',true],['Submitted','bi-send',true],['Released','bi-award',released]].map(([label, icon, done], i) => (
-                            <div key={label} style={{ display:'flex', alignItems:'center', flex:1 }}>
-                                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flex:1 }}>
-                                    <div style={{ width:32, height:32, borderRadius:'50%',
-                                        background: done ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
-                                        border:`2px solid ${done ? 'var(--admin-accent)' : 'var(--admin-border)'}`,
-                                        display:'flex', alignItems:'center', justifyContent:'center',
-                                        color: done ? '#fff' : 'var(--admin-text-muted)',
-                                        boxShadow: i===1&&!released ? '0 0 0 4px rgba(59,130,246,0.2)' : 'none' }}>
-                                        <i className={`bi ${done && i<2 ? 'bi-check-lg' : icon}`} style={{ fontSize:'0.78rem' }} />
+                    <div style={{ padding:'1rem 1.25rem' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:0 }}>
+                            {[['Draft','bi-pencil-square',true],['Submitted','bi-send',true],['Released','bi-award',released]].map(([label, icon, done], i) => (
+                                <div key={label} style={{ display:'flex', alignItems:'center', flex:1 }}>
+                                    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flex:1 }}>
+                                        <div style={{ width:32, height:32, borderRadius:'50%',
+                                            background: done ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
+                                            border:`2px solid ${done ? 'var(--admin-accent)' : 'var(--admin-border)'}`,
+                                            display:'flex', alignItems:'center', justifyContent:'center',
+                                            color: done ? '#fff' : 'var(--admin-text-muted)',
+                                            boxShadow: i===1&&!released ? '0 0 0 4px rgba(59,130,246,0.2)' : 'none' }}>
+                                            <i className={`bi ${done && i<2 ? 'bi-check-lg' : icon}`} style={{ fontSize:'0.78rem' }} />
+                                        </div>
+                                        <span style={{ fontSize:'0.58rem', fontWeight: (i===1&&!released)||(i===2&&released) ? 700 : 500, color: (i===1&&!released)||(i===2&&released) ? 'var(--admin-accent)' : 'var(--admin-text-muted)' }}>{label}</span>
                                     </div>
-                                    <span style={{ fontSize:'0.58rem', fontWeight: (i===1&&!released)||(i===2&&released) ? 700 : 500, color: (i===1&&!released)||(i===2&&released) ? 'var(--admin-accent)' : 'var(--admin-text-muted)' }}>{label}</span>
+                                    {i < 2 && <div style={{ height:2, flex:0.5, background: done ? 'var(--admin-accent)' : 'var(--admin-border)', marginBottom:16 }} />}
                                 </div>
-                                {i < 2 && <div style={{ height:2, flex:0.5, background: done ? 'var(--admin-accent)' : 'var(--admin-border)', marginBottom:16 }} />}
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
 

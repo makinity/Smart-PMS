@@ -177,7 +177,7 @@ export default function Show() {
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                                 background: 'none', border: 'none', cursor: 'pointer',
                                 color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0 }}>
-                            <i className="bi bi-arrow-left" /> Back to IDP Approvals
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg> Back to IDP Approvals
                         </button>
                         <a href={`/employee/idp/${plan.id}/export`} style={{
                             display: 'inline-flex', alignItems: 'center', gap: '0.4rem',

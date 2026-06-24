@@ -540,7 +540,7 @@ export default function Show() {
                 <div style={{ ...card, position: 'sticky', top: 0, zIndex: 50, padding: isCompact ? '1rem' : '1.25rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: isCompact ? '0.6rem' : '0.85rem', minWidth: 0 }}>
-                            <button type="button" onClick={() => router.visit(BASE)} title="Back to offices" style={{ ...actionSecondary, padding: '0.5rem 0.7rem', minHeight: 38, flexShrink: 0 }}><i className="bi bi-arrow-left" /></button>
+                            <button type="button" onClick={() => router.visit(BASE)} title="Back to offices" style={{ ...actionSecondary, padding: '0.5rem 0.7rem', minHeight: 38, flexShrink: 0 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
                             <div style={{ minWidth: 0 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                     <h1 style={{ fontSize: isCompact ? '1.1rem' : '1.35rem', fontWeight: 800, color: 'var(--admin-text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2, wordBreak: 'break-word' }}>{office.name}</h1>

@@ -286,29 +286,27 @@ export default function EmployeeShow() {
 
     return (
         <AppLayout title="Employee Accomplishment" description={`${submission?.employee_name} — ${submission?.period}`}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-                {/* Header */}
-                <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: '0.85rem' }}>
-                        <div>
+            <div style={{ borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'clip', marginBottom: '1rem' }}>
+                <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)', padding: '0.6rem 1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                             <button onClick={() => router.visit(`/pmt/opcr-accomplishment/${opcraId}`)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0, marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <i className="bi bi-arrow-left" /> Back to Office Review
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', padding: '0.25rem', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                             </button>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: 1, height: 28, background: 'var(--admin-border-strong)', flexShrink: 0 }} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
                                 <img src={avatarSrc(submission?.employee_avatar)} onError={onAvatarError} alt={submission?.employee_name}
-                                    style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--admin-border-strong)', flexShrink: 0 }} />
-                                <div>
-                                    <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)', marginBottom: 2 }}>
+                                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {submission?.employee_name}
-                                        <span style={{ fontWeight: 400, color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}> — {submission?.employee_office}</span>
                                     </div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>{submission?.period}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{submission?.employee_office} · {submission?.period}</div>
                                 </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                             {hasCalib && (
                                 <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
                                     <i className="bi bi-sliders" style={{ marginRight: 3 }} />Calibrated
@@ -316,8 +314,12 @@ export default function EmployeeShow() {
                             )}
                         </div>
                     </div>
+                </div>
+                <div style={{ padding: '1rem 1.25rem' }}>
                     <PipelineStepper status={status} />
                 </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
                 {/* Calibrated score banner */}
                 {hasCalib && (
