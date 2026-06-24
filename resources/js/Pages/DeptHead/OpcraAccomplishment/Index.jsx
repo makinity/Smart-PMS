@@ -6,6 +6,83 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
 const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
 
+// ── Office-Level OPCR Accomplishment Section ──────────────────────────────────
+const FN_LABELS = { core: 'A. CORE FUNCTIONS', support: 'B. SUPPORT FUNCTIONS', strategic: 'C. STRATEGIC FUNCTIONS' };
+function round2(v) { return Math.round(v * 100) / 100; }
+
+function OpcraOfficeSection({ opcrSections }) {
+    if (!opcrSections || opcrSections.length === 0) return null;
+    const ratingCol = (v) => ({
+        fontWeight: 700, fontSize: '0.82rem',
+        color: !v ? 'var(--admin-text-muted)' : v >= 4.5 ? '#10b981' : v >= 3.5 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444',
+    });
+    const byType = {};
+    opcrSections.forEach(fn => {
+        const ft = fn.function_type === 'support' ? 'support' : 'core';
+        byType[ft] = byType[ft] ?? { ratings: [], weight: fn.weight_percent ?? 0, label: FN_LABELS[ft] ?? ft };
+        fn.outputs.forEach(o => o.indicators.forEach(i => {
+            if (i.A !== null && i.A !== undefined) byType[ft].ratings.push(i.A);
+        }));
+    });
+    const summary = Object.values(byType).map(ft => {
+        const avg = ft.ratings.length ? round2(ft.ratings.reduce((s,v)=>s+v,0)/ft.ratings.length) : 0;
+        return { label: ft.label, weight: ft.weight, weighted: round2(avg * ft.weight / 100) };
+    });
+    const overall = round2(summary.reduce((s,r)=>s+r.weighted,0));
+    return (
+        <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)', overflow: 'hidden' }}>
+            <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--admin-border)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Office OPCR Accomplishment</div>
+            {opcrSections.map((fn, fi) => (
+                <div key={fi}>
+                    <div style={{ padding: '0.6rem 1.25rem', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--admin-text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{FN_LABELS[fn.function_type] ?? fn.function_type}</span>
+                        {fn.weight_percent != null && <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--admin-accent)' }}>{fn.weight_percent}%</span>}
+                    </div>
+                    {fn.outputs.map((output, oi) => (
+                        <div key={oi}>
+                            <div style={{ padding: '0.5rem 1.25rem', background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid var(--admin-border)', fontWeight: 600, fontSize: '0.78rem', color: 'var(--admin-text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{output.output_title}</div>
+                            {output.indicators.map((ind, ii) => (
+                                <div key={ii} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '0.65rem 1.25rem', borderBottom: '1px solid var(--admin-border)', flexWrap: 'wrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+                                        <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: 'var(--admin-text-muted)', flexShrink: 0, marginTop: 2 }}>{ii + 1}</span>
+                                        <span style={{ fontSize: '0.83rem', color: 'var(--admin-text-secondary)', lineHeight: 1.4 }}>{ind.indicator_text}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '1rem', flexShrink: 0 }}>
+                                        {[['Q', ind.Q], ['E', ind.E], ['T', ind.T], ['A', ind.A]].map(([lbl, val]) => (
+                                            <div key={lbl} style={{ textAlign: 'center', minWidth: 36 }}>
+                                                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--admin-text-muted)', marginBottom: 2 }}>{lbl}</div>
+                                                <div style={ratingCol(val)}>{val ? Number(val).toFixed(2) : '—'}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            ))}
+            <div style={{ borderTop: '2px solid var(--admin-border)' }}>
+                <div style={{ padding: '0.5rem 1.25rem', background: 'var(--admin-bg-secondary)' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)' }}>Performance Summary</span>
+                </div>
+                {summary.map((row, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average for {row.label} ({row.weight}%)</span>
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', ...ratingCol(row.weighted) }}>{row.weighted > 0 ? row.weighted.toFixed(2) : '—'}</span>
+                    </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1.25rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1rem', ...ratingCol(overall) }}>{overall > 0 ? overall.toFixed(2) : '—'}</span>
+                        {overall > 0 && <span style={{ fontSize: '0.75rem', color: adjColor(overall) }}>{adjLabel(overall)}</span>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const STATUS_CFG = {
     draft:     { label: 'Draft',     c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' },
     submitted: { label: 'Submitted', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
@@ -31,11 +108,20 @@ function ScoreRing({ score, size = 64 }) {
 }
 
 export default function Index() {
-    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId } = usePage().props;
+    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections } = usePage().props;
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
     const [saving, setSaving]     = useState(false);
+    const [search, setSearch]     = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    const filteredEmployees = employees.filter(emp => {
+        const matchSearch = emp.name.toLowerCase().includes(search.toLowerCase());
+        const empStatus = emp.released ? 'released_by_pmt' : emp.approved ? 'approved' : (emp.status ?? 'not_submitted');
+        const matchStatus = statusFilter === 'all' || empStatus === statusFilter;
+        return matchSearch && matchStatus;
+    });
 
     const status   = submission?.status ?? 'draft';
     const sc       = STATUS_CFG[status] ?? STATUS_CFG.draft;
@@ -163,8 +249,19 @@ export default function Index() {
                 </div>
 
                 <div style={{ ...card, overflow:'hidden' }}>
-                    <div style={{ padding:'0.85rem 1.25rem', borderBottom:'1px solid var(--admin-border)', fontWeight:700, fontSize:'0.9rem', color:'var(--admin-text-primary)' }}>
-                        Employee Ratings
+                    <div style={{ padding:'0.85rem 1.25rem', borderBottom:'1px solid var(--admin-border)' }}>
+                        <div style={{ fontWeight:700, fontSize:'0.9rem', color:'var(--admin-text-primary)', marginBottom:'0.65rem' }}>Employee Ratings</div>
+                        <div style={{ display:'flex', gap:'0.5rem', alignItems:'center', flexWrap:'wrap' }}>
+                            <div style={{ position:'relative', flex:'1 1 180px', minWidth:0 }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position:'absolute', left:'0.6rem', top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employee…" style={{ width:'100%', paddingLeft:'2rem', paddingRight:'0.65rem', paddingTop:'0.4rem', paddingBottom:'0.4rem', borderRadius:8, border:'1px solid var(--admin-border-strong)', background:'var(--admin-bg-secondary)', color:'var(--admin-text-primary)', fontSize:'0.82rem', outline:'none', boxSizing:'border-box' }} />
+                            </div>
+                            <div style={{ display:'flex', gap:'0.3rem', flexShrink:0 }}>
+                                {[['all','All'],['released_by_pmt','Released'],['approved','Approved'],['supervisor_endorsed','Pending'],['not_submitted','Not Submitted']].map(([val, label]) => (
+                                    <button key={val} onClick={() => setStatusFilter(val)} style={{ padding:'0.38rem 0.65rem', borderRadius:7, border:`1px solid ${statusFilter===val?'var(--admin-accent)':'var(--admin-border-strong)'}`, background:statusFilter===val?'rgba(59,130,246,0.12)':'var(--admin-bg-secondary)', color:statusFilter===val?'var(--admin-accent)':'var(--admin-text-muted)', fontWeight:statusFilter===val?700:500, fontSize:'0.75rem', cursor:'pointer', whiteSpace:'nowrap' }}>{label}</button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     {/* Desktop table */}
                     <div style={{ overflowX:'auto', display:'none' }} className="desk-table">
@@ -177,7 +274,9 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {employees.map(emp => {
+                                {filteredEmployees.length === 0 ? (
+                                    <tr><td colSpan={5} style={{ padding:'1.5rem', textAlign:'center', color:'var(--admin-text-muted)', fontSize:'0.85rem' }}>No employees match your filter.</td></tr>
+                                ) : filteredEmployees.map(emp => {
                                     const canView = !!emp.submission_id;
                                     return (
                                         <tr key={emp.id}
@@ -216,7 +315,9 @@ export default function Index() {
                     </div>
                     {/* Mobile cards */}
                     <div className="mob-list">
-                        {employees.map(emp => {
+                        {filteredEmployees.length === 0 ? (
+                            <div style={{ padding:'1.5rem', textAlign:'center', color:'var(--admin-text-muted)', fontSize:'0.85rem' }}>No employees match your filter.</div>
+                        ) : filteredEmployees.map(emp => {
                             const canView = !!emp.submission_id;
                             return (
                                 <div key={emp.id}
@@ -238,6 +339,9 @@ export default function Index() {
                         })}
                     </div>
                 </div>
+
+                {/* Office OPCR Accomplishment */}
+                <OpcraOfficeSection opcrSections={opcrSections} />
 
                 {/* Submit / Released */}
                 {released ? (

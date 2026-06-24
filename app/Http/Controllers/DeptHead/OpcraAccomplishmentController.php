@@ -74,6 +74,31 @@ class OpcraAccomplishmentController extends Controller
 
         $approved = $employeeData->where('approved', true)->count();
 
+        // Office-level OPCR sections (only if approved OPCR exists)
+        $opcrSections = [];
+        if ($approvedOpcr) {
+            $ratingService = app(\App\Services\PerformanceRatingService::class);
+            $scoreMap = $ratingService->buildConsolidatedOfficeOutputRatings($approvedOpcr);
+            $fnMap = [];
+            foreach ($scoreMap as $row) {
+                $fnType = $row['function_type'] ?? 'core';
+                $outputTitle = $row['output_title'] ?? '';
+                $fnMap[$fnType] ??= ['function_type' => $fnType, 'weight_percent' => $row['weight_percent'], 'outputs' => []];
+                $fnMap[$fnType]['outputs'][$outputTitle] ??= ['output_title' => $outputTitle, 'indicators' => []];
+                $fnMap[$fnType]['outputs'][$outputTitle]['indicators'][] = [
+                    'indicator_text' => $row['indicator_text'],
+                    'Q' => $row['q'] > 0 ? $row['q'] : null,
+                    'E' => $row['e'] > 0 ? $row['e'] : null,
+                    'T' => $row['t'] > 0 ? $row['t'] : null,
+                    'A' => $row['a'],  // keep 0 for weighted average computation
+                ];
+            }
+            foreach ($fnMap as &$fn) {
+                $fn['outputs'] = array_values($fn['outputs']);
+            }
+            $opcrSections = array_values($fnMap);
+        }
+
         return Inertia::render('DeptHead/OpcraAccomplishment/Index', [
             'period' => ['id' => $period->id, 'name' => $period->name],
             'submission' => $submission ? [
@@ -91,6 +116,7 @@ class OpcraAccomplishmentController extends Controller
             'stats' => ['approved' => $approved, 'total' => $employeeData->count()],
             'hasApprovedOpcr' => (bool) $approvedOpcr,
             'approvedOpcrId' => $approvedOpcr?->id,
+            'opcrSections' => $opcrSections,
         ]);
     }
 

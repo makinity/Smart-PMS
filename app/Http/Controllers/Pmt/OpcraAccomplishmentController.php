@@ -68,6 +68,36 @@ class OpcraAccomplishmentController extends Controller
             'approved' => $subMap->get($emp->id)?->status === 'dept_head_approved',
         ])->values();
 
+        // Office-level OPCR sections
+        $approvedOpcr = \App\Models\Opcr::where('office_id', $opcraAccomplishment->office_id)
+            ->where('performance_period_id', $opcraAccomplishment->performance_period_id)
+            ->where('status', 'approved')
+            ->first();
+
+        $opcrSections = [];
+        if ($approvedOpcr) {
+            $ratingService = app(\App\Services\PerformanceRatingService::class);
+            $scoreMap = $ratingService->buildConsolidatedOfficeOutputRatings($approvedOpcr);
+            $fnMap = [];
+            foreach ($scoreMap as $row) {
+                $fnType = $row['function_type'] ?? 'core';
+                $outputTitle = $row['output_title'] ?? '';
+                $fnMap[$fnType] ??= ['function_type' => $fnType, 'weight_percent' => $row['weight_percent'], 'outputs' => []];
+                $fnMap[$fnType]['outputs'][$outputTitle] ??= ['output_title' => $outputTitle, 'indicators' => []];
+                $fnMap[$fnType]['outputs'][$outputTitle]['indicators'][] = [
+                    'indicator_text' => $row['indicator_text'],
+                    'Q' => $row['q'] > 0 ? $row['q'] : null,
+                    'E' => $row['e'] > 0 ? $row['e'] : null,
+                    'T' => $row['t'] > 0 ? $row['t'] : null,
+                    'A' => $row['a'],  // keep 0 for weighted average computation
+                ];
+            }
+            foreach ($fnMap as &$fn) {
+                $fn['outputs'] = array_values($fn['outputs']);
+            }
+            $opcrSections = array_values($fnMap);
+        }
+
         return Inertia::render('Pmt/OpcraAccomplishment/Show', [
             'submission' => [
                 'id' => $opcraAccomplishment->id,
@@ -86,6 +116,7 @@ class OpcraAccomplishmentController extends Controller
                 'dept_head' => $opcraAccomplishment->deptHead?->name ?? '—',
             ],
             'employees' => $employeeData,
+            'opcrSections' => $opcrSections,
         ]);
     }
 

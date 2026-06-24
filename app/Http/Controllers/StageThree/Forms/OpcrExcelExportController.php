@@ -37,7 +37,7 @@ class OpcrExcelExportController extends BaseExport
         ]);
         $request->merge([
             '_official_office_rating' => [
-                'final_office_rating' => $submission?->final_office_rating,
+                'final_office_rating' => ($submission?->final_office_rating > 0) ? $submission->final_office_rating : null,
                 'computed_office_rating' => $submission?->computed_office_rating,
                 'final_adjectival_rating' => $submission?->final_adjectival_rating,
             ],
