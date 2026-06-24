@@ -266,6 +266,16 @@ export default function Show() {
     const { qar, office, deptHead, annexRows, mpors } = usePage().props;
     const bp = useBreakpoint();
     const isMobile = bp === 'mobile';
+    const [search, setSearch] = useState('');
+    const [monthFilter, setMonthFilter] = useState('all');
+
+    // Derive unique months from the mpors list (already sorted by the server)
+    const uniqueMonths = [...new Map(mpors.map(m => [m.month, m.month_label])).entries()];
+
+    const filteredMpors = mpors.filter(m =>
+        m.employee.name.toLowerCase().includes(search.toLowerCase()) &&
+        (monthFilter === 'all' || m.month === monthFilter)
+    );
 
     return (
         <AppLayout title={`QAR — ${office?.name}`}>
@@ -315,12 +325,31 @@ export default function Show() {
 
                 {/* Included MPORs */}
                 <div style={card}>
-                    <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', marginBottom: '0.85rem' }}>Included MPORs</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <p style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', margin: 0 }}>Included MPORs</p>
+                    </div>
+                    {mpors.length > 0 && (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 0 }}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: '0.6rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employee…" style={{ width: '100%', paddingLeft: '2rem', paddingRight: '0.65rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', outline: 'none', boxSizing: 'border-box' }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+                                {[{ value: 'all', label: 'All' }, ...uniqueMonths.map(([v, l]) => ({ value: v, label: new Date(v + '-02').toLocaleString('default', { month: 'short' }) }))].map(opt => (
+                                    <button key={opt.value} onClick={() => setMonthFilter(opt.value)} style={{ padding: '0.38rem 0.65rem', borderRadius: 7, border: `1px solid ${monthFilter === opt.value ? 'var(--admin-accent)' : 'var(--admin-border-strong)'}`, background: monthFilter === opt.value ? 'rgba(59,130,246,0.12)' : 'var(--admin-bg-secondary)', color: monthFilter === opt.value ? 'var(--admin-accent)' : 'var(--admin-text-muted)', fontWeight: monthFilter === opt.value ? 700 : 500, fontSize: '0.78rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     {mpors.length === 0 ? (
                         <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', fontStyle: 'italic' }}>No MPORs linked.</div>
                     ) : isMobile ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
-                            {mpors.map(m => (
+                            {filteredMpors.length === 0 ? (
+                                <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>No MPORs match your filter.</div>
+                            ) : filteredMpors.map(m => (
                                 <div key={m.id} style={{ background: 'var(--admin-bg-secondary)', borderRadius: 'var(--admin-radius)', padding: '0.85rem 1rem', border: '1px solid var(--admin-border)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.6rem' }}>
                                         <Avatar name={m.employee.name} src={m.employee.avatar} />
@@ -347,7 +376,9 @@ export default function Show() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mpors.map(m => (
+                                    {filteredMpors.length === 0 ? (
+                                        <tr><td colSpan={4} style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>No MPORs match your filter.</td></tr>
+                                    ) : filteredMpors.map(m => (
                                         <tr key={m.id} onMouseEnter={e => e.currentTarget.style.background='var(--admin-bg-secondary)'} onMouseLeave={e => e.currentTarget.style.background=''}>
                                             <td style={tdS}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
