@@ -123,6 +123,58 @@ class HistoryController extends Controller
             'score'  => $s['final_rating'],
         ]);
 
+        // Enrich each history period with ORS totals + indicator list
+        foreach ($history as $period => &$row) {
+            $ipcr = Ipcr::with([
+                'items.indicator.uwpMfo',
+                'period:id,name,start_date,end_date',
+            ])->where('employee_id', $user->id)
+                ->whereHas('period', fn ($q) => $q->where('name', $period))
+                ->first();
+
+            if (! $ipcr || ! $ipcr->period) continue;
+
+            $p = $ipcr->period;
+
+            // Total ORS qty in period
+            $totalQty = OrsEntry::whereIn('ipcr_item_id', $ipcr->items->pluck('id'))
+                ->where('status', 'rated')
+                ->where('quantity', '>', 0)
+                ->whereBetween('work_date', [$p->start_date, $p->end_date])
+                ->sum('quantity');
+
+            // Indicator list with actual qty and A-rating
+            $indicators = $ipcr->items->map(function ($item) use ($p) {
+                $entries = OrsEntry::where('ipcr_item_id', $item->id)
+                    ->where('status', 'rated')->where('quantity', '>', 0)
+                    ->whereBetween('work_date', [$p->start_date, $p->end_date])
+                    ->with('monitoring')->get();
+
+                $qty      = $entries->sum('quantity');
+                $qualPts  = $entries->sum(fn ($e) => $e->quantity * ($e->monitoring->first()?->quality_rating ?? 0));
+                $timePts  = $entries->sum(fn ($e) => $e->quantity * ($e->monitoring->first()?->timeliness_rating ?? 0));
+                $Q = $qty > 0 ? round($qualPts / $qty, 2) : null;
+                $T = $qty > 0 ? round($timePts / $qty, 2) : null;
+                $target = is_numeric($item->indicator?->target_quantity) ? (float) $item->indicator->target_quantity : null;
+                $E = ($target && $target > 0) ? min(5.00, round(($qty / $target) * 5, 2)) : $Q;
+                $A = ($Q !== null && $T !== null) ? round(($Q + $E + $T) / 3, 2) : null;
+
+                return [
+                    'text' => $item->indicator?->indicator_text ?? '—',
+                    'mfo'  => $item->indicator?->uwpMfo?->title ?? '—',
+                    'qty'  => (int) $qty,
+                    'A'    => $A,
+                    'Q'    => $Q,
+                    'E'    => $E,
+                    'T'    => $T,
+                ];
+            })->values()->all();
+
+            $row['total_qty']   = (int) $totalQty;
+            $row['indicators']  = $indicators;
+        }
+        unset($row);
+
         return Inertia::render('Employee/History/Index', [
             'employee'  => [
                 'id'           => $user->id,

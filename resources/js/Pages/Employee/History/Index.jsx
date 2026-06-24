@@ -13,12 +13,12 @@ const RATING_CFG = {
 };
 
 const SUBMISSION_STATUS = {
-    draft:                   { label: 'Draft',         c: 'var(--admin-text-muted)', bg: 'var(--admin-bg-secondary)' },
-    submitted_to_supervisor: { label: 'Submitted',     c: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-    supervisor_endorsed:     { label: 'Endorsed',      c: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-    dept_head_endorsed:      { label: 'Dept Head ✓',   c: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
-    released_by_pmt:         { label: 'Released',      c: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-    returned_to_employee:    { label: 'Returned',      c: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
+    draft:                   { label: 'Draft',           c: 'var(--admin-text-muted)', bg: 'var(--admin-bg-secondary)' },
+    submitted_to_supervisor: { label: 'Submitted',       c: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+    supervisor_endorsed:     { label: 'Endorsed',        c: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+    dept_head_approved:      { label: 'Dept Head ✓',     c: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+    released_by_pmt:         { label: 'Released',        c: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+    returned_to_employee:    { label: 'Returned',        c: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
 };
 
 const IDP_STATUS = {
@@ -108,31 +108,32 @@ export default function Index() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
                 {/* Header card */}
-                <div style={{ ...card, padding: '1.25rem', borderLeft: `4px solid ${cfg.color}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ ...card, padding: '1rem 1.25rem', borderLeft: `4px solid ${cfg.color}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                         <img src={resolveAvatar(employee.avatar)} alt={employee.name} onError={onAvatarError}
-                            style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `3px solid ${cfg.color}` }} />
+                            style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: `2px solid ${cfg.color}` }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--admin-text-primary)' }}>{employee.name}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>{employee.name}</span>
                                 {employee.employee_id && (
                                     <Badge label={employee.employee_id} color="var(--admin-text-muted)" bg="var(--admin-bg-secondary)" />
                                 )}
                             </div>
-                            <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>{employee.position}</div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>{employee.position}</div>
                             {employee.office && (
-                                <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
-                                    <i className="bi bi-building" /> {employee.office.name}
-                                    {employee.office.code && <span style={{ marginLeft: 5, fontSize: '0.68rem', padding: '1px 6px', borderRadius: 99, background: 'var(--admin-bg-secondary)' }}>{employee.office.code}</span>}
+                                <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <i className="bi bi-building" style={{ fontSize: '0.65rem' }} />
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{employee.office.name}</span>
+                                    {employee.office.code && <span style={{ fontSize: '0.62rem', padding: '1px 5px', borderRadius: 99, background: 'var(--admin-bg-secondary)', flexShrink: 0 }}>{employee.office.code}</span>}
                                 </div>
                             )}
                         </div>
                         {currentScore && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-                                <ScoreRing score={currentScore} rating={currentRating} size={60} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                                <ScoreRing score={currentScore} rating={currentRating} size={52} />
                                 <div>
-                                    <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)' }}>Latest Score</div>
-                                    <div style={{ fontWeight: 800, fontSize: '0.85rem', color: cfg.color, marginTop: 2 }}>
+                                    <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)' }}>Latest Score</div>
+                                    <div style={{ fontWeight: 800, fontSize: '0.78rem', color: cfg.color, marginTop: 2, whiteSpace: 'nowrap' }}>
                                         {cfg.icon} {currentRating}
                                     </div>
                                 </div>
@@ -157,26 +158,86 @@ export default function Index() {
                 {/* ── TAB: Overview ── */}
                 {tab === 'Overview' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: '0.75rem' }}>
+
+                        {/* Current period status */}
+                        {history[0] && (
+                            <div style={{ ...card, padding: '1rem 1.25rem', borderLeft: `4px solid ${history[0].submission?.final_rating ? ratingCfg(history[0].submission?.final_adjectival).color : 'var(--admin-border)'}` }}>
+                                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 8 }}>
+                                    Current Period — {history[0].period}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                                    {history[0].submission?.final_rating ? (
+                                        <>
+                                            <div>
+                                                <div style={{ fontSize: '2rem', fontWeight: 800, color: ratingCfg(history[0].submission.final_adjectival).color, lineHeight: 1 }}>
+                                                    {history[0].submission.final_rating.toFixed(2)}
+                                                </div>
+                                                <div style={{ marginTop: 4 }}>
+                                                    <Badge label={`${ratingCfg(history[0].submission.final_adjectival).icon} ${history[0].submission.final_adjectival}`}
+                                                        color={ratingCfg(history[0].submission.final_adjectival).color}
+                                                        bg={ratingCfg(history[0].submission.final_adjectival).bg}
+                                                        size="0.78rem" />
+                                                </div>
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 160, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                                {history[0].total_qty > 0 && (
+                                                    <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-secondary)' }}>
+                                                        <i className="bi bi-check2-all" style={{ marginRight: 5, color: '#a78bfa' }} />
+                                                        <strong>{history[0].total_qty}</strong> total outputs delivered
+                                                    </div>
+                                                )}
+                                                {history[0].indicators?.length > 0 && (
+                                                    <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-secondary)' }}>
+                                                        <i className="bi bi-list-check" style={{ marginRight: 5, color: 'var(--admin-accent)' }} />
+                                                        <strong>{history[0].indicators.length}</strong> success indicators
+                                                    </div>
+                                                )}
+                                                {history[0].idp && (
+                                                    <div style={{ fontSize: '0.78rem', color: '#f59e0b' }}>
+                                                        <i className="bi bi-journal-check" style={{ marginRight: 5 }} />
+                                                        IDP: {IDP_STATUS[history[0].idp.status]?.label ?? history[0].idp.status}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
+                                            {history[0].submission
+                                                ? <><i className="bi bi-hourglass-split" style={{ marginRight: 5 }} />Accomplishment in progress — {SUBMISSION_STATUS[history[0].submission.status]?.label ?? history[0].submission.status}</>
+                                                : <><i className="bi bi-pencil-square" style={{ marginRight: 5 }} />No submission yet for this period</>
+                                            }
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stat cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: '0.75rem' }}>
                             {[
-                                { label: 'Periods Rated', value: stats.periods_rated, icon: 'bi-calendar-check' },
-                                { label: 'Average Rating', value: stats.avg_rating?.toFixed(2) ?? '—', icon: 'bi-bar-chart' },
-                                { label: 'Best Rating', value: stats.best_rating?.toFixed(2) ?? '—', sub: stats.best_period, icon: 'bi-trophy' },
-                                { label: 'IDPs Submitted', value: stats.idps_submitted, icon: 'bi-journal-check' },
+                                { label: 'Periods Rated', value: stats.periods_rated, icon: 'bi-calendar-check', color: 'var(--admin-accent)' },
+                                { label: 'Average Rating', value: stats.avg_rating?.toFixed(2) ?? '—', icon: 'bi-bar-chart',
+                                  color: stats.avg_rating ? ratingCfg(stats.avg_rating >= 4.5 ? 'Outstanding' : stats.avg_rating >= 3.5 ? 'Very Satisfactory' : stats.avg_rating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
+                                { label: 'Best Rating', value: stats.best_rating?.toFixed(2) ?? '—', sub: stats.best_period, icon: 'bi-trophy',
+                                  color: stats.best_rating ? ratingCfg(stats.best_rating >= 4.5 ? 'Outstanding' : stats.best_rating >= 3.5 ? 'Very Satisfactory' : stats.best_rating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
+                                { label: 'IDPs Submitted', value: stats.idps_submitted, icon: 'bi-journal-check',
+                                  color: stats.idps_submitted > 0 ? '#f59e0b' : 'var(--admin-text-muted)' },
                             ].map(s => (
                                 <div key={s.label} style={{ ...card, padding: '1rem', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                    <i className={`bi ${s.icon}`} style={{ color: 'var(--admin-accent)', fontSize: '1.1rem' }} />
-                                    <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--admin-text-primary)', lineHeight: 1 }}>{s.value}</div>
-                                    <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)' }}>{s.label}</div>
-                                    {s.sub && <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>{s.sub}</div>}
+                                    <i className={`bi ${s.icon}`} style={{ color: s.color, fontSize: '1.1rem' }} />
+                                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                                    <div style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>{s.label}</div>
+                                    {s.sub && <div style={{ fontSize: '0.62rem', color: 'var(--admin-text-muted)' }}>{s.sub}</div>}
                                 </div>
                             ))}
                         </div>
 
+                        {/* Rating trend chart */}
                         {chartData.length >= 2 && (
-                            <div style={{ ...card, padding: '1.1rem' }}>
-                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem',
-                                    textTransform: 'uppercase', letterSpacing: '0.06em' }}>Rating Trend</div>
+                            <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
+                                <div style={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>
+                                    <i className="bi bi-graph-up" style={{ marginRight: 5, color: 'var(--admin-accent)' }} />Rating Trend
+                                </div>
                                 <MiniChart data={chartData} />
                             </div>
                         )}
@@ -223,59 +284,77 @@ export default function Index() {
                                         </div>
                                     </div>
                                     {expanded && (
-                                        <div style={{ borderTop: '1px solid var(--admin-border)', padding: '0.85rem 1.1rem',
-                                            display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '0.75rem 1.5rem' }}>
-                                            {row.ipcr && (
-                                                <div>
-                                                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>IPCR</div>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-primary)' }}>
-                                                        Score: <strong>{row.ipcr.final_score}</strong>
-                                                        {row.ipcr.pmt_score && row.ipcr.pmt_score !== row.ipcr.final_score && (
-                                                            <span style={{ marginLeft: 5, color: 'var(--admin-accent)' }}>→ PMT: <strong>{row.ipcr.pmt_score}</strong></span>
-                                                        )}
-                                                    </div>
-                                                    {(row.ipcr.pmt_adjectival || row.ipcr.adjectival) && (
-                                                        <div style={{ marginTop: 4 }}>
-                                                            <Badge label={row.ipcr.pmt_adjectival || row.ipcr.adjectival}
-                                                                color={ratingCfg(row.ipcr.pmt_adjectival || row.ipcr.adjectival).color}
-                                                                bg={ratingCfg(row.ipcr.pmt_adjectival || row.ipcr.adjectival).bg} />
+                                        <div style={{ borderTop: '1px solid var(--admin-border)', padding: '0.85rem 1.1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                                            {/* Summary row */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: '0.5rem' }}>
+                                                {row.ipcr && (
+                                                    <div style={{ padding: '0.65rem 0.85rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)' }}>
+                                                        <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--admin-accent)', textTransform: 'uppercase', marginBottom: 4 }}>IPCR Score</div>
+                                                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: ratingCfg(row.ipcr.pmt_adjectival || row.ipcr.adjectival).color }}>
+                                                            {row.ipcr.pmt_score ?? row.ipcr.final_score}
                                                         </div>
-                                                    )}
-                                                    {row.ipcr.committed_at && (
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 4 }}>Committed: {row.ipcr.committed_at}</div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {row.submission && (
-                                                <div>
-                                                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Accomplishment</div>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-primary)' }}>
-                                                        Final Rating: <strong>{row.submission.final_rating?.toFixed(2) ?? '—'}</strong>
+                                                        <Badge label={row.ipcr.pmt_adjectival || row.ipcr.adjectival}
+                                                            color={ratingCfg(row.ipcr.pmt_adjectival || row.ipcr.adjectival).color}
+                                                            bg={ratingCfg(row.ipcr.pmt_adjectival || row.ipcr.adjectival).bg} />
                                                     </div>
-                                                    {subCfg && <div style={{ marginTop: 4 }}><Badge label={subCfg.label} color={subCfg.c} bg={subCfg.bg} /></div>}
-                                                    {row.submission.submitted_at && (
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 4 }}>Submitted: {row.submission.submitted_at}</div>
-                                                    )}
-                                                    {row.submission.pmt_action_at && (
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)' }}>PMT Action: {row.submission.pmt_action_at}</div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {row.idp && (
-                                                <div>
-                                                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--admin-text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Dev Plan</div>
-                                                    {idpCfg && <div style={{ marginBottom: 4 }}><Badge label={idpCfg.label} color={idpCfg.c} bg={idpCfg.bg} /></div>}
-                                                    {row.idp.source_score && (
-                                                        <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-primary)' }}>Source: <strong>{row.idp.source_score}</strong></div>
-                                                    )}
-                                                    {row.idp.lnd_sync_status && row.idp.lnd_sync_status !== 'not_sent' && (
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 4 }}>
-                                                            LnD Sync: {row.idp.lnd_sync_status === 'acknowledged' ? '🟢' : row.idp.lnd_sync_status === 'sent' ? '🟡' : '🔴'} {row.idp.lnd_sync_status}
+                                                )}
+                                                {row.submission?.final_rating && (
+                                                    <div style={{ padding: '0.65rem 0.85rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)' }}>
+                                                        <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', marginBottom: 4 }}>Final Rating</div>
+                                                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: adjCfg?.color ?? 'var(--admin-text-primary)' }}>
+                                                            {row.submission.final_rating.toFixed(2)}
                                                         </div>
-                                                    )}
-                                                    {row.idp.submitted_to_ld_at && (
-                                                        <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>Submitted: {row.idp.submitted_to_ld_at}</div>
-                                                    )}
+                                                        {subCfg && <Badge label={subCfg.label} color={subCfg.c} bg={subCfg.bg} />}
+                                                    </div>
+                                                )}
+                                                {row.total_qty > 0 && (
+                                                    <div style={{ padding: '0.65rem 0.85rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)' }}>
+                                                        <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: 4 }}>Total Outputs</div>
+                                                        <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--admin-text-primary)' }}>{row.total_qty}</div>
+                                                        <div style={{ fontSize: '0.65rem', color: 'var(--admin-text-muted)' }}>rated ORS entries</div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Indicators table */}
+                                            {row.indicators?.length > 0 && (
+                                                <div style={{ border: '1px solid var(--admin-border)', borderRadius: 8, overflow: 'hidden' }}>
+                                                    <div style={{ padding: '0.5rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--admin-text-muted)' }}>
+                                                        Success Indicators
+                                                    </div>
+                                                    <div style={{ overflowX: 'auto' }}>
+                                                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                                            <thead>
+                                                                <tr style={{ background: 'var(--admin-bg-secondary)' }}>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', textAlign: 'left', borderBottom: '1px solid var(--admin-border)' }}>Indicator</th>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', textAlign: 'center', borderBottom: '1px solid var(--admin-border)', whiteSpace: 'nowrap' }}>Qty</th>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', textAlign: 'center', borderBottom: '1px solid var(--admin-border)' }}>Q</th>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', textAlign: 'center', borderBottom: '1px solid var(--admin-border)' }}>E</th>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', textAlign: 'center', borderBottom: '1px solid var(--admin-border)' }}>T</th>
+                                                                    <th style={{ padding: '0.4rem 0.75rem', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-accent)', textAlign: 'center', borderBottom: '1px solid var(--admin-border)' }}>A</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {row.indicators.map((ind, j) => {
+                                                                    const aColor = !ind.A ? 'var(--admin-text-muted)' : ind.A >= 4.5 ? '#10b981' : ind.A >= 3.5 ? '#3b82f6' : ind.A >= 2.5 ? '#f59e0b' : '#ef4444';
+                                                                    return (
+                                                                        <tr key={j} style={{ borderBottom: '1px solid var(--admin-border)' }}>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', fontSize: '0.78rem', color: 'var(--admin-text-primary)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={ind.text}>
+                                                                                <div style={{ fontSize: '0.62rem', color: 'var(--admin-text-muted)', marginBottom: 1 }}>{ind.mfo}</div>
+                                                                                {ind.text}
+                                                                            </td>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, color: ind.qty > 0 ? 'var(--admin-text-primary)' : 'var(--admin-text-muted)' }}>{ind.qty || '—'}</td>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', textAlign: 'center', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{ind.Q ?? '—'}</td>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', textAlign: 'center', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{ind.E ?? '—'}</td>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', textAlign: 'center', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{ind.T ?? '—'}</td>
+                                                                            <td style={{ padding: '0.45rem 0.75rem', textAlign: 'center', fontSize: '0.88rem', fontWeight: 800, color: aColor }}>{ind.A ?? '—'}</td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             )}
                                             {row.snapshot && (
