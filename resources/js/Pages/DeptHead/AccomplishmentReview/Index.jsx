@@ -4,17 +4,16 @@ import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
-    supervisor_endorsed:  { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    dept_head_endorsed:   { label: 'Endorsed to PMT', c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    pmt_calibrated:       { label: 'PMT Calibration', c: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
-    released_by_pmt:      { label: 'Released',        c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
-    returned_to_employee: { label: 'Returned',        c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+    supervisor_endorsed:  { label: 'Pending Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    dept_head_approved:   { label: 'Approved',         c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+    released_by_pmt:      { label: 'Released',         c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    returned_to_employee: { label: 'Returned',         c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
 };
 
 const FILTERS = [
     { key: 'all',                  label: 'All' },
     { key: 'supervisor_endorsed',  label: 'Pending' },
-    { key: 'dept_head_endorsed',   label: 'Endorsed' },
+    { key: 'dept_head_approved',   label: 'Approved' },
     { key: 'returned_to_employee', label: 'Returned' },
 ];
 
@@ -61,7 +60,7 @@ export default function Index() {
                     <div>
                         <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>Employee Submissions</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
-                            {pendingCount} pending review · {submissions.length} total
+                            {pendingCount} pending approval · {submissions.length} total
                         </div>
                     </div>
                     {pendingCount > 0 && (

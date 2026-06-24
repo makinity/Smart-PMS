@@ -5,7 +5,6 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
 const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
-const ADJECTIVAL = ['Outstanding','Very Satisfactory','Satisfactory','Unsatisfactory','Poor'];
 
 const STATUS_CFG = {
     submitted: { label:'Pending PMT Review', c:'#f59e0b', bg:'rgba(245,158,11,0.12)' },
@@ -26,110 +25,6 @@ function ScoreRing({ score, size = 80 }) {
                 {score > 0 ? Number(score).toFixed(2) : '—'}
             </div>
         </div>
-    );
-}
-
-function CalibrateModal({ submission, onClose }) {
-    const computed = parseFloat(submission.computed_office_rating ?? 0);
-    const [rating, setRating]     = useState(computed ? computed.toFixed(2) : '');
-    const [adj, setAdj]           = useState(adjLabel(computed));
-    const [remarks, setRemarks]   = useState('');
-    const [saving, setSaving]     = useState(false);
-
-    function onRatingChange(v) {
-        setRating(v);
-        const n = parseFloat(v);
-        if (!isNaN(n)) setAdj(adjLabel(n));
-    }
-    const rColor = adjColor(parseFloat(rating));
-
-    function submit() {
-        setSaving(true);
-        router.post(`/pmt/opcr-accomplishment/${submission.id}/calibrate-release`, {
-            final_office_rating: parseFloat(rating), final_adjectival_rating: adj, pmt_remarks: remarks,
-        }, { preserveScroll:true, onSuccess:() => { setSaving(false); onClose(); }, onError:() => setSaving(false) });
-    }
-
-    return (
-        <>
-            <div onClick={onClose} style={{ position:'fixed', inset:0, zIndex:1100, background:'rgba(0,0,0,0.55)' }} />
-            <div style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', zIndex:1101,
-                background:'var(--admin-card)', borderRadius:'var(--admin-radius)', border:'1px solid var(--admin-border-strong)',
-                boxShadow:'var(--admin-shadow)', width:'90%', maxWidth:520, maxHeight:'90vh', overflowY:'auto' }}>
-                <div style={{ padding:'1rem 1.25rem', borderBottom:'1px solid var(--admin-border)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <div>
-                        <div style={{ fontWeight:700, fontSize:'0.95rem', color:'var(--admin-text-primary)' }}>Calibrate &amp; Release</div>
-                        <div style={{ fontSize:'0.72rem', color:'var(--admin-text-muted)' }}>{submission.office_name} — {submission.period}</div>
-                    </div>
-                    <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--admin-text-muted)', fontSize:'1rem' }}><i className="bi bi-x-lg" /></button>
-                </div>
-
-                <div style={{ padding:'1rem 1.25rem', display:'flex', flexDirection:'column', gap:'1rem' }}>
-                    {/* Comparison */}
-                    <div style={{ display:'flex', gap:'0.75rem', alignItems:'center', flexWrap:'wrap' }}>
-                        <div style={{ flex:1, padding:'0.75rem', borderRadius:10, background:'var(--admin-bg-secondary)', border:'1px solid var(--admin-border)', minWidth:130 }}>
-                            <div style={{ fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase', color:'var(--admin-text-muted)', marginBottom:6 }}>Computed</div>
-                            <div style={{ fontSize:'1.5rem', fontWeight:800, color:adjColor(computed) }}>{computed > 0 ? computed.toFixed(2) : '—'}</div>
-                            <div style={{ fontSize:'0.72rem', color:'var(--admin-text-muted)' }}>{adjLabel(computed)}</div>
-                        </div>
-                        <i className="bi bi-arrow-right" style={{ color:'var(--admin-text-muted)', fontSize:'1.2rem' }} />
-                        <div style={{ flex:1, padding:'0.75rem', borderRadius:10, background:`${rColor}10`, border:`1px solid ${rColor}40`, minWidth:130 }}>
-                            <div style={{ fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase', color:rColor, marginBottom:6 }}>Calibrated</div>
-                            <div style={{ fontSize:'1.5rem', fontWeight:800, color:rColor }}>{rating || '—'}</div>
-                            <div style={{ fontSize:'0.72rem', fontWeight:600, color:rColor }}>{adj || '—'}</div>
-                        </div>
-                    </div>
-
-                    {/* Rating input */}
-                    <div>
-                        <div style={{ fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-text-muted)', marginBottom:'0.4rem' }}>
-                            Final Rating (1.00–5.00) <span style={{ color:'#ef4444' }}>*</span>
-                        </div>
-                        <input type="number" min="1" max="5" step="0.01" value={rating} onChange={e => onRatingChange(e.target.value)}
-                            style={{ width:'100%', boxSizing:'border-box', padding:'0.6rem 0.9rem', background:'var(--admin-bg-secondary)', border:'1px solid var(--admin-border)', borderRadius:8, color:'var(--admin-text-primary)', fontSize:'0.95rem', fontWeight:700, outline:'none', fontFamily:'inherit' }} />
-                    </div>
-
-                    {/* Adjectival pills */}
-                    <div>
-                        <div style={{ fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-text-muted)', marginBottom:'0.4rem' }}>
-                            Adjectival Rating <span style={{ color:'#ef4444' }}>*</span>
-                        </div>
-                        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
-                            {ADJECTIVAL.map(a => (
-                                <button key={a} onClick={() => setAdj(a)} style={{ padding:'0.35rem 0.8rem', borderRadius:99, border:'1px solid', fontSize:'0.72rem', fontWeight:600, cursor:'pointer',
-                                    borderColor: adj===a ? rColor : 'var(--admin-border)',
-                                    background: adj===a ? `${rColor}18` : 'transparent',
-                                    color: adj===a ? rColor : 'var(--admin-text-muted)' }}>{a}</button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Remarks */}
-                    <div>
-                        <div style={{ fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--admin-text-muted)', marginBottom:'0.4rem' }}>
-                            Calibration Remarks <span style={{ color:'#ef4444' }}>*</span>
-                        </div>
-                        <textarea rows={3} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
-                            placeholder="Explain the basis for the calibrated rating..."
-                            style={{ width:'100%', boxSizing:'border-box', padding:'0.65rem 0.9rem', background:'var(--admin-bg-secondary)',
-                                border:`1px solid ${!remarks.trim() ? 'rgba(239,68,68,0.4)' : 'var(--admin-border)'}`,
-                                borderRadius:8, color:'var(--admin-text-primary)', fontSize:'0.85rem', outline:'none', resize:'vertical', fontFamily:'inherit' }} />
-                    </div>
-                </div>
-
-                <div style={{ padding:'0.75rem 1.25rem', borderTop:'1px solid var(--admin-border)', display:'flex', justifyContent:'space-between', gap:8 }}>
-                    <button onClick={onClose} style={{ padding:'0.5rem 1.1rem', borderRadius:8, border:'1px solid var(--admin-border-strong)', background:'transparent', color:'var(--admin-text-primary)', cursor:'pointer', fontSize:'0.85rem', fontWeight:600 }}>Cancel</button>
-                    <button onClick={submit} disabled={!remarks.trim() || !adj || !rating || saving}
-                        style={{ padding:'0.5rem 1.25rem', borderRadius:8, border:'none',
-                            background:(!remarks.trim()||!adj||!rating)?'var(--admin-bg-secondary)':'#a78bfa',
-                            color:(!remarks.trim()||!adj||!rating)?'var(--admin-text-muted)':'#fff',
-                            cursor:(!remarks.trim()||!adj||!rating||saving)?'not-allowed':'pointer',
-                            fontSize:'0.85rem', fontWeight:700, opacity: saving?0.7:1, display:'flex', alignItems:'center', gap:6 }}>
-                        <i className="bi bi-patch-check-fill" />{saving?'Releasing…':'Calibrate & Release'}
-                    </button>
-                </div>
-            </div>
-        </>
     );
 }
 
@@ -175,7 +70,6 @@ function ReturnModal({ submissionId, onClose }) {
 
 export default function Show() {
     const { submission, officeInfo, employees } = usePage().props;
-    const [showCalibrate, setShowCalibrate] = useState(false);
     const [showReturn,    setShowReturn]    = useState(false);
     const [releasing,     setReleasing]     = useState(false);
 
@@ -290,45 +184,73 @@ export default function Show() {
                         <table style={{ width:'100%', borderCollapse:'collapse' }}>
                             <thead>
                                 <tr style={{ background:'var(--admin-bg-secondary)' }}>
-                                    {['Employee','Position','Individual Rating','Adjectival','Released Date'].map(h => (
+                                    {['Employee','Position','System Score','Calibrated','Status',''].map(h => (
                                         <th key={h} style={{ padding:'0.5rem 1rem', fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--admin-text-muted)', textAlign:'left', borderBottom:'1px solid var(--admin-border)', whiteSpace:'nowrap' }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
-                                {employees.map(emp => (
-                                    <tr key={emp.id} style={{ borderBottom:'1px solid var(--admin-border)' }}>
-                                        <td style={{ padding:'0.6rem 1rem' }}>
-                                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                                                <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
-                                                    style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
-                                                <span style={{ fontWeight:600, fontSize:'0.85rem', color:'var(--admin-text-primary)' }}>{emp.name}</span>
-                                            </div>
-                                        </td>
-                                        <td style={{ padding:'0.6rem 1rem', fontSize:'0.8rem', color:'var(--admin-text-muted)' }}>{emp.position}</td>
-                                        <td style={{ padding:'0.6rem 1rem', fontSize:'0.9rem', fontWeight:700, color:adjColor(emp.final_rating) }}>{emp.final_rating ? Number(emp.final_rating).toFixed(2) : '—'}</td>
-                                        <td style={{ padding:'0.6rem 1rem', fontSize:'0.8rem', fontWeight:600, color:adjColor(emp.final_rating) }}>{emp.adjectival ?? '—'}</td>
-                                        <td style={{ padding:'0.6rem 1rem', fontSize:'0.78rem', color:'var(--admin-text-muted)' }}>{emp.released ? (emp.released_at ?? '✓') : <span style={{ color:'#f59e0b' }}>⏳ Pending</span>}</td>
-                                    </tr>
-                                ))}
+                                {employees.map(emp => {
+                                    const canView = !!emp.submission_id;
+                                    return (
+                                        <tr key={emp.id}
+                                            onClick={() => canView && router.visit(`/pmt/opcr-accomplishment/${submission.id}/employee/${emp.submission_id}`)}
+                                            style={{ borderBottom:'1px solid var(--admin-border)', cursor: canView ? 'pointer' : 'default', transition:'background 0.15s' }}
+                                            onMouseEnter={e => canView && (e.currentTarget.style.background='var(--admin-bg-secondary)')}
+                                            onMouseLeave={e => (e.currentTarget.style.background='')}>
+                                            <td style={{ padding:'0.6rem 1rem' }}>
+                                                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                                    <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
+                                                        style={{ width:28, height:28, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                                                    <span style={{ fontWeight:600, fontSize:'0.85rem', color:'var(--admin-text-primary)' }}>{emp.name}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ padding:'0.6rem 1rem', fontSize:'0.8rem', color:'var(--admin-text-muted)' }}>{emp.position}</td>
+                                            <td style={{ padding:'0.6rem 1rem', fontSize:'0.88rem', fontWeight:700, color:adjColor(emp.system_score) }}>
+                                                {emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}
+                                            </td>
+                                            <td style={{ padding:'0.6rem 1rem', fontSize:'0.88rem', fontWeight:700, color: emp.calibrated_rating ? '#a78bfa' : 'var(--admin-text-muted)' }}>
+                                                {emp.calibrated_rating ? Number(emp.calibrated_rating).toFixed(2) : '—'}
+                                                {emp.calibrated_rating && <span style={{ fontSize:'0.62rem', fontWeight:600, marginLeft:4, color:'#a78bfa' }}>calibrated</span>}
+                                            </td>
+                                            <td style={{ padding:'0.6rem 1rem' }}>
+                                                {emp.approved
+                                                    ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(74,222,128,0.12)', color:'#4ade80' }}>✓ Approved</span>
+                                                    : <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(100,116,139,0.12)', color:'var(--admin-text-muted)' }}>
+                                                        {emp.status === 'not_submitted' ? 'Not Submitted' : emp.status}
+                                                    </span>}
+                                            </td>
+                                            <td style={{ padding:'0.6rem 1rem', textAlign:'right' }}>
+                                                {canView && <i className="bi bi-chevron-right" style={{ color:'var(--admin-text-muted)', fontSize:'0.75rem' }} />}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
                     {/* Mobile */}
                     <div className="mob-list">
-                        {employees.map(emp => (
-                            <div key={emp.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.7rem 1rem', borderBottom:'1px solid var(--admin-border)' }}>
-                                <div>
-                                    <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>{emp.name}</div>
-                                    <div style={{ fontSize:'0.72rem', marginTop:2, color: emp.released ? adjColor(emp.final_rating) : 'var(--admin-text-muted)' }}>
-                                        {emp.released ? `${Number(emp.final_rating).toFixed(2)} · ${emp.adjectival}` : 'Not yet released'}
+                        {employees.map(emp => {
+                            const canView = !!emp.submission_id;
+                            return (
+                                <div key={emp.id}
+                                    onClick={() => canView && router.visit(`/pmt/opcr-accomplishment/${submission.id}/employee/${emp.submission_id}`)}
+                                    style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.7rem 1rem', borderBottom:'1px solid var(--admin-border)', cursor: canView ? 'pointer' : 'default' }}>
+                                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                        <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
+                                            style={{ width:32, height:32, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
+                                        <div>
+                                            <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>{emp.name}</div>
+                                            <div style={{ fontSize:'0.72rem', marginTop:2, color: emp.calibrated_rating ? '#a78bfa' : emp.approved ? '#4ade80' : 'var(--admin-text-muted)' }}>
+                                                {emp.calibrated_rating ? `Calibrated: ${Number(emp.calibrated_rating).toFixed(2)}` : emp.approved ? `System: ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : 'Not Submitted'}
+                                            </div>
+                                        </div>
                                     </div>
+                                    {canView && <i className="bi bi-chevron-right" style={{ color:'var(--admin-text-muted)', fontSize:'0.75rem', flexShrink:0 }} />}
                                 </div>
-                                {emp.released
-                                    ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 7px', borderRadius:99, background:'rgba(74,222,128,0.12)', color:'#4ade80' }}>Released</span>
-                                    : <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 7px', borderRadius:99, background:'rgba(245,158,11,0.12)', color:'#f59e0b' }}>Pending</span>}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -338,19 +260,13 @@ export default function Show() {
                         <button onClick={() => setShowReturn(true)} style={{ padding:'0.6rem 1.25rem', borderRadius:8, border:'1px solid rgba(239,68,68,0.4)', background:'rgba(239,68,68,0.08)', color:'#f87171', cursor:'pointer', fontSize:'0.85rem', fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
                             <i className="bi bi-arrow-counterclockwise" /> Return
                         </button>
-                        <div style={{ display:'flex', gap:'0.75rem', flexWrap:'wrap' }}>
-                            <button onClick={() => setShowCalibrate(true)} style={{ padding:'0.6rem 1.25rem', borderRadius:8, border:'1px solid rgba(167,139,250,0.4)', background:'rgba(167,139,250,0.08)', color:'#a78bfa', cursor:'pointer', fontSize:'0.85rem', fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
-                                <i className="bi bi-sliders" /> Calibrate &amp; Release
-                            </button>
-                            <button onClick={doRelease} disabled={releasing} style={{ padding:'0.6rem 1.5rem', borderRadius:8, border:'none', background:'var(--admin-accent)', color:'#fff', cursor: releasing?'not-allowed':'pointer', fontSize:'0.85rem', fontWeight:700, opacity: releasing?0.7:1, display:'flex', alignItems:'center', gap:6 }}>
-                                <i className="bi bi-award-fill" />{releasing?'Releasing…':'Release'}
-                            </button>
-                        </div>
+                        <button onClick={doRelease} disabled={releasing} style={{ padding:'0.6rem 1.5rem', borderRadius:8, border:'none', background:'var(--admin-accent)', color:'#fff', cursor: releasing?'not-allowed':'pointer', fontSize:'0.85rem', fontWeight:700, opacity: releasing?0.7:1, display:'flex', alignItems:'center', gap:6 }}>
+                            <i className="bi bi-award-fill" />{releasing?'Releasing…':'Release'}
+                        </button>
                     </div>
                 )}
             </div>
 
-            {showCalibrate && <CalibrateModal submission={{ ...submission, office_name:officeInfo.name, period:officeInfo.period }} onClose={() => setShowCalibrate(false)} />}
             {showReturn    && <ReturnModal submissionId={submission.id} onClose={() => setShowReturn(false)} />}
 
             <style>{`

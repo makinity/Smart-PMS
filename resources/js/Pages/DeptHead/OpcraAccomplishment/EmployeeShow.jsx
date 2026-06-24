@@ -2,27 +2,20 @@ import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
-import useBreakpoint from '@/Components/useBreakpoint';
 
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
     { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
     { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
-    { key: 'dept_head_endorsed',      label: 'PMT',        icon: 'bi-patch-check' },
+    { key: 'dept_head_approved',      label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
 ];
 const STEP_KEYS = STEPS.map(s => s.key);
-function activeStep(status) {
-    if (!status || status === 'draft' || status === 'returned_to_employee') return 0;
-    const i = STEP_KEYS.indexOf(status);
-    return i === -1 ? 1 : i;
-}
 const STATUS_CFG = {
-    supervisor_endorsed:  { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    dept_head_endorsed:   { label: 'Endorsed to PMT', c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    pmt_calibrated:       { label: 'PMT Calibration', c: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
-    released_by_pmt:      { label: 'Released',        c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
-    returned_to_employee: { label: 'Returned',        c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
+    supervisor_endorsed:  { label: 'Pending Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    dept_head_approved:   { label: 'Approved',         c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+    released_by_pmt:      { label: 'Released',         c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    returned_to_employee: { label: 'Returned',         c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
 };
 const SMPOR_TABS = [
     { key: 'qty',  label: 'Efficiency / Quantity' },
@@ -30,6 +23,11 @@ const SMPOR_TABS = [
     { key: 'time', label: 'Timeliness' },
 ];
 
+function activeStep(status) {
+    if (!status || status === 'draft' || status === 'returned_to_employee') return 0;
+    const i = STEP_KEYS.indexOf(status);
+    return i === -1 ? 1 : i;
+}
 function formatBytes(b) {
     if (!b) return '';
     if (b < 1024) return b + ' B';
@@ -37,7 +35,6 @@ function formatBytes(b) {
     return (b / 1048576).toFixed(1) + ' MB';
 }
 
-// ── Pipeline Stepper ──────────────────────────────────────────────────────────
 function PipelineStepper({ status }) {
     const cur = activeStep(status), returned = status === 'returned_to_employee';
     return (
@@ -65,9 +62,7 @@ function PipelineStepper({ status }) {
     );
 }
 
-// ── Score Circle ──────────────────────────────────────────────────────────────
-function ScoreCircle({ score, rating, label = 'IPCR SCORE' }) {
-    const bp  = useBreakpoint();
+function ScoreCircle({ score, rating }) {
     const pct = Math.min((score / 5) * 100, 100);
     const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
     const r = 28;
@@ -84,34 +79,26 @@ function ScoreCircle({ score, rating, label = 'IPCR SCORE' }) {
                 </div>
             </div>
             <div>
-                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>{label}</div>
-                <div style={{ fontWeight: 700, fontSize: bp === 'mobile' ? '0.72rem' : '0.95rem', color: 'var(--admin-text-primary)', whiteSpace: 'nowrap' }}>{rating ?? '—'}</div>
+                <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>IPCR SCORE</div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)', whiteSpace: 'nowrap' }}>{rating ?? '—'}</div>
             </div>
         </div>
     );
 }
 
-// ── SMPOR Table ───────────────────────────────────────────────────────────────
 function SmporTable({ table }) {
     const [tab, setTab] = useState('qty');
     const months = table?.months ?? [], sections = table?.sections ?? [];
     const th = { padding: '0.5rem 0.75rem', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--admin-text-muted)', whiteSpace: 'nowrap', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)' };
     const td = { padding: '0.55rem 0.75rem', fontSize: '0.82rem', color: 'var(--admin-text-primary)', borderBottom: '1px solid var(--admin-border)', whiteSpace: 'nowrap' };
-
-    function val(row, m) {
-        const d = row.months[m] ?? {};
-        return tab === 'qty' ? d.qty : tab === 'qual' ? d.qual_pts : d.time_pts;
-    }
-    function total(row) {
-        return tab === 'qty' ? row.total_qty : tab === 'qual' ? row.avg_qual : row.avg_time;
-    }
+    function val(row, m) { const d = row.months[m] ?? {}; return tab === 'qty' ? d.qty : tab === 'qual' ? d.qual_pts : d.time_pts; }
+    function total(row) { return tab === 'qty' ? row.total_qty : tab === 'qual' ? row.avg_qual : row.avg_time; }
 
     if (!sections.length) return (
         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>
             <i className="bi bi-table" style={{ fontSize: '1.5rem', display: 'block', marginBottom: 6 }} />No rated ORS data found.
         </div>
     );
-
     return (
         <>
             <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--admin-border)', marginBottom: '0.75rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -121,22 +108,20 @@ function SmporTable({ table }) {
             </div>
             {sections.map(section => (
                 <div key={section.type} style={{ marginBottom: '0.75rem', border: '1px solid var(--admin-border)', borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ padding: '0.5rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--admin-text-primary)', textTransform: 'capitalize' }}>
+                    <div style={{ padding: '0.5rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.78rem', fontWeight: 700, textTransform: 'capitalize', color: 'var(--admin-text-primary)' }}>
                         {section.type}{section.weight ? ` (${section.weight}%)` : ''}
                     </div>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr>
-                                    <th style={{ ...th, position: 'sticky', left: 0, zIndex: 2, minWidth: 200, textAlign: 'left' }}>Expected Output</th>
-                                    {months.map(m => <th key={m} style={{ ...th, textAlign: 'center', minWidth: 60 }}>{m}</th>)}
-                                    <th style={{ ...th, textAlign: 'center', minWidth: 70, color: 'var(--admin-accent)' }}>{tab === 'qty' ? 'Total' : 'Avg'}</th>
-                                </tr>
-                            </thead>
+                            <thead><tr>
+                                <th style={{ ...th, position: 'sticky', left: 0, zIndex: 2, minWidth: 200, textAlign: 'left' }}>Expected Output</th>
+                                {months.map(m => <th key={m} style={{ ...th, textAlign: 'center', minWidth: 60 }}>{m}</th>)}
+                                <th style={{ ...th, textAlign: 'center', minWidth: 70, color: 'var(--admin-accent)' }}>{tab === 'qty' ? 'Total' : 'Avg'}</th>
+                            </tr></thead>
                             <tbody>
                                 {section.rows.map((row, i) => (
                                     <tr key={i}>
-                                        <td style={{ ...td, position: 'sticky', left: 0, zIndex: 1, background: 'var(--admin-card)', fontWeight: 500, maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.output}>{row.output}</td>
+                                        <td style={{ ...td, position: 'sticky', left: 0, zIndex: 1, background: 'var(--admin-card)', fontWeight: 500, maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.output}</td>
                                         {months.map(m => <td key={m} style={{ ...td, textAlign: 'center' }}>{val(row, m) || '—'}</td>)}
                                         <td style={{ ...td, textAlign: 'center', fontWeight: 700, borderLeft: '1px solid var(--admin-border-strong)' }}>{total(row) || '—'}</td>
                                     </tr>
@@ -150,7 +135,6 @@ function SmporTable({ table }) {
     );
 }
 
-// ── IPCR Sections ─────────────────────────────────────────────────────────────
 function RatingBadge({ label, value }) {
     const color = !value ? 'var(--admin-text-muted)' : value >= 4.5 ? '#10b981' : value >= 3.5 ? '#3b82f6' : value >= 2.5 ? '#f59e0b' : '#ef4444';
     return (
@@ -163,7 +147,7 @@ function RatingBadge({ label, value }) {
 
 function IpcrSections({ sections, ipcrMeta }) {
     const typeScores = ipcrMeta?.type_scores ?? [];
-    const score  = ipcrMeta?.score ?? 0;
+    const score = ipcrMeta?.score ?? 0;
     const rating = ipcrMeta?.rating ?? null;
     const sColor = s => s >= 4.5 ? '#10b981' : s >= 3.5 ? '#3b82f6' : s >= 2.5 ? '#f59e0b' : '#ef4444';
 
@@ -173,13 +157,12 @@ function IpcrSections({ sections, ipcrMeta }) {
             {sections.map(fn => (
                 <div key={fn.id} style={{ marginBottom: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.6rem 0.85rem', background: 'rgba(59,130,246,0.05)', borderRadius: '8px 8px 0 0', border: '1px solid var(--admin-border)' }}>
-                        <i className="bi bi-house-door" style={{ color: 'var(--admin-accent)' }} />
                         <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)', flex: 1 }}>{fn.name}</span>
                         {fn.weight && <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(59,130,246,0.10)', color: 'var(--admin-accent)' }}>{fn.weight}%</span>}
                     </div>
                     {fn.mfos.map(mfo => (
                         <div key={mfo.id} style={{ border: '1px solid var(--admin-border)', borderTop: 'none' }}>
-                            <div style={{ padding: '0.55rem 0.85rem', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{mfo.title}</div>
+                            <div style={{ padding: '0.55rem 0.85rem', background: 'var(--admin-bg-secondary)', borderBottom: '1px solid var(--admin-border)', fontSize: '0.82rem', fontWeight: 600 }}>{mfo.title}</div>
                             {mfo.indicators.map((ind, i) => (
                                 <div key={ind.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', padding: '0.7rem 0.85rem', borderBottom: '1px solid var(--admin-border)', flexWrap: 'wrap' }}>
                                     <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', fontSize: '0.62rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>{i + 1}</div>
@@ -199,17 +182,17 @@ function IpcrSections({ sections, ipcrMeta }) {
                 </div>
             ))}
             {typeScores.length > 0 && (
-                <div style={{ marginTop: '0.5rem', padding: '0.85rem', background: 'var(--admin-bg-secondary)', borderRadius: 8, border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                <div style={{ padding: '0.85rem', background: 'var(--admin-bg-secondary)', borderRadius: 8, border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                     <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: 2 }}>Performance Summary</div>
                     {typeScores.map((ts, i) => (
                         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4, fontSize: '0.8rem' }}>
-                            <span style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average Rating for {ts.label} ({ts.weight}%)</span>
+                            <span style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average for {ts.label} ({ts.weight}%)</span>
                             <span style={{ fontWeight: 800, color: sColor(ts.weighted_score) }}>{ts.weighted_score.toFixed(2)}</span>
                         </div>
                     ))}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4, paddingTop: '0.45rem', borderTop: '1px solid var(--admin-border)', fontSize: '0.82rem' }}>
-                        <span style={{ fontWeight: 700, color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
-                        <div style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.45rem', borderTop: '1px solid var(--admin-border)', fontSize: '0.82rem' }}>
+                        <span style={{ fontWeight: 700 }}>OVERALL RATING</span>
+                        <div>
                             <span style={{ fontWeight: 800, fontSize: '1rem', color: sColor(score) }}>{score > 0 ? score.toFixed(2) : '—'}</span>
                             {rating && <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', marginLeft: 6 }}>{rating}</span>}
                         </div>
@@ -220,79 +203,39 @@ function IpcrSections({ sections, ipcrMeta }) {
     );
 }
 
-// ── Endorse Modal ─────────────────────────────────────────────────────────────
-function EndorseModal({ submissionId, onClose }) {
-    const [flagForCalibration, setFlagForCalibration] = useState(false);
+
+function ApproveModal({ submissionId, onClose }) {
     const [remarks, setRemarks] = useState('');
     const [submitting, setSubmitting] = useState(false);
-
     function submit() {
         setSubmitting(true);
-        router.post(`/dept-head/accomplishment-review/${submissionId}/endorse`, {
-            remarks: remarks || null,
-            flag_for_calibration: flagForCalibration,
-        }, {
+        router.post(`/dept-head/accomplishment-review/${submissionId}/approve`, { remarks: remarks || null }, {
             preserveScroll: true,
-            onSuccess: () => { setSubmitting(false); onClose(); },
-            onError:   () => setSubmitting(false),
+            onSuccess: () => router.visit('/dept-head/accomplishment-review'),
+            onError: () => setSubmitting(false),
         });
     }
-
     return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101,
-                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)',
-                boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 500 }}>
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 480 }}>
                 <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Endorse to PMT</div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}>
-                        <i className="bi bi-x-lg" />
-                    </button>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Approve Accomplishment</div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}><i className="bi bi-x-lg" /></button>
                 </div>
-                <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {/* Remarks */}
-                    <div>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' }}>
-                            Remarks <span style={{ fontWeight: 400, color: 'var(--admin-text-muted)', textTransform: 'none' }}>(optional)</span>
-                        </div>
-                        <textarea rows={3} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
-                            placeholder="Add endorsement notes for PMT..."
-                            style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem',
-                                background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)',
-                                borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem',
-                                outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
+                <div style={{ padding: '1rem 1.25rem' }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' }}>
+                        Remarks <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span>
                     </div>
-
-                    {/* Flag for calibration toggle */}
-                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer',
-                        padding: '0.85rem 1rem', borderRadius: 10,
-                        background: flagForCalibration ? 'rgba(167,139,250,0.08)' : 'var(--admin-bg-secondary)',
-                        border: `1px solid ${flagForCalibration ? 'rgba(167,139,250,0.4)' : 'var(--admin-border)'}`,
-                        transition: 'all 0.15s' }}>
-                        <input type="checkbox" checked={flagForCalibration} onChange={e => setFlagForCalibration(e.target.checked)}
-                            style={{ marginTop: 2, accentColor: '#a78bfa', width: 16, height: 16, flexShrink: 0 }} />
-                        <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.88rem', color: flagForCalibration ? '#a78bfa' : 'var(--admin-text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <i className="bi bi-flag-fill" style={{ fontSize: '0.82rem' }} />
-                                Flag for PMT Calibration
-                            </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 3, lineHeight: 1.5 }}>
-                                Check this if the rating needs to be reviewed and normalized by the PMT calibration session before release.
-                            </div>
-                        </div>
-                    </label>
+                    <textarea rows={3} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
+                        placeholder="Add any notes for this approval..."
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
                 </div>
                 <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
                     <button onClick={submit} disabled={submitting}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none',
-                            background: flagForCalibration ? '#a78bfa' : 'var(--admin-accent)',
-                            color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1,
-                            display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className={`bi ${flagForCalibration ? 'bi-flag-fill' : 'bi-check2-circle'}`} />
-                        {submitting ? 'Endorsing…' : flagForCalibration ? 'Endorse & Flag for Calibration' : 'Endorse to PMT'}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <i className="bi bi-check2-circle" />{submitting ? 'Approving…' : 'Approve'}
                     </button>
                 </div>
             </div>
@@ -300,32 +243,25 @@ function EndorseModal({ submissionId, onClose }) {
     );
 }
 
-// ── Return Modal ──────────────────────────────────────────────────────────────
 function ReturnModal({ submissionId, onClose }) {
     const [remarks, setRemarks] = useState('');
     const [submitting, setSubmitting] = useState(false);
-
     function submit() {
         if (!remarks.trim()) return;
         setSubmitting(true);
         router.post(`/dept-head/accomplishment-review/${submissionId}/return`, { remarks }, {
             preserveScroll: true,
-            onSuccess: () => { setSubmitting(false); onClose(); },
-            onError:   () => setSubmitting(false),
+            onSuccess: () => router.visit('/dept-head/accomplishment-review'),
+            onError: () => setSubmitting(false),
         });
     }
-
     return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101,
-                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)',
-                boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 480 }}>
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 480 }}>
                 <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Return Submission</div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}>
-                        <i className="bi bi-x-lg" />
-                    </button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}><i className="bi bi-x-lg" /></button>
                 </div>
                 <div style={{ padding: '1rem 1.25rem' }}>
                     <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' }}>
@@ -333,23 +269,14 @@ function ReturnModal({ submissionId, onClose }) {
                     </div>
                     <textarea rows={4} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
                         placeholder="Explain why this submission is being returned..."
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem',
-                            background: 'var(--admin-bg-secondary)',
-                            border: `1px solid ${!remarks.trim() ? 'rgba(239,68,68,0.4)' : 'var(--admin-border)'}`,
-                            borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem',
-                            outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem', background: 'var(--admin-bg-secondary)', border: `1px solid ${!remarks.trim() ? 'rgba(239,68,68,0.4)' : 'var(--admin-border)'}`, borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
                     <div style={{ textAlign: 'right', fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>{remarks.length}/2000</div>
                 </div>
                 <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
                     <button onClick={submit} disabled={!remarks.trim() || submitting}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none',
-                            background: !remarks.trim() ? 'var(--admin-bg-secondary)' : '#ef4444',
-                            color: !remarks.trim() ? 'var(--admin-text-muted)' : '#fff',
-                            cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer',
-                            fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-arrow-counterclockwise" />
-                        {submitting ? 'Returning…' : 'Return to Employee'}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: !remarks.trim() ? 'var(--admin-bg-secondary)' : '#ef4444', color: !remarks.trim() ? 'var(--admin-text-muted)' : '#fff', cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <i className="bi bi-arrow-counterclockwise" />{submitting ? 'Returning…' : 'Return to Employee'}
                     </button>
                 </div>
             </div>
@@ -357,25 +284,23 @@ function ReturnModal({ submissionId, onClose }) {
     );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-export default function Show() {
+export default function EmployeeShow() {
     const { submission, smporTable, ipcrSections, ipcrMeta } = usePage().props;
-    const [showEndorse, setShowEndorse] = useState(false);
+    const [showApprove, setShowApprove] = useState(false);
     const [showReturn,  setShowReturn]  = useState(false);
     const [activeTab,   setActiveTab]   = useState('smpor');
 
     const status  = submission?.status;
     const sc      = STATUS_CFG[status] ?? { label: status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
     const canAct  = status === 'supervisor_endorsed';
-
-    const card         = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
-    const sectionLabel = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
+    const card    = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
+    const lbl     = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
 
     return (
-        <AppLayout title="Review Accomplishment" description={`${submission?.employee_name} — ${submission?.period}`}>
+        <AppLayout title="Employee Accomplishment" description={`${submission?.employee_name} — ${submission?.period}`}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-                {/* Header + pipeline */}
+                {/* Header */}
                 <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: '0.85rem' }}>
                         <div>
@@ -395,22 +320,15 @@ export default function Show() {
                                 </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            {submission?.dept_head_flagged_for_calibration && (
-                                <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(167,139,250,0.15)', color: '#a78bfa' }}>
-                                    <i className="bi bi-flag-fill" style={{ marginRight: 3 }} />Flagged for Calibration
-                                </span>
-                            )}
-                            <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, background: sc.bg, color: sc.c }}>{sc.label}</span>
-                        </div>
+                        <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, background: sc.bg, color: sc.c }}>{sc.label}</span>
                     </div>
                     <PipelineStepper status={status} />
                 </div>
 
-                {/* Supervisor remarks (read-only for Dept Head context) */}
+                {/* Supervisor remarks */}
                 {submission?.supervisor_remarks && (
                     <div style={{ ...card, padding: '1rem 1.25rem', borderLeft: '3px solid #60a5fa' }}>
-                        <div style={sectionLabel}>Supervisor Remarks</div>
+                        <div style={lbl}>Supervisor Remarks</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, fontStyle: 'italic' }}>{submission.supervisor_remarks}</div>
                     </div>
                 )}
@@ -423,29 +341,20 @@ export default function Show() {
                     </div>
                 )}
 
-                {/* Official Final Rating — shown after release */}
-                {status === 'released_by_pmt' && (
-                    <div style={{ ...card, padding: '1.1rem 1.25rem', borderLeft: '3px solid #4ade80', background: 'rgba(74,222,128,0.04)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                            <div>
-                                <div style={sectionLabel}>Official Final Rating</div>
-                                <ScoreCircle score={submission?.final_rating ?? 0} rating={submission?.final_adjectival_rating} label="Final Rating" />
-                            </div>
-                            {submission?.pmt_remarks && (
-                                <div style={{ flex: 1, minWidth: 200, padding: '0.75rem', borderRadius: 8, background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)' }}>
-                                    <div style={sectionLabel}>PMT Remarks</div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, fontStyle: 'italic' }}>{submission.pmt_remarks}</div>
-                                </div>
-                            )}
+                {/* Approved banner */}
+                {status === 'dept_head_approved' && (
+                    <div style={{ ...card, padding: '0.85rem 1rem', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)', borderLeft: '3px solid #10b981' }}>
+                        <div style={{ fontSize: '0.82rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="bi bi-check-circle-fill" /> Approved — included in OPCR Accomplishment pool.
                         </div>
                     </div>
                 )}
 
-                {/* Summary cards */}
+                {/* Score + data source */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
-                            <div><div style={sectionLabel}>SMPOR</div><div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>Summary MPOR</div></div>
+                            <div style={lbl}>SMPOR</div>
                             <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '2px 8px', borderRadius: 99,
                                 background: submission?.dataset_source === 'qar_official' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
                                 color: submission?.dataset_source === 'qar_official' ? '#10b981' : '#f59e0b' }}>
@@ -457,8 +366,9 @@ export default function Show() {
                         </button>
                     </div>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                        <div style={{ marginBottom: '0.65rem' }}><div style={sectionLabel}>IPCR Score</div></div>
-                        {ipcrMeta ? <div style={{ marginBottom: '0.65rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div> : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.65rem' }}>No IPCR data.</div>}
+                        <div style={{ marginBottom: '0.65rem' }}><div style={lbl}>IPCR Score</div></div>
+                        {ipcrMeta ? <div style={{ marginBottom: '0.65rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div>
+                            : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.65rem' }}>No IPCR data.</div>}
                         <button onClick={() => setActiveTab('ipcr')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-clipboard2-data" /> View IPCR
                         </button>
@@ -477,14 +387,14 @@ export default function Show() {
                     {activeTab === 'smpor' ? <SmporTable table={smporTable} /> : <IpcrSections sections={ipcrSections} ipcrMeta={ipcrMeta} />}
                 </div>
 
-                {/* Supporting docs */}
+                {/* Attachments */}
                 {submission?.attachments?.length > 0 && (
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                        <div style={sectionLabel}>Supporting Documents</div>
+                        <div style={lbl}>Supporting Documents</div>
                         {submission.attachments.map((a, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.45rem 0.75rem', background: 'var(--admin-bg-secondary)', borderRadius: 8, border: '1px solid var(--admin-border)', marginBottom: 4 }}>
                                 <i className="bi bi-file-earmark" style={{ color: 'var(--admin-accent)', flexShrink: 0 }} />
-                                <span style={{ flex: 1, fontSize: '0.82rem', color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.original_name}</span>
+                                <span style={{ flex: 1, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.original_name}</span>
                                 <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', flexShrink: 0 }}>{formatBytes(a.size)}</span>
                                 <a href={a.url} target="_blank" rel="noreferrer" style={{ padding: '3px 7px', borderRadius: 5, border: '1px solid var(--admin-border)', color: 'var(--admin-text-muted)', textDecoration: 'none', fontSize: '0.78rem' }}>
                                     <i className="bi bi-download" />
@@ -497,7 +407,7 @@ export default function Show() {
                 {/* Employee remarks */}
                 {submission?.employee_remarks && (
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
-                        <div style={sectionLabel}>Employee Remarks</div>
+                        <div style={lbl}>Employee Remarks</div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, fontStyle: 'italic' }}>{submission.employee_remarks}</div>
                     </div>
                 )}
@@ -509,15 +419,15 @@ export default function Show() {
                             style={{ padding: '0.6rem 1.5rem', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-arrow-counterclockwise" /> Return
                         </button>
-                        <button onClick={() => setShowEndorse(true)}
-                            style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <i className="bi bi-check2-circle" /> Endorse to PMT
+                        <button onClick={() => setShowApprove(true)}
+                            style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <i className="bi bi-check2-circle" /> Approve
                         </button>
                     </div>
                 )}
             </div>
 
-            {showEndorse && <EndorseModal submissionId={submission.id} onClose={() => setShowEndorse(false)} />}
+            {showApprove && <ApproveModal submissionId={submission.id} onClose={() => setShowApprove(false)} />}
             {showReturn  && <ReturnModal  submissionId={submission.id} onClose={() => setShowReturn(false)} />}
         </AppLayout>
     );

@@ -22,11 +22,11 @@ class AccomplishmentReviewController extends Controller
 
         $submissions = AccomplishmentSubmission::where('dept_head_id', $deptHead->id)
             ->whereIn('status', [
-                'supervisor_endorsed', 'dept_head_endorsed', 'pmt_calibrated',
+                'supervisor_endorsed', 'dept_head_approved',
                 'released_by_pmt', 'returned_to_employee',
             ])
             ->with(['employee.office', 'period'])
-            ->orderByRaw("FIELD(status, 'supervisor_endorsed', 'returned_to_employee', 'dept_head_endorsed', 'pmt_calibrated', 'released_by_pmt')")
+            ->orderByRaw("FIELD(status, 'supervisor_endorsed', 'returned_to_employee', 'dept_head_approved', 'released_by_pmt')")
             ->orderByDesc('submitted_at')
             ->get()
             ->map(fn ($s) => [
@@ -85,37 +85,23 @@ class AccomplishmentReviewController extends Controller
         ]);
     }
 
-    public function endorse(Request $request, AccomplishmentSubmission $accomplishment)
+    public function approve(Request $request, AccomplishmentSubmission $accomplishment)
     {
         $deptHead = auth()->user();
         abort_if($accomplishment->dept_head_id !== $deptHead->id, 403);
-        abort_if($accomplishment->status !== 'supervisor_endorsed', 422, 'Cannot endorse at this stage.');
+        abort_if($accomplishment->status !== 'supervisor_endorsed', 422, 'Cannot approve at this stage.');
 
         $data = $request->validate([
             'remarks' => ['nullable', 'string', 'max:2000'],
-            'flag_for_calibration' => ['boolean'],
         ]);
 
         $accomplishment->update([
-            'status' => 'dept_head_endorsed',
+            'status' => 'dept_head_approved',
             'dept_head_remarks' => $data['remarks'] ?? null,
-            'dept_head_flagged_for_calibration' => $data['flag_for_calibration'] ?? false,
             'dept_head_action_at' => now(),
         ]);
 
-        // Notify PMT members
-        User::where('role', 'pmt')
-            ->each(function (User $pmt) use ($accomplishment, $deptHead) {
-                $flag = $accomplishment->dept_head_flagged_for_calibration ? ' (Flagged for Calibration)' : '';
-                $pmt->notify(new WorkflowEventNotification(
-                    type: 'info',
-                    event: 'accomplishment.dept_head_endorsed',
-                    message: "{$accomplishment->employee->name}'s accomplishment has been endorsed by {$deptHead->name}{$flag}.",
-                    url: route('pmt.accomplishment-review.show', $accomplishment),
-                ));
-            });
-
-        return back()->with('success', 'Accomplishment endorsed and forwarded to PMT.');
+        return back()->with('success', 'Accomplishment approved and added to OPCR Accomplishment pool.');
     }
 
     public function return(Request $request, AccomplishmentSubmission $accomplishment)

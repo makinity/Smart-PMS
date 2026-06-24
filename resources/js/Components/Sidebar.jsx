@@ -48,7 +48,6 @@ const roleLinks = {
         { href: '/pmt/qar', label: 'QAR', icon: 'bi-file-earmark-check-fill' },
         { href: '/pmt/performance-overview', label: 'Performance Overview', icon: 'bi-bar-chart-steps' },
         { href: '/pmt/idp', label: 'IDP', icon: 'bi-journal-bookmark-fill' },
-        { href: '/pmt/accomplishment-review', label: 'Accomplishment Review', icon: 'bi-award-fill' },
         { href: '/pmt/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },
         { href: '/pmt/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
