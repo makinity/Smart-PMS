@@ -1,6 +1,72 @@
 import { useForm } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
+
+function ParticleCanvas({ darkMode }) {
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+        if (window.innerWidth < 1024) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const SPACING = 28, RADIUS = 1.8, REPEL_DIST = 120, REPEL_STRENGTH = 40, LERP = 0.08;
+
+        let dots = [], mouse = { x: -999, y: -999 }, raf;
+
+        function build() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            dots = [];
+            for (let x = SPACING; x < canvas.width; x += SPACING)
+                for (let y = SPACING; y < canvas.height; y += SPACING)
+                    dots.push({ rx: x, ry: y, cx: x, cy: y });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const color = darkMode ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)';
+            ctx.fillStyle = color;
+            for (const d of dots) {
+                const dx = d.cx - mouse.x, dy = d.cy - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                let tx = d.rx, ty = d.ry;
+                if (dist < REPEL_DIST && dist > 0) {
+                    const force = (1 - dist / REPEL_DIST) * REPEL_STRENGTH;
+                    tx = d.rx + (dx / dist) * force;
+                    ty = d.ry + (dy / dist) * force;
+                }
+                d.cx += (tx - d.cx) * LERP;
+                d.cy += (ty - d.cy) * LERP;
+                ctx.beginPath();
+                ctx.arc(d.cx, d.cy, RADIUS, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            raf = requestAnimationFrame(draw);
+        }
+
+        const onMove = e => {
+            const rect = canvas.getBoundingClientRect();
+            mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        };
+        const onLeave = () => { mouse = { x: -999, y: -999 }; };
+        const onResize = () => { build(); };
+
+        build();
+        draw();
+        canvas.addEventListener('mousemove', onMove);
+        canvas.addEventListener('mouseleave', onLeave);
+        window.addEventListener('resize', onResize);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            canvas.removeEventListener('mousemove', onMove);
+            canvas.removeEventListener('mouseleave', onLeave);
+            window.removeEventListener('resize', onResize);
+        };
+    }, [darkMode]);
+
+    return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, pointerEvents: 'none', display: 'none' }} className="particle-canvas" />;
+}
 
 export default function Login() {
     const [mode, setMode] = useState('login');
@@ -234,12 +300,15 @@ export default function Login() {
                     background: 'var(--admin-bg-primary)',
                     padding: '2rem 1rem',
                     gap: '1.25rem',
+                    position: 'relative',
                 }}>
+                    <ParticleCanvas darkMode={darkMode} />
                     {/* Mobile-only logo */}
                     <div className="mobile-logo" style={{
                         display: 'none',
                         alignItems: 'center',
                         gap: '0.6rem',
+                        position: 'relative', zIndex: 1,
                     }}>
                         <img src="/images/pms-logo.png" alt="Smart PMS" style={{ width: 32, height: 32, objectFit: 'contain' }} />
                         <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--admin-text-primary)', letterSpacing: '-0.01em' }}>Smart PMS</span>
@@ -253,6 +322,7 @@ export default function Login() {
                         borderRadius: 'var(--admin-radius)',
                         boxShadow: 'var(--admin-shadow)',
                         padding: '2.5rem 2rem',
+                        position: 'relative', zIndex: 1,
                     }}>
                         {/* Form header */}
                         <div style={{ marginBottom: '2rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
@@ -376,6 +446,7 @@ export default function Login() {
 
                 @media (min-width: 768px) { .auth-hero { display: flex !important; } }
                 @media (max-width: 767px) { .mobile-logo { display: flex !important; } }
+                @media (min-width: 1024px) { .particle-canvas { display: block !important; pointer-events: auto !important; } }
 
                 .auth-split-slide {
                     position: absolute;
