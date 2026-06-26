@@ -10,6 +10,7 @@ use App\Models\Opcr;
 use App\Models\OrsEntry;
 use App\Models\PerformancePeriod;
 use App\Models\QarHeader;
+use App\Models\UnitWorkPlan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -43,50 +44,94 @@ class PerformancePeriodsController extends Controller
         $pid  = $performancePeriod->id;
         $name = $performancePeriod->name;
 
-        // Employees with unsubmitted ORS or uncommitted IPCR or draft accomplishment
+        // All active employees in the system
+        $allEmployeeIds = \App\Models\User::where('role', 'employee')->where('is_active', true)->pluck('id');
+
+        // Employees with no IPCR at all for this period
+        $withIpcr = Ipcr::where('performance_period_id', $pid)->pluck('employee_id');
+        $noIpcrIds = $allEmployeeIds->diff($withIpcr);
+
+        // Employees with IPCR not yet committed
+        $uncommittedIpcrIds = Ipcr::where('performance_period_id', $pid)
+            ->whereNotIn('status', ['committed', 'released_by_pmt'])
+            ->pluck('employee_id');
+
+        // Employees with committed IPCR but no accomplishment submission
+        $withAccomplishment = AccomplishmentSubmission::where('performance_period_id', $pid)->pluck('employee_id');
+        $committedNoAccomplishmentIds = Ipcr::where('performance_period_id', $pid)
+            ->whereIn('status', ['committed', 'released_by_pmt'])
+            ->pluck('employee_id')
+            ->diff($withAccomplishment);
+
+        // Employees with draft/in-progress accomplishment
+        $draftAccomplishmentIds = AccomplishmentSubmission::where('performance_period_id', $pid)
+            ->whereIn('status', ['draft', 'returned_to_employee'])
+            ->pluck('employee_id');
+
+        // Employees with unsubmitted ORS
+        $orsIds = OrsEntry::where('performance_period_id', $pid)
+            ->whereIn('status', ['draft', 'recording', 'paused'])
+            ->pluck('employee_id');
+
         $employeeIds = collect()
-            ->merge(
-                OrsEntry::where('performance_period_id', $pid)
-                    ->whereIn('status', ['draft', 'recording', 'paused'])
-                    ->pluck('employee_id')
-            )
-            ->merge(
-                Ipcr::where('performance_period_id', $pid)
-                    ->whereNotIn('status', ['committed', 'released_by_pmt'])
-                    ->pluck('employee_id')
-            )
-            ->merge(
-                AccomplishmentSubmission::where('performance_period_id', $pid)
-                    ->whereNotIn('status', ['pmt_approved', 'returned_to_employee'])
-                    ->whereIn('status', ['draft'])
-                    ->pluck('employee_id')
-            )
+            ->merge($noIpcrIds)
+            ->merge($uncommittedIpcrIds)
+            ->merge($committedNoAccomplishmentIds)
+            ->merge($draftAccomplishmentIds)
+            ->merge($orsIds)
             ->unique();
 
-        // Supervisors with unrated ORS entries
-        $supervisorIds = OrsEntry::where('performance_period_id', $pid)
+        // Supervisors with unrated ORS entries or draft UWP
+        $supervisorOrsIds = OrsEntry::where('performance_period_id', $pid)
             ->where('status', 'submitted')
             ->pluck('supervisor_id')
             ->unique();
 
-        // Dept heads with accomplishments pending endorsement or unsubmitted QAR
-        $deptHeadIds = collect()
-            ->merge(
-                AccomplishmentSubmission::where('performance_period_id', $pid)
-                    ->whereIn('status', ['supervisor_endorsed'])
-                    ->pluck('dept_head_id')
-                    ->filter()
-            )
-            ->merge(
-                QarHeader::where('performance_period_id', $pid)
-                    ->whereNotIn('status', ['submitted', 'pmt_approved'])
-                    ->pluck('office_id')
-                    ->map(fn($oid) => \App\Models\User::where('office_id', $oid)->where('role', 'dept-head')->value('id'))
-                    ->filter()
-            )
+        $supervisorUwpIds = UnitWorkPlan::where('performance_period_id', $pid)
+            ->whereIn('status', ['draft', 'returned'])
+            ->pluck('office_id')
+            ->map(fn($oid) => \App\Models\User::where('office_id', $oid)->where('role', 'supervisor')->value('id'))
+            ->filter()
             ->unique();
 
-        $notif = fn(string $role, string $msg, string $url) =>
+        // Accomplishments pending supervisor endorsement
+        $supervisorAccomplishmentIds = AccomplishmentSubmission::where('performance_period_id', $pid)
+            ->where('status', 'submitted')
+            ->pluck('supervisor_id')
+            ->filter()
+            ->unique();
+
+        $supervisorIds = collect()
+            ->merge($supervisorOrsIds)
+            ->merge($supervisorUwpIds)
+            ->merge($supervisorAccomplishmentIds)
+            ->unique();
+
+        // Dept heads with no OPCR, pending accomplishment endorsement, or unsubmitted QAR
+        $noOpcrDeptHeadIds = \App\Models\Office::where('is_active', true)
+            ->get()
+            ->filter(fn($o) => ! Opcr::where('performance_period_id', $pid)->where('office_id', $o->id)->whereIn('status', ['approved'])->exists())
+            ->map(fn($o) => \App\Models\User::where('office_id', $o->id)->where('role', 'dept-head')->value('id'))
+            ->filter();
+
+        $deptHeadAccomplishmentIds = AccomplishmentSubmission::where('performance_period_id', $pid)
+            ->whereIn('status', ['supervisor_endorsed'])
+            ->pluck('dept_head_id')
+            ->filter();
+
+        $deptHeadQarIds = QarHeader::where('performance_period_id', $pid)
+            ->whereNotIn('status', ['submitted', 'pmt_approved'])
+            ->pluck('office_id')
+            ->map(fn($oid) => \App\Models\User::where('office_id', $oid)->where('role', 'dept-head')->value('id'))
+            ->filter();
+
+        $deptHeadIds = collect()
+            ->merge($noOpcrDeptHeadIds)
+            ->merge($deptHeadAccomplishmentIds)
+            ->merge($deptHeadQarIds)
+            ->unique();
+
+        $notif = fn(string $msg, string $url) =>
             new \App\Notifications\WorkflowEventNotification(
                 type: 'alert',
                 event: 'period.closing_reminder',
@@ -95,22 +140,22 @@ class PerformancePeriodsController extends Controller
             );
 
         \App\Models\User::whereIn('id', $employeeIds)->each(fn($u) =>
-            $u->notify($notif('employee',
-                "The performance period \"{$name}\" is closing. Please complete your pending ORS entries, IPCR, or accomplishment submission.",
-                '/employee/ors'
+            $u->notify($notif(
+                "The performance period \"{$name}\" is closing. Please complete all pending tasks (IPCR, ORS entries, or accomplishment submission).",
+                '/employee/accomplishment'
             ))
         );
 
         \App\Models\User::whereIn('id', $supervisorIds)->each(fn($u) =>
-            $u->notify($notif('supervisor',
-                "The performance period \"{$name}\" is closing. Please review and rate pending ORS entries from your team.",
+            $u->notify($notif(
+                "The performance period \"{$name}\" is closing. Please submit your UWP and review pending ORS entries or accomplishment submissions from your team.",
                 '/supervisor/ors-monitoring'
             ))
         );
 
         \App\Models\User::whereIn('id', $deptHeadIds)->each(fn($u) =>
-            $u->notify($notif('dept-head',
-                "The performance period \"{$name}\" is closing. Please complete pending accomplishment endorsements or QAR submissions.",
+            $u->notify($notif(
+                "The performance period \"{$name}\" is closing. Please ensure your OPCR is approved and complete any pending endorsements or QAR submissions.",
                 '/dept-head/accomplishment-review'
             ))
         );
@@ -175,27 +220,34 @@ class PerformancePeriodsController extends Controller
     {
         $pid = $p->id;
 
+        // Employees with no IPCR for this period
+        $allEmployeeIds = \App\Models\User::where('role', 'employee')->where('is_active', true)->pluck('id');
+        $withIpcr       = Ipcr::where('performance_period_id', $pid)->pluck('employee_id');
+        $noIpcr         = $allEmployeeIds->diff($withIpcr)->count();
+
+        // Employees with committed IPCR but no accomplishment submission
+        $withAccomplishment = AccomplishmentSubmission::where('performance_period_id', $pid)->pluck('employee_id');
+        $noAccomplishment   = Ipcr::where('performance_period_id', $pid)
+            ->whereIn('status', ['committed', 'released_by_pmt'])
+            ->pluck('employee_id')
+            ->diff($withAccomplishment)
+            ->count();
+
+        // Offices with no approved OPCR
+        $noOpcr = \App\Models\Office::where('is_active', true)
+            ->get()
+            ->filter(fn($o) => ! Opcr::where('performance_period_id', $pid)->where('office_id', $o->id)->whereIn('status', ['approved'])->exists())
+            ->count();
+
         return array_filter([
-            'OPCR not yet approved' => Opcr::where('performance_period_id', $pid)
-                ->whereNotIn('status', ['approved'])
-                ->count(),
-
-            'IPCR not yet committed' => Ipcr::where('performance_period_id', $pid)
-                ->whereNotIn('status', ['committed', 'released_by_pmt'])
-                ->count(),
-
-            'Accomplishments in progress' => AccomplishmentSubmission::where('performance_period_id', $pid)
-                ->whereNotIn('status', ['pmt_approved', 'returned_to_employee'])
-                ->count(),
-
-            'ORS entries unsubmitted' => OrsEntry::where('performance_period_id', $pid)
-                ->whereIn('status', ['draft', 'recording', 'paused'])
-                ->count(),
-
-            'QAR not yet PMT-approved' => QarHeader::where('performance_period_id', $pid)
-                ->whereNotIn('pmt_status', ['pmt_approved'])
-                ->whereIn('status', ['submitted'])
-                ->count(),
+            'Offices with no approved OPCR'          => $noOpcr,
+            'Employees with no IPCR set up'          => $noIpcr,
+            'IPCR not yet committed'                 => Ipcr::where('performance_period_id', $pid)->whereNotIn('status', ['committed', 'released_by_pmt'])->count(),
+            'Employees with no accomplishment filed' => $noAccomplishment,
+            'Accomplishments in progress'            => AccomplishmentSubmission::where('performance_period_id', $pid)->whereNotIn('status', ['pmt_approved', 'returned_to_employee'])->count(),
+            'ORS entries unsubmitted'                => OrsEntry::where('performance_period_id', $pid)->whereIn('status', ['draft', 'recording', 'paused'])->count(),
+            'UWP not yet submitted'                  => \App\Models\UnitWorkPlan::where('performance_period_id', $pid)->whereIn('status', ['draft', 'returned'])->count(),
+            'QAR not yet PMT-approved'               => QarHeader::where('performance_period_id', $pid)->whereIn('status', ['submitted'])->whereNull('pmt_status')->count(),
         ]);
     }
 }
