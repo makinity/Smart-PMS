@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import AppLayout from '@/Layouts/AppLayout';
+import ValidationModal from '@/Components/ValidationModal';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const RATING_LABELS = ['', 'Unsatisfactory', 'Needs Improvement', 'Satisfactory', 'Very Satisfactory', 'Outstanding'];
@@ -285,6 +287,7 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
     const [saving,     setSaving]     = useState(false);
     const [errs,       setErrs]       = useState({});
     const [showQet,    setShowQet]    = useState(false);
+    const [lockError,  setLockError]  = useState(null);
 
     useEffect(() => {
         const rated = entry.status === 'rated' && entry.rating !== null;
@@ -310,17 +313,17 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
         if (!timeliness) e.timeliness = 'Timeliness rating is required (1–5).';
         if (Object.keys(e).length) { setErrs(e); return; }
         setSaving(true);
-        router.post(`/supervisor/ors-monitoring/${entry.id}/rate`,
+        axios.post(`/supervisor/ors-monitoring/${entry.id}/rate`,
             { quality_rating: quality, timeliness_rating: timeliness, remarks },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setSaving(false); setEditing(false);
-                    onSaved(entry.id, { quality_rating: quality, timeliness_rating: timeliness, remarks, rated_at: new Date().toISOString() });
-                },
-                onError: () => setSaving(false),
-            }
-        );
+            { headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }
+        ).then(() => {
+            setSaving(false); setEditing(false);
+            onSaved(entry.id, { quality_rating: quality, timeliness_rating: timeliness, remarks, rated_at: new Date().toISOString() });
+        }).catch(err => {
+            setSaving(false);
+            const msg = err.response?.data?.message;
+            if (msg) setLockError(msg);
+        });
     }
 
     const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border)',
@@ -329,6 +332,13 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
     // On mobile, action row is sticky — wrap edit content in scrollable div
     return (
     <>
+        {lockError && (
+            <ValidationModal
+                title="Rating Locked"
+                description={lockError}
+                onClose={() => setLockError(null)}
+            />
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
             {/* Scrollable body */}

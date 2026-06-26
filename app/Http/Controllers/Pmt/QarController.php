@@ -157,7 +157,11 @@ class QarController extends Controller
     public function return(Request $request, QarHeader $qar)
     {
         abort_unless(in_array($qar->status, ['submitted', 'pmt_approved']), 422, 'Cannot return this QAR.');
-        $request->validate(['return_remarks' => ['nullable', 'string', 'max:2000']]);
+        $request->validate([
+            'return_remarks' => ['nullable', 'string', 'max:2000'],
+            'mpor_ids'       => ['nullable', 'array'],
+            'mpor_ids.*'     => ['integer'],
+        ]);
 
         $qar->update([
             'status' => 'returned',
@@ -166,6 +170,37 @@ class QarController extends Controller
             'pmt_validated_by' => Auth::id(),
             'return_remarks' => $request->return_remarks,
         ]);
+
+        // Cascade: return only selected MPORs back to supervisor
+        $qar->load('mporLinks.mpor.employee');
+        $selectedIds = $request->input('mpor_ids', []);
+        $notifiedSupervisors = [];
+        foreach ($qar->mporLinks as $link) {
+            $mpor = $link->mpor;
+            if (! $mpor || $mpor->status !== 'approved') continue;
+            if (! empty($selectedIds) && ! in_array($mpor->id, $selectedIds)) continue;
+
+            $mpor->update([
+                'status'         => 'returned',
+                'returned_by'    => Auth::id(),
+                'returned_at'    => now(),
+                'return_remarks' => 'QAR returned by PMT: ' . ($request->return_remarks ?? 'No remarks.'),
+                'approved_by'    => null,
+                'approved_at'    => null,
+            ]);
+
+            // Notify supervisor once per office
+            $supervisor = User::where('office_id', $mpor->office_id)->where('role', 'supervisor')->first();
+            if ($supervisor && ! in_array($supervisor->id, $notifiedSupervisors)) {
+                $supervisor->notify(new WorkflowEventNotification(
+                    type: 'alert',
+                    event: 'mpor.returned_by_pmt',
+                    message: 'QAR for '.$qar->quarter_key.' was returned by PMT. Please re-rate the affected MPORs.',
+                    url: '/supervisor/mpor',
+                ));
+                $notifiedSupervisors[] = $supervisor->id;
+            }
+        }
 
         $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
         $deptHead?->notify(new WorkflowEventNotification(

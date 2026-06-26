@@ -169,7 +169,12 @@ export default function Index() {
                             sub:    m.position,
                             avatar: m.avatar,
                             reason: m.reason,
-                            notifyPayload: { employee_id: m.employee_id, context: 'qar_missing_mpor', month: m.month },
+                            notifyPayload: {
+                                employee_id: m.employee_id,
+                                context: m.reason.includes('awaiting supervisor') ? 'qar_mpor_pending_approval' : 'qar_missing_mpor',
+                                month: m.month,
+                                mpor_id: m.mpor_id ?? null,
+                            },
                         }));
                         setValidationError({
                             title: 'Cannot Submit QAR',

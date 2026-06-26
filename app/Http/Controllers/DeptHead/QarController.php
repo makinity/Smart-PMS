@@ -108,13 +108,19 @@ class QarController extends Controller
                     ->exists();
                 if (! $exists) {
                     $emp = \App\Models\User::find($empId);
+                    $mpor = Mpor::where('employee_id', $empId)->where('month', $month)->first();
+                    $isSubmitted = $mpor && $mpor->status === 'submitted';
+                    $supervisor = $isSubmitted
+                        ? \App\Models\User::where('office_id', $emp?->office_id)->where('role', 'supervisor')->first()
+                        : null;
                     $missingItems[] = [
-                        'employee_id' => $empId,
-                        'name'        => $emp?->name ?? 'Unknown',
-                        'position'    => $emp?->position ?? '',
-                        'avatar'      => $emp?->avatar ?? null,
-                        'month'       => $month,
-                        'reason'      => \Carbon\Carbon::parse($month . '-01')->format('F Y') . ' — MPOR not approved',
+                        'employee_id'   => $supervisor ? $supervisor->id : $empId,
+                        'mpor_id'       => $mpor?->id,
+                        'name'          => $emp?->name ?? 'Unknown',
+                        'position'      => $emp?->position ?? '',
+                        'avatar'        => $emp?->profile_photo_url ?? null,
+                        'month'         => $month,
+                        'reason'        => \Carbon\Carbon::parse($month . '-01')->format('F Y') . ($isSubmitted ? ' — MPOR submitted, awaiting supervisor approval' : ' — MPOR not approved'),
                     ];
                 }
             }

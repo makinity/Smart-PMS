@@ -99,8 +99,16 @@ function AnnexCards({ rows }) {
 }
 
 // ── Return Modal ──────────────────────────────────────────────────────────────
-function ReturnModal({ onClose, onConfirm, loading }) {
+function ReturnModal({ mpors = [], onClose, onConfirm, loading }) {
     const [remarks, setRemarks] = useState('');
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    function toggleMpor(id) {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    }
+
+    const approvedMpors = mpors.filter(m => m.status === 'approved');
+
     return (
         <>
             {/* Backdrop */}
@@ -142,7 +150,33 @@ function ReturnModal({ onClose, onConfirm, loading }) {
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+                    {approvedMpors.length > 0 && (
+                        <div>
+                            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-muted)',
+                                display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                Select MPORs to return <span style={{ color: '#f87171' }}>*</span>
+                            </label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', maxHeight: 180, overflowY: 'auto' }}>
+                                {approvedMpors.map(m => (
+                                    <label key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem',
+                                        padding: '0.5rem 0.75rem', borderRadius: 8, cursor: 'pointer',
+                                        background: selectedIds.includes(m.id) ? 'rgba(239,68,68,0.08)' : 'var(--admin-bg-secondary)',
+                                        border: `1px solid ${selectedIds.includes(m.id) ? 'rgba(239,68,68,0.35)' : 'var(--admin-border)'}` }}>
+                                        <input type="checkbox" checked={selectedIds.includes(m.id)}
+                                            onChange={() => toggleMpor(m.id)} style={{ accentColor: '#f87171', width: 14, height: 14 }} />
+                                        <img src={m.employee.avatar} alt={m.employee.name}
+                                            style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                                        <div style={{ minWidth: 0 }}>
+                                            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.employee.name}</div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)' }}>{m.month_label}</div>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-text-muted)',
                         display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                         Remarks <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
@@ -171,8 +205,8 @@ function ReturnModal({ onClose, onConfirm, loading }) {
                     <button onClick={onClose} style={{ ...btnSecondary }}>
                         Cancel
                     </button>
-                    <button onClick={() => onConfirm(remarks)} disabled={!!loading}
-                        style={{ ...btnDanger, opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                    <button onClick={() => onConfirm(remarks, selectedIds)} disabled={!!loading || (approvedMpors.length > 0 && selectedIds.length === 0)}
+                        style={{ ...btnDanger, opacity: (loading || (approvedMpors.length > 0 && selectedIds.length === 0)) ? 0.7 : 1, cursor: (loading || (approvedMpors.length > 0 && selectedIds.length === 0)) ? 'not-allowed' : 'pointer' }}>
                         {loading === 'return' ? (
                             <><i className="bi bi-hourglass-split" /> Returning…</>
                         ) : (
@@ -190,6 +224,7 @@ function ReturnModal({ onClose, onConfirm, loading }) {
 function ActionPanel({ qar }) {
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [loading, setLoading]                = useState(null);
+    const { mpors } = usePage().props;
     const toast   = useToast();
     const confirm = useConfirm();
     const bp      = useBreakpoint();
@@ -253,8 +288,9 @@ function ActionPanel({ qar }) {
 
             {showReturnModal && (
                 <ReturnModal
+                    mpors={mpors}
                     onClose={() => !loading && setShowReturnModal(false)}
-                    onConfirm={(remarks) => post('return', { return_remarks: remarks })}
+                    onConfirm={(remarks, mporIds) => post('return', { return_remarks: remarks, mpor_ids: mporIds })}
                     loading={loading}
                 />
             )}

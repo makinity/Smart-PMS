@@ -44,17 +44,26 @@ class NotificationController extends Controller
             'employee_id' => 'required|integer|exists:users,id',
             'context'     => 'required|string',
             'month'       => 'nullable|string',
+            'mpor_id'     => 'nullable|integer|exists:mpors,id',
         ]);
 
         $employee = \App\Models\User::findOrFail($validated['employee_id']);
 
         $messages = [
-            'qar_missing_mpor' => 'Please submit your MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . '. It is required for the QAR submission.',
+            'qar_missing_mpor'          => 'Please submit your MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . '. It is required for the QAR submission.',
+            'qar_mpor_pending_approval' => 'An employee\'s MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . ' is pending your approval. It is required for QAR submission.',
         ];
 
         $message = $messages[$validated['context']] ?? 'You have a pending action required. Please check your portal.';
 
-        $employee->notify(new \App\Notifications\GenericReminder($message, $validated['context']));
+        $employee->notify(new \App\Notifications\WorkflowEventNotification(
+            type: 'alert',
+            event: 'reminder.' . $validated['context'],
+            message: $message,
+            url: $validated['context'] === 'qar_mpor_pending_approval'
+                ? '/supervisor/mpor' . ($validated['mpor_id'] ? '/' . $validated['mpor_id'] : '')
+                : '/employee/mpor' . ($validated['month'] ? '?month=' . $validated['month'] : ''),
+        ));
 
         return response()->json(['ok' => true]);
     }

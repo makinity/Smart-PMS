@@ -1,37 +1,57 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+
+let _audioCtx = null;
+let _audioBuffer = null;
+
+function getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return _audioCtx;
+}
+
+async function loadSound() {
+    if (_audioBuffer) return _audioBuffer;
+    const ctx = getAudioCtx();
+    const res = await fetch('/sounds/notifications/new-notification.wav');
+    const arr = await res.arrayBuffer();
+    _audioBuffer = await ctx.decodeAudioData(arr);
+    return _audioBuffer;
+}
+
+function playSound() {
+    const ctx = getAudioCtx();
+    if (!_audioBuffer) return;
+    const src = ctx.createBufferSource();
+    src.buffer = _audioBuffer;
+    src.connect(ctx.destination);
+    src.start(0);
+}
 
 /**
  * Subscribes to the private Reverb channel for the given userId.
  * Calls onNotification() when a notification arrives (after a 300ms delay
  * to let the DB write commit, matching the original Livewire behaviour).
  *
- * Sound is unlocked on first user gesture and played on each notification.
+ * Sound is unlocked on first user gesture via AudioContext resume.
  * The sound file should be at /sounds/notifications/new-notification.wav
  */
 export function useNotificationListener(userId, onNotification) {
-    const soundRef = useRef(null);
-
-    // Pre-load audio immediately (no gesture required for loading, only for playing)
     useEffect(() => {
         if (!userId) return;
-        soundRef.current = new Audio('/sounds/notifications/new-notification.wav');
-        soundRef.current.load();
 
-        // Unlock on first gesture so subsequent plays never get blocked
+        // Pre-load the sound buffer
+        loadSound().catch(() => {});
+
+        // Resume AudioContext on first gesture (required by browsers)
         const unlock = () => {
-            soundRef.current?.play().then(() => {
-                soundRef.current.pause();
-                soundRef.current.currentTime = 0;
-            }).catch(() => {});
+            const ctx = getAudioCtx();
+            if (ctx.state === 'suspended') ctx.resume();
         };
-        window.addEventListener('pointerdown', unlock, { once: true });
-        window.addEventListener('keydown', unlock, { once: true });
-        window.addEventListener('touchstart', unlock, { once: true });
+        window.addEventListener('pointerdown', unlock);
+        window.addEventListener('keydown', unlock);
 
         return () => {
             window.removeEventListener('pointerdown', unlock);
             window.removeEventListener('keydown', unlock);
-            window.removeEventListener('touchstart', unlock);
         };
     }, [userId]);
 
@@ -68,10 +88,7 @@ export function useNotificationListener(userId, onNotification) {
                     console.info('[PMS RT] 🔔 Notification received:', payload);
                     setTimeout(() => {
                         onNotification(payload);
-                        if (soundRef.current) {
-                            soundRef.current.currentTime = 0;
-                            soundRef.current.play().catch(() => {});
-                        }
+                        playSound();
                     }, 300);
                 });
 

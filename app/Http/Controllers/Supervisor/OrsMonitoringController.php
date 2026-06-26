@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mpor;
 use App\Models\OrsEntry;
 use App\Models\OrsEntryMonitoring;
 use App\Notifications\WorkflowEventNotification;
@@ -35,6 +36,12 @@ class OrsMonitoringController extends Controller
         $supervisor = auth()->user();
         abort_if($orsEntry->supervisor_id !== $supervisor->id, 403);
         abort_if(! in_array($orsEntry->status, ['submitted', 'rated']), 422);
+
+        $mporLocked = Mpor::where('employee_id', $orsEntry->employee_id)
+            ->where('month', substr($orsEntry->work_date, 0, 7))
+            ->where('status', 'approved')
+            ->exists();
+        abort_if($mporLocked, 422, 'Cannot edit ratings — MPOR for this month is already approved.');
 
         $data = $request->validate([
             'quality_rating'    => ['required', 'integer', 'min:1', 'max:5'],
