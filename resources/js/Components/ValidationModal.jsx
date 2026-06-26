@@ -13,14 +13,15 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
  *     notifyPayload: if present, shows a Notify button that POSTs to /api/notify/reminder
  *   onClose     {fn}       Called when user closes the modal
  */
-export default function ValidationModal({ title, description, items = [], onClose }) {
+export default function ValidationModal({ title, description, items = [], onClose, extra }) {
     const [notified, setNotified] = useState({});   // key: index → bool
     const [loading,  setLoading]  = useState({});
 
     async function handleNotify(idx, payload) {
         setLoading(p => ({ ...p, [idx]: true }));
         try {
-            await axios.post('/api/notify/reminder', payload);
+            const { _url, ...body } = payload;
+            await axios.post(_url ?? '/api/notify/reminder', body);
             setNotified(p => ({ ...p, [idx]: true }));
         } catch {
             // silently fail — notify is best-effort
@@ -95,6 +96,7 @@ export default function ValidationModal({ title, description, items = [], onClos
 
                 {/* Footer */}
                 <div style={s.footer}>
+                    {extra}
                     <button style={s.closeFullBtn} onClick={onClose}>Understood</button>
                 </div>
             </div>

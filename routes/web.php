@@ -128,6 +128,14 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::redirect('/development-planning', '/pmt/performance-overview');
     // Keep old show/action routes (they still render their own Show pages)
     Route::get('/top-performers/{user}', [\App\Http\Controllers\Pmt\TopPerformersController::class, 'show'])->name('top-performers.show');
+    Route::get('/performance-periods', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'index'])->name('performance-periods.index');
+    Route::get('/performance-periods/{performancePeriod}/check-pending', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'checkPending'])->name('performance-periods.check-pending');
+    Route::post('/performance-periods/{performancePeriod}/notify-pending', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'notifyPending'])->name('performance-periods.notify-pending');
+    Route::post('/performance-periods', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'store'])->name('performance-periods.store');
+    Route::patch('/performance-periods/{performancePeriod}', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'update'])->name('performance-periods.update');
+    Route::patch('/performance-periods/{performancePeriod}/activate', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'activate'])->name('performance-periods.activate');
+    Route::patch('/performance-periods/{performancePeriod}/deactivate', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'deactivate'])->name('performance-periods.deactivate');
+    Route::delete('/performance-periods/{performancePeriod}', [\App\Http\Controllers\Pmt\PerformancePeriodsController::class, 'destroy'])->name('performance-periods.destroy');
     Route::get('/profile', fn () => \Inertia\Inertia::render('Pmt/Profile'))->name('profile');
 });
 

@@ -987,6 +987,35 @@ function DeptHeadQarMporShowSkeleton() {
 
 const skeletons = [
 
+    // PMT Performance Periods
+    [/\/pmt\/performance-periods$/, () => (
+        <>
+            <style>{SHIMMER}</style>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={SK}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                            {sh(42, 42, 12)}{sh(20, 180)}
+                        </div>
+                        {sh(34, 110, 8)}
+                    </div>
+                </div>
+                <div style={{ ...SK, padding: 0, overflow: 'hidden' }}>
+                    <div style={{ padding: '0.6rem 1.1rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', gap: '1rem' }}>
+                        {[140, 100, 100, 70, 80].map((w, i) => <div key={i} style={{ flex: i === 0 ? 1 : 0, minWidth: w }}>{sh(10, i === 0 ? '60%' : w)}</div>)}
+                    </div>
+                    {[0, 1, 2].map(i => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.85rem 1.1rem', borderBottom: '1px solid var(--admin-border)' }}>
+                            <div style={{ flex: 1 }}>{sh(14, '50%')}</div>
+                            {sh(12, 90)}{sh(12, 90)}{sh(22, 64, 99)}
+                            <div style={{ display: 'flex', gap: '0.4rem', marginLeft: 'auto' }}>{sh(30, 80, 7)}{sh(30, 32, 7)}{sh(30, 32, 7)}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    )],
+
     // ORS
     [/\/ors$/, () => (
         <>

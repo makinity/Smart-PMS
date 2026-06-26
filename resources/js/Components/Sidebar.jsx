@@ -49,6 +49,7 @@ const roleLinks = {
         { href: '/pmt/performance-overview', label: 'Performance Overview', icon: 'bi-bar-chart-steps' },
         { href: '/pmt/idp', label: 'IDP', icon: 'bi-journal-bookmark-fill' },
         { href: '/pmt/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },
+        { href: '/pmt/performance-periods', label: 'Performance Periods', icon: 'bi-calendar-range-fill' },
         { href: '/pmt/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],
     'dept-head': [
