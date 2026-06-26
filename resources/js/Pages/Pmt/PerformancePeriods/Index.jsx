@@ -216,7 +216,7 @@ export default function Index({ periods, hasActive }) {
                                 <h1 style={{ fontWeight: 700, fontSize: '1.35rem', color: 'var(--admin-text-primary)', lineHeight: 1.1 }}>Performance Periods</h1>
                             </div>
                         </div>
-                        <button onClick={handleNewPeriod} style={s.btnPrimary}>
+                        <button onClick={handleNewPeriod} style={{ ...s.btnPrimary, marginLeft: 'auto' }}>
                             <i className="bi bi-plus-lg" /> New Period
                         </button>
                     </div>
