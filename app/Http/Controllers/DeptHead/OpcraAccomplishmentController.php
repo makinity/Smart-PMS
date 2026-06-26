@@ -189,22 +189,17 @@ class OpcraAccomplishmentController extends Controller
             ->where('performance_period_id', $period->id)
             ->firstOrFail();
 
-        $scores = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+        $approvedOpcr = Opcr::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
-            ->where('status', 'dept_head_approved')
-            ->get()
-            ->map(fn ($s) => $s->final_rating
-                ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
-                    \App\Models\Ipcr::where('employee_id', $s->employee_id)
-                        ->where('performance_period_id', $s->performance_period_id)
-                        ->first()
-                )
-            )->filter(fn ($v) => $v > 0);
+            ->where('status', 'approved')
+            ->first();
 
-        $computedRating = $scores->isNotEmpty() ? round($scores->avg(), 2) : 0.0;
+        $computedRating = $approvedOpcr
+            ? round(app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0, 2)
+            : 0.0;
 
         $submission->update([
-            'status' => 'submitted',
+            'status' => 'draft',
             'computed_office_rating' => $computedRating,
             'final_office_rating' => null,
             'final_adjectival_rating' => null,
@@ -212,6 +207,12 @@ class OpcraAccomplishmentController extends Controller
             'pmt_remarks' => null,
             'pmt_action_at' => null,
         ]);
+
+        // Reset released employees back to dept_head_approved
+        AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+            ->where('performance_period_id', $period->id)
+            ->where('status', 'released_by_pmt')
+            ->update(['status' => 'dept_head_approved', 'pmt_id' => null, 'pmt_action_at' => null]);
 
         return back()->with('success', 'OPCR accomplishment reset to PMT review.');
     }
@@ -234,23 +235,19 @@ class OpcraAccomplishmentController extends Controller
 
         abort_unless($approvedOpcr, 422, 'No approved OPCR found for the active performance period.');
 
-        // Compute office rating from dept_head_approved employees
-        $approvedSubs = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+        // Ensure at least one approved employee
+        $hasApproved = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
             ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
-            ->get();
+            ->exists();
 
-        abort_if($approvedSubs->isEmpty(), 422, 'No approved employee accomplishments found. Please approve at least one employee first.');
+        abort_if(! $hasApproved, 422, 'No approved employee accomplishments found. Please approve at least one employee first.');
 
-        $scores = $approvedSubs->map(fn ($s) => $s->final_rating
-            ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
-                \App\Models\Ipcr::where('employee_id', $s->employee_id)
-                    ->where('performance_period_id', $s->performance_period_id)
-                    ->first()
-            )
-        )->filter(fn ($v) => $v > 0);
-
-        $computedRating = $scores->isNotEmpty() ? round($scores->avg(), 2) : 0.0;
+        // Compute office rating from the OPCR's own consolidated output ratings
+        $computedRating = round(
+            app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0,
+            2
+        );
 
         $submission = OpcraAccomplishmentSubmission::updateOrCreate(
             ['office_id' => $deptHead->office_id, 'performance_period_id' => $period->id],

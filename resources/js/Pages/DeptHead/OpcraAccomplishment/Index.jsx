@@ -74,8 +74,8 @@ function OpcraOfficeSection({ opcrSections }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1.25rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1rem', ...ratingCol(overall) }}>{overall > 0 ? overall.toFixed(2) : '—'}</span>
-                        {overall > 0 && <span style={{ fontSize: '0.75rem', color: adjColor(overall) }}>{adjLabel(overall)}</span>}
+                        <span style={{ fontWeight: 800, fontSize: '1rem', ...ratingCol(overall) }}>{overall != null ? overall.toFixed(2) : '—'}</span>
+                        {overall != null && <span style={{ fontSize: '0.75rem', color: adjColor(overall) }}>{adjLabel(overall)}</span>}
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@ function ScoreRing({ score, size = 64 }) {
                     strokeDasharray={`${circ * Math.min((score/5)*100,100) / 100} ${circ}`} strokeLinecap="round" />
             </svg>
             <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize: size>70?'1rem':'0.82rem', fontWeight:800, color }}>
-                {score > 0 ? Number(score).toFixed(2) : '—'}
+                {score !== null && score !== undefined ? Number(score).toFixed(2) : '—'}
             </div>
         </div>
     );

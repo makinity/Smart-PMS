@@ -1503,7 +1503,170 @@ const skeletons = [
         </>
     )],
 
-    // PMT QAR / IDP / OPCR Accomplishment Index
+    // PMT OPCR Accomplishment Show
+    [/\/pmt\/opcr-accomplishment\/\d+$/, () => (
+        <>
+            <style>{SHIMMER}</style>
+            <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+                {/* Sticky header */}
+                <div style={{ ...SK, overflow:'hidden' }}>
+                    <div style={{ padding:'0.6rem 1rem', borderBottom:'1px solid var(--admin-border)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'0.75rem' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', minWidth:0, flex:1 }}>
+                            {sh(34, 34, 10)}
+                            <div style={{ width:1, height:28, background:'var(--admin-border-strong)', flexShrink:0 }} />
+                            <div style={{ minWidth:0, flex:1 }}>
+                                {sh(14, '220px')}
+                                {sh(10, '160px')}
+                            </div>
+                        </div>
+                        {pill(90, 24)}
+                    </div>
+                    {/* Stepper */}
+                    <div style={{ padding:'1rem 1.25rem', display:'flex', alignItems:'center', gap:0 }}>
+                        {[0,1,2].map(i => (
+                            <div key={i} style={{ display:'flex', alignItems:'center', flex:1 }}>
+                                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flex:1 }}>
+                                    <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--admin-bg-secondary)', border:'2px solid var(--admin-border)', flexShrink:0, ...( i===0 ? { background:'var(--admin-accent)', border:'2px solid var(--admin-accent)' } : {}) }} />
+                                    {sh(9, i===0?52:i===1?60:48, 4)}
+                                </div>
+                                {i < 2 && <div style={{ height:2, flex:0.5, background:'var(--admin-border)', marginBottom:16 }} />}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Score cards */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', gap:'0.75rem' }}>
+                    {[0,1].map(i => (
+                        <div key={i} style={{ ...SK, padding:'1.1rem 1.25rem', display:'flex', alignItems:'center', gap:'0.85rem' }}>
+                            <div style={{ width:80, height:80, borderRadius:'50%', flexShrink:0, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />
+                            <div style={{ flex:1 }}>
+                                {sh(10, '45%')}
+                                {sh(20, '60%')}
+                                {sh(10, '70%')}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Employee table */}
+                <div style={{ ...SK, overflow:'hidden' }}>
+                    <div style={{ padding:'0.85rem 1.25rem', borderBottom:'1px solid var(--admin-border)' }}>
+                        {sh(14, '28%')}
+                        <div style={{ display:'flex', gap:'0.5rem', marginTop:'0.65rem', alignItems:'center', flexWrap:'wrap' }}>
+                            {sh(36, undefined, 8)}
+                            <div style={{ display:'flex', gap:'0.3rem' }}>{[42,72,72,90].map((w,i)=><div key={i}>{pill(w,30)}</div>)}</div>
+                        </div>
+                    </div>
+                    {[0,1,2,3].map(i => (
+                        <div key={i} style={{ display:'flex', gap:'0.75rem', padding:'0.6rem 1rem', borderBottom:'1px solid var(--admin-border)', alignItems:'center' }}>
+                            {avatar(28)}
+                            <div style={{ flex:1 }}>{sh(12, '42%')}</div>
+                            {sh(12, '16%')}
+                            {sh(12, '12%')}
+                            {sh(22, 72, 99)}
+                            {sh(10, 10, 99)}
+                        </div>
+                    ))}
+                </div>
+
+                {/* OPCR office section */}
+                <div style={{ ...SK, overflow:'hidden' }}>
+                    {sh(14, '34%')}
+                    <div style={{ overflowX:'auto', marginTop:'0.9rem', borderRadius:8, border:'1px solid var(--admin-border)' }}>
+                        <div style={{ minWidth:880 }}>
+                            <div style={{ display:'flex', gap:'0.5rem', padding:'0.55rem 0.75rem', borderBottom:'1px solid var(--admin-border)', background:'var(--admin-bg-secondary)' }}>
+                                {sh(10,'220px')}{sh(10,'30%')}{sh(10,'20%')}{sh(10,'20%')}
+                            </div>
+                            <div style={{ display:'flex', gap:'0.5rem', padding:'0.4rem 0.75rem', borderBottom:'2px solid var(--admin-border)', background:'var(--admin-bg-secondary)' }}>
+                                {[220,40,40,40,40,55,40,40,40,40,55,40,40,40,40,55].map((w,i)=>(
+                                    <div key={i} style={{ width:w, height:9, flexShrink:0, borderRadius:3, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />
+                                ))}
+                            </div>
+                            {[0,1,2,3,4].map(i=>(
+                                <div key={i} style={{ display:'flex', gap:'0.5rem', padding:'0.5rem 0.75rem', borderBottom:'1px solid var(--admin-border)', alignItems:'center' }}>
+                                    {[220,40,40,40,40,55,40,40,40,40,55,40,40,40,40,55].map((w,j)=>(
+                                        <div key={j} style={{ width:w, height:11, flexShrink:0, borderRadius:3, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display:'flex', justifyContent:'space-between' }}>
+                    {sh(36, 100, 8)}
+                    {sh(36, 110, 8)}
+                </div>
+            </div>
+        </>
+    )],
+
+    // PMT Top Performers Show
+    [/\/pmt\/top-performers\/\d+$/, () => (
+        <>
+            <style>{SHIMMER}</style>
+            <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+                {/* Back link */}
+                {sh(12, 140)}
+
+                {/* Header card */}
+                <div style={{ ...SK, borderLeft:'4px solid var(--admin-accent)' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'1rem', flexWrap:'wrap' }}>
+                        {avatar(72)}
+                        <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:'0.5rem', flexWrap:'wrap', marginBottom:6 }}>
+                                {sh(18, '180px')}
+                                {pill(55, 20)}
+                                {pill(48, 20)}
+                            </div>
+                            {sh(10, '140px')}
+                            {sh(10, '120px')}
+                        </div>
+                        <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', flexShrink:0 }}>
+                            <div style={{ width:60, height:60, borderRadius:'50%', background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />
+                            <div>{sh(9, 60)}{sh(14, 80)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tabs */}
+                <div style={{ display:'flex', gap:'0.35rem', flexWrap:'wrap' }}>
+                    {[90, 140, 60, 80].map((w,i) => <div key={i}>{pill(w, 32)}</div>)}
+                </div>
+
+                {/* Stats row */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))', gap:'0.75rem' }}>
+                    {[0,1,2,3].map(i => (
+                        <div key={i} style={{ ...SK, padding:'1rem' }}>
+                            {sh(18, 20, 4)}
+                            {sh(28, '50%')}
+                            {sh(10, '65%')}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Employee details card */}
+                <div style={SK}>
+                    {sh(10, '22%')}
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:'0.6rem 1.5rem', marginTop:'0.75rem' }}>
+                        {[0,1,2,3,4,5,6].map(i => (
+                            <div key={i}>{sh(9, '38%')}{sh(12, i%2===0?'72%':'58%')}</div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Chart card */}
+                <div style={SK}>
+                    {sh(10, '22%')}
+                    {sh(80, undefined, 8)}
+                </div>
+            </div>
+        </>
+    )],
+
+
     [/\/pmt\/(qar|idp|opcr-accomplishment)$/, () => (
         <>
             <style>{SHIMMER}</style>

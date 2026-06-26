@@ -179,10 +179,6 @@ class OpcraAccomplishmentController extends Controller
             'pmt_id' => auth()->id(),
         ]);
 
-        // Recompute office rating and update computed_office_rating (draft)
-        $newOfficeRating = $this->computeOfficeRating($opcraAccomplishment);
-        $opcraAccomplishment->update(['computed_office_rating' => $newOfficeRating]);
-
         return back()->with('success', 'Employee score calibrated.');
     }
 
@@ -190,7 +186,18 @@ class OpcraAccomplishmentController extends Controller
     {
         abort_if($opcraAccomplishment->status !== 'submitted', 422, 'Cannot release at this stage.');
 
-        $score = (float) $opcraAccomplishment->computed_office_rating;
+        // Finalize employees first so their ORS data is available for the OPCR-based calculation
+        $this->finalizeEmployees($opcraAccomplishment);
+
+        // Compute final office rating from the OPCR's own consolidated output ratings
+        $approvedOpcr = \App\Models\Opcr::where('office_id', $opcraAccomplishment->office_id)
+            ->where('performance_period_id', $opcraAccomplishment->performance_period_id)
+            ->where('status', 'approved')
+            ->first();
+
+        $score = $approvedOpcr
+            ? round(app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0, 2)
+            : (float) $opcraAccomplishment->computed_office_rating;
 
         $opcraAccomplishment->update([
             'status' => 'released',
@@ -200,7 +207,6 @@ class OpcraAccomplishmentController extends Controller
             'pmt_action_at' => now(),
         ]);
 
-        $this->finalizeEmployees($opcraAccomplishment);
         $this->notifyDeptHead($opcraAccomplishment,
             "Your office OPCR Accomplishment has been officially released by PMT. Final rating: {$this->toAdjectival($score)} ({$score}).");
 
@@ -317,23 +323,6 @@ class OpcraAccomplishmentController extends Controller
             message: "Your performance score ({$s->final_adjectival_rating}) requires an Individual Development Plan.",
             url: '/employee/idp',
         ));
-    }
-
-    /** Recompute office rating from approved employees' final_rating (calibrated drafts or system scores) */
-    private function computeOfficeRating(OpcraAccomplishmentSubmission $opcra): float
-    {
-        $submissions = AccomplishmentSubmission::where('office_id', $opcra->office_id)
-            ->where('performance_period_id', $opcra->performance_period_id)
-            ->where('status', 'dept_head_approved')
-            ->get();
-
-        if ($submissions->isEmpty()) return 0.0;
-
-        $scores = $submissions->map(function ($s) {
-            return $s->final_rating ?? $this->computeScoreForSub($s);
-        })->filter(fn ($v) => $v > 0);
-
-        return $scores->isNotEmpty() ? round($scores->avg(), 2) : 0.0;
     }
 
     private function computeScoreForSub(AccomplishmentSubmission $s): float
