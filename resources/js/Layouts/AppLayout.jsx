@@ -6,6 +6,7 @@ import { ToastProvider } from '@/Components/Snackbar';
 import { ConfirmProvider } from '@/Components/ConfirmDialog';
 import LoginLoadingScreen from '@/Components/LoginLoadingScreen';
 import { useNotificationListener } from '@/Components/useNotificationListener';
+import PageSkeleton from '@/Components/PageSkeletons';
 import axios from 'axios';
 
 const EVENT_ROUTE = {
@@ -38,146 +39,6 @@ const EVENT_ROUTE = {
     'development_plan.returned_by_dept_head':  '/employee/idp',
 };
 
-// ── Page skeleton map (keyed by URL prefix) ───────────────────────────────────
-function PageSkeleton({ url }) {
-    const sk = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', padding: '1.25rem' };
-    const sh = (h, w = '100%', r = 6) => (
-        <div style={{ height: h, width: w, borderRadius: r, marginBottom: 8,
-            background: 'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)',
-            backgroundSize: '800px 100%', animation: 'sk-shimmer 1.4s infinite linear' }} />
-    );
-
-    // ORS — stat cards + calendar grid
-    if (url.match(/\/ors$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                {[0,1,2,3].map(i => <div key={i} style={sk}>{sh(10,'50%')}{sh(28,'40%')}</div>)}
-            </div>
-            <div style={{ ...sk, marginBottom: '0.75rem' }}>{sh(18)}</div>
-            <div style={sk}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>{sh(20,160)}{sh(32,110,8)}</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: '0.35rem' }}>
-                    {Array.from({length:35}).map((_,i) => <div key={i} style={{ height:80, borderRadius:8, background:'var(--admin-border)', animation:'sk-shimmer 1.4s infinite linear', backgroundSize:'800px 100%', background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)' }} />)}
-                </div>
-            </div>
-        </>
-    );
-
-    // UWP Index — table rows
-    if (url.match(/\/uwp$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={sk}>
-                {sh(20,'30%')}{sh(36,undefined,8)}
-                <div style={{ display:'flex', gap:5, margin:'0.75rem 0' }}>{[0,1,2,3,4].map(i=><div key={i} style={{ width:72, height:28, borderRadius:99, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />)}</div>
-                {[0,1,2,3].map(i=>(
-                    <div key={i} style={{ display:'flex', gap:'1rem', padding:'0.75rem 0', borderBottom:'1px solid var(--admin-border)', alignItems:'center' }}>
-                        {sh(14,'20%')}{sh(14,'30%')}{sh(22,60,99)}{sh(12,'15%')}
-                        <div style={{ marginLeft:'auto' }}>{sh(30,64,6)}</div>
-                    </div>
-                ))}
-            </div>
-        </>
-    );
-
-    // MPOR — header + table
-    if (url.match(/\/mpor$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
-                <div style={sk}>{sh(28,'40%')}</div>
-                <div style={sk}>
-                    <div style={{ display:'flex', gap:'0.5rem', marginBottom:'1rem' }}>{[0,1,2].map(i=><div key={i} style={{ width:90, height:32, borderRadius:6, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />)}</div>
-                    {[0,1,2,3,4].map(i=>(
-                        <div key={i} style={{ display:'flex', gap:'1rem', padding:'0.6rem 0', borderBottom:'1px solid var(--admin-border)' }}>
-                            {sh(13,'35%')}{sh(13,'12%')}{sh(13,'12%')}{sh(13,'12%')}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
-
-    // Team Tasks — card grid
-    if (url.match(/\/team-tasks$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={sk}>
-                {sh(20,'40%')}{sh(34,undefined,8)}
-                <div style={{ display:'flex', gap:4, margin:'0.75rem 0' }}>{[0,1,2,3,4,5].map(i=><div key={i} style={{ width:72, height:28, borderRadius:99, background:'linear-gradient(90deg,var(--admin-border) 25%,var(--admin-bg-secondary) 50%,var(--admin-border) 75%)', backgroundSize:'800px 100%', animation:'sk-shimmer 1.4s infinite linear' }} />)}</div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.75rem' }}>
-                    {Array.from({length:8}).map((_,i)=>(
-                        <div key={i} style={{ ...sk, padding:'1rem', display:'flex', flexDirection:'column', gap:'0.5rem' }}>
-                            <div style={{ display:'flex', gap:'0.5rem', alignItems:'center' }}>{sh(28,28,28)}{sh(12,'50%')}</div>
-                            {sh(12)}{sh(12,'80%')}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
-
-    // ORS Monitoring — two-column
-    if (url.match(/\/ors-monitoring$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={{ display:'grid', gridTemplateColumns:'380px 1fr', gap:'1rem', height:'calc(100vh - 120px)' }}>
-                <div style={{ ...sk, display:'flex', flexDirection:'column', gap:'0.75rem' }}>
-                    {sh(16,'60%')}{sh(34,undefined,8)}
-                    <div style={{ display:'flex', gap:4 }}>{sh(30,undefined,8)}{sh(30,undefined,8)}</div>
-                    {[0,1,2,3,4].map(i=>(
-                        <div key={i} style={{ padding:'0.75rem', borderRadius:10, border:'1px solid var(--admin-border)', display:'flex', flexDirection:'column', gap:'0.5rem' }}>
-                            <div style={{ display:'flex', gap:'0.5rem' }}>{sh(24,24,24)}{sh(13,'60%')}</div>
-                            {sh(11)}{sh(11,'70%')}
-                        </div>
-                    ))}
-                </div>
-                <div style={{ ...sk, display:'flex', flexDirection:'column', gap:'1rem' }}>
-                    {sh(18,'40%')}{sh(13,'70%')}{sh(120,undefined,10)}{sh(80,undefined,10)}
-                </div>
-            </div>
-        </>
-    );
-
-    // Dashboard — stat cards + charts + module cards
-    if (url.match(/\/(employee|supervisor|dept-head|pmt|admin)\/?$/)) return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            {/* 4 stat cards */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.75rem', marginBottom:'0.75rem' }}>
-                {[0,1,2,3].map(i => <div key={i} style={sk}>{sh(10,'55%')}{sh(32,'40%')}{sh(10,'60%',4)}</div>)}
-            </div>
-            {/* 2 chart cards */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem', marginBottom:'0.75rem' }}>
-                <div style={sk}>{sh(14,'40%')}{sh(180,undefined,8)}</div>
-                <div style={sk}>{sh(14,'40%')}{sh(180,undefined,8)}</div>
-            </div>
-            {/* 4 module cards */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0.75rem', marginBottom:'0.75rem' }}>
-                {[0,1,2,3].map(i => <div key={i} style={sk}>{sh(28,28,8)}{sh(14,'70%')}{sh(10,'90%')}</div>)}
-            </div>
-            {/* Recent tasks table */}
-            <div style={sk}>
-                {sh(16,'30%')}
-                {[0,1,2,3].map(i => (
-                    <div key={i} style={{ display:'flex', gap:'1rem', padding:'0.6rem 0', borderBottom:'1px solid var(--admin-border)' }}>
-                        {sh(12,'45%')}{sh(20,70,99)}{sh(12,'20%')}
-                    </div>
-                ))}
-            </div>
-        </>
-    );
-
-    // Generic fallback — simple card placeholder
-    return (
-        <>
-            <style>{`@keyframes sk-shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}`}</style>
-            <div style={sk}>{sh(20,'40%')}{sh(14)}{sh(14,'80%')}{sh(14,'60%')}</div>
-        </>
-    );
-}
-
 export default function AppLayout({ children, title, description }) {
     const page = usePage();
     const userId = page?.props?.auth?.user?.id;
@@ -187,11 +48,55 @@ export default function AppLayout({ children, title, description }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [navTarget, setNavTarget] = useState(null); // URL we're navigating TO
+    const navStartAtRef = useRef(0);
+    const navClearTimerRef = useRef(null);
+    const suppressNextGetSkeletonUntilRef = useRef(0);
+    const MIN_SKELETON_MS = 220;
 
     useEffect(() => {
-        const offStart  = router.on('start',  (e) => setNavTarget(e.detail.visit.url.pathname));
-        const offFinish = router.on('finish', ()  => setNavTarget(null));
-        return () => { offStart(); offFinish(); };
+        const offStart  = router.on('start',  (e) => {
+            if (navClearTimerRef.current) {
+                clearTimeout(navClearTimerRef.current);
+                navClearTimerRef.current = null;
+            }
+            navStartAtRef.current = Date.now();
+            const target = e.detail.visit.url.pathname;
+            const method = String(e.detail.visit.method ?? 'get').toLowerCase();
+
+            // Action submissions should not replace the current page with a full skeleton.
+            if (method !== 'get') {
+                suppressNextGetSkeletonUntilRef.current = Date.now() + 1000;
+                setNavTarget(null);
+                return;
+            }
+
+            // If a GET is the immediate redirect after an action submission, keep the
+            // current page visible instead of flashing a page skeleton.
+            if (Date.now() < suppressNextGetSkeletonUntilRef.current) {
+                setNavTarget(null);
+                return;
+            }
+
+            if (/^\/supervisor\/uwp\/\d+\/editor(?:[/?#]|$)/.test(target)) {
+                setNavTarget(null);
+                return;
+            }
+            if (target !== window.location.pathname) setNavTarget(target);
+        });
+        const offFinish = router.on('finish', () => {
+            const elapsed = Date.now() - navStartAtRef.current;
+            const remaining = Math.max(0, MIN_SKELETON_MS - elapsed);
+            if (navClearTimerRef.current) clearTimeout(navClearTimerRef.current);
+            navClearTimerRef.current = setTimeout(() => {
+                requestAnimationFrame(() => setNavTarget(null));
+                navClearTimerRef.current = null;
+            }, remaining);
+        });
+        return () => {
+            offStart();
+            offFinish();
+            if (navClearTimerRef.current) clearTimeout(navClearTimerRef.current);
+        };
     }, []);
 
     const fetchNotifications = useCallback(async () => {

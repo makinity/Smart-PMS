@@ -1,5 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { usePage, router } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect, useMemo } from 'react';
 
 const statusStyle = s => ({
@@ -38,6 +38,10 @@ export default function Index() {
     const [search,       setSearch]       = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
 
+    useEffect(() => {
+        void import('./Editor.jsx');
+    }, []);
+
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
         return uwps.filter(u =>
@@ -45,6 +49,10 @@ export default function Index() {
             (!q || u.period?.toLowerCase().includes(q) || u.office?.toLowerCase().includes(q))
         );
     }, [uwps, search, statusFilter]);
+
+    const preloadEditor = () => {
+        void import('./Editor.jsx');
+    };
 
     return (
         <AppLayout title="Unit Work Plans">
@@ -92,8 +100,8 @@ export default function Index() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{uwp.updated_at}</span>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></a>
-                                            <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit"><EditIcon /></a>
+                                            <Link href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></Link>
+                                            <Link href={`/supervisor/uwp/${uwp.id}/editor`} onMouseEnter={preloadEditor} onFocus={preloadEditor} style={iconBtn} title="Edit"><EditIcon /></Link>
                                         </div>
                                     </div>
                                 </div>
@@ -119,8 +127,8 @@ export default function Index() {
                                             <td style={{ ...td, color: 'var(--admin-text-muted)' }}>{uwp.updated_at}</td>
                                             <td style={{ ...td, textAlign: 'right' }}>
                                                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                    <a href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></a>
-                                                    <a href={`/supervisor/uwp/${uwp.id}/editor`} style={iconBtn} title="Edit"><EditIcon /></a>
+                                                    <Link href={`/supervisor/uwp/${uwp.id}`} style={iconBtn} title="View"><EyeIcon /></Link>
+                                                    <Link href={`/supervisor/uwp/${uwp.id}/editor`} onMouseEnter={preloadEditor} onFocus={preloadEditor} style={iconBtn} title="Edit"><EditIcon /></Link>
                                                 </div>
                                             </td>
                                         </tr>

@@ -88,7 +88,7 @@ export default function Index({ qars, offices, search: iS, officeId: iO, status:
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>Submitted {q.submitted_at ?? '—'}</span>
-                                    <a href={`/pmt/qar/${q.id}`} style={btnView}>Review <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
+                                    <button onClick={() => router.visit(`/pmt/qar/${q.id}`)} style={btnView}>Review <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
                                 </div>
                             </div>
                         ))}
@@ -120,7 +120,7 @@ export default function Index({ qars, offices, search: iS, officeId: iO, status:
                                         <td style={td}><span style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)' }}>{q.submitted_at ?? '—'}</span></td>
                                         <td style={td}><StatusBadge status={q.status} /></td>
                                         <td style={{ ...td, textAlign: 'right' }}>
-                                            <a href={`/pmt/qar/${q.id}`} style={btnView}>Review <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
+                                            <button onClick={() => router.visit(`/pmt/qar/${q.id}`)} style={btnView}>Review <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
                                         </td>
                                     </tr>
                                 ))}

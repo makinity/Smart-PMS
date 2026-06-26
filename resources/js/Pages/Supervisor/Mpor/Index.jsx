@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
@@ -155,10 +155,10 @@ function DesktopTable({ mpors }) {
                             </td>
                             <td style={td}><StatusBadge status={m.status} /></td>
                             <td style={{ ...td, textAlign: 'right' }}>
-                                <a href={`/supervisor/mpor/${m.id}`} style={btnView}>
+                                <Link href={`/supervisor/mpor/${m.id}`} style={btnView}>
                                     Review
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                                </a>
+                                </Link>
                             </td>
                         </tr>
                     ))}
@@ -186,10 +186,10 @@ function MobileList({ mpors }) {
                             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--admin-text-primary)' }}>{formatMonth(m.month)}</span>
                             {m.submitted_at && <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginLeft: '0.5rem' }}>{m.submitted_at}</span>}
                         </div>
-                        <a href={`/supervisor/mpor/${m.id}`} style={btnView}>
+                        <Link href={`/supervisor/mpor/${m.id}`} style={btnView}>
                             Review
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                        </a>
+                        </Link>
                     </div>
                 </div>
             ))}

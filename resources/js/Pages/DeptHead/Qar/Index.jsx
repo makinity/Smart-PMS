@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
@@ -311,9 +311,9 @@ export default function Index() {
                                             <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>{m.month_label}</span>
                                             {m.approved_at && <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginLeft: '0.5rem' }}>{m.approved_at}</span>}
                                         </div>
-                                        <a href={`/dept-head/qar/mpor/${m.id}?q=${q}`} style={btnView}>
+                                        <Link href={`/dept-head/qar/mpor/${m.id}?q=${q}`} style={btnView}>
                                             View <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}
@@ -346,9 +346,9 @@ export default function Index() {
                                             <td style={tdS}><span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>{m.approved_at ?? '—'}</span></td>
                                             <td style={tdS}><StatusBadge status={m.status} /></td>
                                             <td style={{ ...tdS, textAlign: 'right' }}>
-                                                <a href={`/dept-head/qar/mpor/${m.id}?q=${q}`} style={btnView}>
+                                                <Link href={`/dept-head/qar/mpor/${m.id}?q=${q}`} style={btnView}>
                                                     View <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                                                </a>
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

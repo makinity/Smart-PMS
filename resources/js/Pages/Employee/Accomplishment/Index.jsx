@@ -248,10 +248,10 @@ export default function Index() {
                                 </div>
                             ))}
                         </div>
-                        <a href="/employee/accomplishment/smpor"
-                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => router.visit('/employee/accomplishment/smpor')}
+                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-table" /> View Full SMPOR
-                        </a>
+                        </button>
                     </div>
 
                     {/* IPCR */}
@@ -278,10 +278,10 @@ export default function Index() {
                         ) : (
                             <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.75rem' }}>No IPCR data yet.</div>
                         )}
-                        <a href="/employee/accomplishment/ipcr"
-                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <button onClick={() => router.visit('/employee/accomplishment/ipcr')}
+                            style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-clipboard2-data" /> View Full IPCR
-                        </a>
+                        </button>
                     </div>
                 </div>
 
