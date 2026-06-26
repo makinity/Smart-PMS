@@ -30,6 +30,7 @@ class OpcraAccomplishmentController extends Controller
                 'office_name' => $s->office?->name ?? '—',
                 'period' => $s->period?->name ?? '—',
                 'dept_head_name' => $s->deptHead?->name ?? '—',
+                'dept_head_avatar' => $s->deptHead?->profile_photo_url,
                 'status' => $s->status,
                 'computed_office_rating' => $s->computed_office_rating,
                 'final_office_rating' => $s->final_office_rating,

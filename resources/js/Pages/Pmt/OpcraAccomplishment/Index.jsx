@@ -57,9 +57,8 @@ export default function Index() {
                     borderLeft:`3px solid ${s.dept_head_flagged_for_calibration ? '#a78bfa' : sc.c}` }}
                 onMouseEnter={e => e.currentTarget.style.background='rgba(59,130,246,0.05)'}
                 onMouseLeave={e => e.currentTarget.style.background='var(--admin-bg-secondary)'}>
-                <div style={{ width:36, height:36, borderRadius:'50%', background:'var(--admin-accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.7rem', fontWeight:700, flexShrink:0 }}>
-                    {s.office_name?.slice(0,2).toUpperCase()}
-                </div>
+                <img src={s.dept_head_avatar} alt={s.dept_head_name}
+                    style={{ width:36, height:36, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
                 <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                         {s.office_name}
