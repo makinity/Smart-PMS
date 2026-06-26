@@ -391,13 +391,27 @@ export default function Index() {
     // MPOR lock: format cal month as YYYY-MM and check against locked months
     const calMonthStr = `${cal.year}-${String(cal.month + 1).padStart(2, '0')}`;
     const isCalMonthMporLocked = mporLockedMonths.includes(calMonthStr);
-    const effectivelyLocked = orsGateLocked || isCalMonthMporLocked;
+
+    // Outside-period lock: any day in the viewed month is outside period start/end
+    const isOutsidePeriod = (() => {
+        if (!period?.start_date || !period?.end_date) return false;
+        const monthStart = new Date(cal.year, cal.month, 1);
+        const monthEnd   = new Date(cal.year, cal.month + 1, 0);
+        const pStart     = new Date(period.start_date);
+        const pEnd       = new Date(period.end_date);
+        return monthEnd < pStart || monthStart > pEnd;
+    })();
+
+    const effectivelyLocked = orsGateLocked || isCalMonthMporLocked || isOutsidePeriod;
 
     function onDayClick(dateStr, dayEntries) {
         const dateMonth = dateStr.slice(0, 7);
         const dateLocked = mporLockedMonths.includes(dateMonth);
+        const dateOutside = period?.start_date && period?.end_date
+            ? dateStr < period.start_date || dateStr > period.end_date
+            : false;
         if (dayEntries.length > 0) setModal({ type: 'day', date: dateStr, entries: dayEntries, mporLocked: dateLocked });
-        else if (!dateLocked && !orsGateLocked) setModal({ type: 'log', date: dateStr });
+        else if (!dateLocked && !orsGateLocked && !dateOutside) setModal({ type: 'log', date: dateStr });
     }
 
     function timerAction(action, entryId, openDetails = false) {
@@ -453,6 +467,19 @@ export default function Index() {
                     <div>
                         <strong>MPOR Submitted — {calMonthStr}</strong>
                         <span style={{ marginLeft: '0.5rem', fontWeight: 400 }}>This month's MPOR has been submitted. ORS entries are locked. If your supervisor returns the MPOR, this month will be unlocked.</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Outside-period banner */}
+            {!orsGateLocked && isOutsidePeriod && (
+                <div style={{ marginBottom: '1rem', padding: '0.85rem 1.25rem', background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.35)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#ca8a04' }}>
+                    <i className="bi bi-exclamation-circle-fill" />
+                    <div>
+                        <strong>Outside Performance Period</strong>
+                        <span style={{ marginLeft: '0.5rem', fontWeight: 400 }}>
+                            {MONTHS[cal.month]} {cal.year} is outside the current performance period ({period.start_date} – {period.end_date}). Task logging is disabled for this month.
+                        </span>
                     </div>
                 </div>
             )}

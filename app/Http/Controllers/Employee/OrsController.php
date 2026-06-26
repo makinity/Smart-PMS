@@ -127,7 +127,10 @@ class OrsController extends Controller
             ->toArray();
 
         return Inertia::render('Employee/Ors/Index', [
-            'period'           => $period,
+            'period'           => $period ? array_merge((array) $period->only('id', 'name'), [
+                'start_date' => $period->start_date->toDateString(),
+                'end_date'   => $period->end_date->toDateString(),
+            ]) : null,
             'orsGateLocked'    => $orsGateLocked,
             'orsGateReason'    => $orsGateReason,
             'orsOptions'       => $orsOptions,
@@ -158,8 +161,16 @@ class OrsController extends Controller
             'notes'        => ['nullable', 'string', 'max:1000'],
         ]);
 
+        // Block if work_date is outside the performance period range
+        $workDate = \Carbon\Carbon::parse($data['work_date']);
+        abort_if(
+            $workDate->lt($period->start_date) || $workDate->gt($period->end_date),
+            422,
+            "Work date is outside the current performance period ({$period->start_date->toDateString()} – {$period->end_date->toDateString()})."
+        );
+
         // Block if MPOR for this month is already submitted/approved/endorsed
-        $workMonth = \Carbon\Carbon::parse($data['work_date'])->format('Y-m');
+        $workMonth = $workDate->format('Y-m');
         $mporLocked = Mpor::where('employee_id', $user->id)
             ->where('month', $workMonth)
             ->whereIn('status', ['submitted', 'approved', 'endorsed'])
