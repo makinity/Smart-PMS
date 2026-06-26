@@ -302,7 +302,7 @@ class PerformanceRatingService
             ])
             ->where('office_id', $opcr->office_id)
             ->where('performance_period_id', $opcr->performance_period_id)
-            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->where('status', 'released_by_pmt')
             ->get();
 
         if ($submissions->isEmpty()) {

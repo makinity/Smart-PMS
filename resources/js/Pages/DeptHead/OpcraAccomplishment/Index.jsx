@@ -10,7 +10,7 @@ const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very
 const FN_LABELS = { core: 'A. CORE FUNCTIONS', support: 'B. SUPPORT FUNCTIONS', strategic: 'C. STRATEGIC FUNCTIONS' };
 function round2(v) { return Math.round(v * 100) / 100; }
 
-function OpcraOfficeSection({ opcrSections }) {
+function OpcraOfficeSection({ opcrSections, officialScore }) {
     if (!opcrSections || opcrSections.length === 0) return null;
     const ratingCol = (v) => ({
         fontWeight: 700, fontSize: '0.82rem',
@@ -18,8 +18,9 @@ function OpcraOfficeSection({ opcrSections }) {
     });
     const byType = {};
     opcrSections.forEach(fn => {
-        const ft = fn.function_type === 'support' ? 'support' : 'core';
-        byType[ft] = byType[ft] ?? { ratings: [], weight: fn.weight_percent ?? 0, label: FN_LABELS[ft] ?? ft };
+        const ft = fn.function_type ?? 'core';
+        byType[ft] = byType[ft] ?? { ratings: [], weight: 0, label: FN_LABELS[ft] ?? ft };
+        byType[ft].weight = round2(byType[ft].weight + (fn.weight_percent ?? 0));
         fn.outputs.forEach(o => o.indicators.forEach(i => {
             if (i.A !== null && i.A !== undefined) byType[ft].ratings.push(i.A);
         }));
@@ -61,22 +62,24 @@ function OpcraOfficeSection({ opcrSections }) {
                     ))}
                 </div>
             ))}
+            {/* Performance Summary */}
             <div style={{ borderTop: '2px solid var(--admin-border)' }}>
                 <div style={{ padding: '0.5rem 1.25rem', background: 'var(--admin-bg-secondary)' }}>
                     <span style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)' }}>Performance Summary</span>
                 </div>
                 {summary.map((row, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average for {row.label} ({row.weight}%)</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average Rating for {row.label} ({row.weight}%)</span>
                         <span style={{ fontWeight: 700, fontSize: '0.85rem', ...ratingCol(row.weighted) }}>{row.weighted > 0 ? row.weighted.toFixed(2) : '—'}</span>
                     </div>
                 ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1.25rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1rem', ...ratingCol(overall) }}>{overall != null ? overall.toFixed(2) : '—'}</span>
-                        {overall != null && <span style={{ fontSize: '0.75rem', color: adjColor(overall) }}>{adjLabel(overall)}</span>}
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', ...ratingCol(officialScore) }}>{officialScore != null ? Number(officialScore).toFixed(2) : '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>ADJECTIVAL RATING</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: adjColor(officialScore) }}>{adjLabel(officialScore)}</span>
                 </div>
             </div>
         </div>
@@ -341,7 +344,7 @@ export default function Index() {
                 </div>
 
                 {/* Office OPCR Accomplishment */}
-                <OpcraOfficeSection opcrSections={opcrSections} />
+                <OpcraOfficeSection opcrSections={opcrSections} officialScore={submission?.final_office_rating ?? submission?.computed_office_rating} />
 
                 {/* Submit / Released */}
                 {released ? (

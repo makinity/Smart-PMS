@@ -8,7 +8,7 @@ const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : 
 // ── Office-Level OPCR Accomplishment Section ──────────────────────────────────
 const FN_LABELS = { core: 'A. CORE FUNCTIONS', support: 'B. SUPPORT FUNCTIONS', strategic: 'C. STRATEGIC FUNCTIONS' };
 
-function OpcraOfficeSection({ opcrSections }) {
+function OpcraOfficeSection({ opcrSections, officialScore }) {
     if (!opcrSections || opcrSections.length === 0) return null;
 
     const ratingCol = (v) => ({
@@ -16,11 +16,11 @@ function OpcraOfficeSection({ opcrSections }) {
         color: !v ? 'var(--admin-text-muted)' : v >= 4.5 ? '#10b981' : v >= 3.5 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444',
     });
 
-    // Mirror export exactly: non-support = core bucket; use OPCR weight_percent per type
     const byType = {};
     opcrSections.forEach(fn => {
-        const ft = fn.function_type === 'support' ? 'support' : 'core';
-        byType[ft] = byType[ft] ?? { ratings: [], weight: fn.weight_percent ?? 0, label: FN_LABELS[ft] ?? ft };
+        const ft = fn.function_type ?? 'core';
+        byType[ft] = byType[ft] ?? { ratings: [], weight: 0, label: FN_LABELS[ft] ?? ft };
+        byType[ft].weight = round2(byType[ft].weight + (fn.weight_percent ?? 0));
         fn.outputs.forEach(o => o.indicators.forEach(i => {
             if (i.A !== null && i.A !== undefined) byType[ft].ratings.push(i.A);
         }));
@@ -77,7 +77,6 @@ function OpcraOfficeSection({ opcrSections }) {
                     ))}
                 </div>
             ))}
-
             {/* Performance Summary */}
             <div style={{ borderTop: '2px solid var(--admin-border)' }}>
                 <div style={{ padding: '0.5rem 1.25rem', background: 'var(--admin-bg-secondary)' }}>
@@ -85,16 +84,17 @@ function OpcraOfficeSection({ opcrSections }) {
                 </div>
                 {summaryRows.map((row, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average for {row.label} ({row.weight}%)</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>Weighted Average Rating for {row.label} ({row.weight}%)</span>
                         <span style={{ fontWeight: 700, fontSize: '0.85rem', ...ratingCol(row.weighted) }}>{row.weighted > 0 ? row.weighted.toFixed(2) : '—'}</span>
                     </div>
                 ))}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1.25rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '1rem', ...ratingCol(overall) }}>{overall != null ? overall.toFixed(2) : '—'}</span>
-                        {overall != null && <span style={{ fontSize: '0.75rem', color: adjColor(overall) }}>{adjLabel(overall)}</span>}
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--admin-border)' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>OVERALL RATING</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.95rem', ...ratingCol(officialScore) }}>{officialScore != null ? Number(officialScore).toFixed(2) : '—'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-primary)' }}>ADJECTIVAL RATING</span>
+                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: adjColor(officialScore) }}>{adjLabel(officialScore)}</span>
                 </div>
             </div>
         </div>
@@ -276,7 +276,7 @@ export default function Show() {
                         <div>
                             <div style={lbl}>Computed Office Rating</div>
                             <div style={{ fontWeight:700, fontSize:'0.95rem', color:'var(--admin-text-primary)' }}>{adjLabel(submission.computed_office_rating)}</div>
-                            <div style={{ fontSize:'0.68rem', color:'var(--admin-text-muted)', marginTop:2 }}>Average of released employees</div>
+                            <div style={{ fontSize:'0.68rem', color:'var(--admin-text-muted)', marginTop:2 }}>Average of approved employee IPCR scores</div>
                         </div>
                     </div>
                     {submission.dept_head_remarks && (
@@ -383,7 +383,7 @@ export default function Show() {
                 </div>
 
                 {/* Office OPCR Accomplishment */}
-                <OpcraOfficeSection opcrSections={opcrSections} />
+                <OpcraOfficeSection opcrSections={opcrSections} officialScore={submission.final_office_rating ?? submission.computed_office_rating} />
 
                 {/* Actions */}
                 {canAct && (

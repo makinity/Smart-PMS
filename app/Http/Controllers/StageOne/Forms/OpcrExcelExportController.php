@@ -357,85 +357,63 @@ class OpcrExcelExportController extends Controller
         // ── Footer summary rows ────────────────────────────────────────────────
         $accScores   = $request->input('_accomplishment_scores', []);
         $officialOfficeRating = $request->input('_official_office_rating', []);
-        $coreScores   = [];
-        $supportScores = [];
+
+        // Group A scores by function_type dynamically
+        $typeScores = [];
         foreach ($accScores as $s) {
             $rating = $s['a'] ?? null;
-            if (!is_numeric($rating)) {
-                continue;
-            }
-
-            $functionType = strtolower(trim((string) ($s['function_type'] ?? '')));
-            if ($functionType === 'support') {
-                $supportScores[] = (float) $rating;
-            } else {
-                $coreScores[] = (float) $rating;
-            }
+            if (!is_numeric($rating) || (float) $rating <= 0) continue;
+            $ft = strtolower(trim((string) ($s['function_type'] ?? 'core')));
+            $typeScores[$ft][] = (float) $rating;
         }
 
-        $coreAvg = !empty($coreScores) ? round(array_sum($coreScores) / count($coreScores), 2) : null;
-        $suppAvg = !empty($supportScores) ? round(array_sum($supportScores) / count($supportScores), 2) : null;
-        $coreWeight = (float) ($typeWeights['core'] ?? 0);
-        $suppWeight = (float) ($typeWeights['support'] ?? 0);
-        $coreWeighted = $coreAvg !== null ? round($coreAvg * ($coreWeight / 100), 2) : null;
-        $suppWeighted = $suppAvg !== null ? round($suppAvg * ($suppWeight / 100), 2) : null;
+        // Compute weighted average per type using accumulated weights
+        $fnTypeWeights = [];
+        foreach ($typeWeights as $ft => $w) {
+            $fnTypeWeights[$ft] = (float) $w;
+        }
+
+        $typeWeightedRows = [];
+        foreach ($fnTypeWeights as $ft => $weight) {
+            $scores = $typeScores[$ft] ?? [];
+            $avg = !empty($scores) ? round(array_sum($scores) / count($scores), 2) : 0.0;
+            $weighted = round($avg * ($weight / 100), 2);
+            $label = match($ft) {
+                'core'      => 'Core Functions',
+                'support'   => 'Support Functions',
+                'strategic' => 'Strategic Functions',
+                default     => ucfirst($ft) . ' Functions',
+            };
+            $typeWeightedRows[] = [
+                'label'    => "Weighted Average Rating for {$label} ({$weight}%)",
+                'weighted' => $weighted,
+            ];
+        }
+
         $officialOverall = is_numeric($officialOfficeRating['final_office_rating'] ?? null)
             ? round((float) $officialOfficeRating['final_office_rating'], 2)
-            : null;
+            : round(array_sum(array_column($typeWeightedRows, 'weighted')), 2);
         $officialAdjectival = trim((string) ($officialOfficeRating['final_adjectival_rating'] ?? ''));
-
-        if ($officialOverall !== null) {
-            if ($coreWeighted === null && $suppWeighted === null) {
-                $coreWeighted = round($officialOverall * ($coreWeight / 100), 2);
-                $suppWeighted = round($officialOverall * ($suppWeight / 100), 2);
-            } elseif ($coreWeighted === null) {
-                $coreWeighted = round(max(0, $officialOverall - (float) $suppWeighted), 2);
-            } elseif ($suppWeighted === null) {
-                $suppWeighted = round(max(0, $officialOverall - (float) $coreWeighted), 2);
-            }
-
-            if ($coreWeighted !== null && $suppWeighted !== null) {
-                // Keep the displayed breakdown aligned with the official total.
-                $suppWeighted = round(max(0, $officialOverall - (float) $coreWeighted), 2);
-            }
+        if ($officialAdjectival === '') {
+            $officialAdjectival = $officialOverall >= 4.5 ? 'Outstanding'
+                : ($officialOverall >= 3.5 ? 'Very Satisfactory'
+                : ($officialOverall >= 2.5 ? 'Satisfactory'
+                : ($officialOverall >= 1.5 ? 'Unsatisfactory' : 'Poor')));
         }
 
-        $overallRating = null;
-        if ($coreWeighted !== null || $suppWeighted !== null) {
-            $overallRating = round(($coreWeighted ?? 0) + ($suppWeighted ?? 0), 2);
-        }
-        if ($officialOverall !== null) {
-            $overallRating = $officialOverall;
-        }
+        $footerRows = array_merge(
+            array_map(fn($r) => ['label' => $r['label'], 'value' => $r['weighted'], 'bold' => true], $typeWeightedRows),
+            [
+                ['label' => 'OVERALL RATING',    'value' => $officialOverall,    'bold' => true],
+                ['label' => 'ADJECTIVAL RATING', 'value' => $officialAdjectival, 'bold' => false],
+            ]
+        );
 
-        if ($officialAdjectival !== '') {
-            $adjectivalRating = $officialAdjectival;
-        } else {
-            $adjectivalRating = $overallRating !== null
-                ? ($overallRating >= 4.5 ? 'Outstanding' : ($overallRating >= 3.5 ? 'Very Satisfactory' : ($overallRating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory')))
-                : '';
-        }
-
-        $coreWeighted = $coreWeighted ?? 0.00;
-        $suppWeighted = $suppWeighted ?? 0.00;
-        $overallRating = $overallRating ?? round($coreWeighted + $suppWeighted, 2);
-
-        foreach ([
-            'Weighted Average Rating for Core Functions (' . ($typeWeights['core'] ?? 0) . '%)',
-            'Weighted Average Rating for Support Functions (' . ($typeWeights['support'] ?? 0) . '%)',
-            'OVERALL RATING',
-            'ADJECTIVAL RATING',
-        ] as $idx => $label) {
-            $value = match($idx) {
-                0 => $coreWeighted,
-                1 => $suppWeighted,
-                2 => $overallRating,
-                3 => $adjectivalRating,
-                default => null,
-            };
+        foreach ($footerRows as $idx => $row) {
+            $value = $row['value'];
             $ws->mergeCells("A{$r}:E{$r}");
             $ws->mergeCells("F{$r}:{$lastCol}{$r}");
-            $ws->setCellValue("A{$r}", $label);
+            $ws->setCellValue("A{$r}", $row['label']);
             if ($value !== null && $value !== '') $ws->setCellValue("F{$r}", $value);
             $ws->getStyle("A{$r}:E{$r}")->applyFromArray([
                 'font'      => ['size' => 8, 'italic' => true],
@@ -444,7 +422,7 @@ class OpcrExcelExportController extends Controller
                 'borders'   => $this->border(self::BDR_BLACK),
             ]);
             $ws->getStyle("F{$r}:{$lastCol}{$r}")->applyFromArray([
-                'font'      => ['bold' => $idx !== 3, 'size' => 9],
+                'font'      => ['bold' => $row['bold'], 'size' => 9],
                 'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => self::BG_FOOT]],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER, 'indent' => 1],
                 'borders' => $this->border(self::BDR_BLACK),

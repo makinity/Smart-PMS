@@ -101,22 +101,6 @@ class AccomplishmentReviewController extends Controller
             'dept_head_action_at' => now(),
         ]);
 
-        // Recompute OPCR-based office rating if a submission exists
-        $opcraSubmission = \App\Models\OpcraAccomplishmentSubmission::where('office_id', $deptHead->office_id)
-            ->where('performance_period_id', $accomplishment->performance_period_id)
-            ->whereIn('status', ['draft', 'submitted', 'returned'])
-            ->first();
-
-        if ($opcraSubmission) {
-            $approvedOpcr = \App\Models\Opcr::where('office_id', $deptHead->office_id)
-                ->where('performance_period_id', $accomplishment->performance_period_id)
-                ->where('status', 'approved')->first();
-            if ($approvedOpcr) {
-                $rating = round(app(\App\Services\OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0, 2);
-                $opcraSubmission->update(['computed_office_rating' => $rating]);
-            }
-        }
-
         return back()->with('success', 'Accomplishment approved and added to OPCR Accomplishment pool.');
     }
 

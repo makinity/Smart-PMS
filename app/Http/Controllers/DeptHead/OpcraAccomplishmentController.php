@@ -194,9 +194,19 @@ class OpcraAccomplishmentController extends Controller
             ->where('status', 'approved')
             ->first();
 
-        $computedRating = $approvedOpcr
-            ? round(app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0, 2)
-            : 0.0;
+        $scores = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+            ->where('performance_period_id', $period->id)
+            ->where('status', 'dept_head_approved')
+            ->get()
+            ->map(fn ($s) => $s->final_rating
+                ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
+                    \App\Models\Ipcr::where('employee_id', $s->employee_id)
+                        ->where('performance_period_id', $s->performance_period_id)
+                        ->first()
+                )
+            )->filter(fn ($v) => $v > 0);
+
+        $computedRating = $scores->isNotEmpty() ? round($scores->avg(), 2) : 0.0;
 
         $submission->update([
             'status' => 'draft',
@@ -243,11 +253,20 @@ class OpcraAccomplishmentController extends Controller
 
         abort_if(! $hasApproved, 422, 'No approved employee accomplishments found. Please approve at least one employee first.');
 
-        // Compute office rating from the OPCR's own consolidated output ratings
-        $computedRating = round(
-            app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0,
-            2
-        );
+        $approvedSubs = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+            ->where('performance_period_id', $period->id)
+            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->get();
+
+        $scores = $approvedSubs->map(fn ($s) => $s->final_rating
+            ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
+                \App\Models\Ipcr::where('employee_id', $s->employee_id)
+                    ->where('performance_period_id', $s->performance_period_id)
+                    ->first()
+            )
+        )->filter(fn ($v) => $v > 0);
+
+        $computedRating = $scores->isNotEmpty() ? round($scores->avg(), 2) : 0.0;
 
         $submission = OpcraAccomplishmentSubmission::updateOrCreate(
             ['office_id' => $deptHead->office_id, 'performance_period_id' => $period->id],

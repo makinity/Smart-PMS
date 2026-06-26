@@ -186,18 +186,7 @@ class OpcraAccomplishmentController extends Controller
     {
         abort_if($opcraAccomplishment->status !== 'submitted', 422, 'Cannot release at this stage.');
 
-        // Finalize employees first so their ORS data is available for the OPCR-based calculation
-        $this->finalizeEmployees($opcraAccomplishment);
-
-        // Compute final office rating from the OPCR's own consolidated output ratings
-        $approvedOpcr = \App\Models\Opcr::where('office_id', $opcraAccomplishment->office_id)
-            ->where('performance_period_id', $opcraAccomplishment->performance_period_id)
-            ->where('status', 'approved')
-            ->first();
-
-        $score = $approvedOpcr
-            ? round(app(OpcrOfficeRatingService::class)->calculate($approvedOpcr)['overall_score'] ?? 0.0, 2)
-            : (float) $opcraAccomplishment->computed_office_rating;
+        $score = (float) $opcraAccomplishment->computed_office_rating;
 
         $opcraAccomplishment->update([
             'status' => 'released',
@@ -207,6 +196,7 @@ class OpcraAccomplishmentController extends Controller
             'pmt_action_at' => now(),
         ]);
 
+        $this->finalizeEmployees($opcraAccomplishment);
         $this->notifyDeptHead($opcraAccomplishment,
             "Your office OPCR Accomplishment has been officially released by PMT. Final rating: {$this->toAdjectival($score)} ({$score}).");
 
