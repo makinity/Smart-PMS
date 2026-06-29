@@ -37,7 +37,7 @@ class LndHandoffService
             $body = [];
         }
 
-        if (!$response->ok()) {
+        if (!$response->successful()) {
             $message = (string) ($body['message'] ?? ('LND API returned HTTP ' . $response->status()));
             throw new RuntimeException($message);
         }
