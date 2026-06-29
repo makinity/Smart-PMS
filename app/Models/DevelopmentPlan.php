@@ -15,6 +15,8 @@ class DevelopmentPlan extends Model
     public const STATUS_SUBMITTED = 'submitted';
     public const STATUS_SUPERVISOR_RECOMMENDED = 'supervisor_recommended';
     public const STATUS_RETURNED = 'returned';
+    public const STATUS_DEPT_HEAD_APPROVED = 'dept_head_approved';
+    public const STATUS_SUBMITTED_TO_PMT = 'submitted_to_pmt';
     public const STATUS_SUBMITTED_TO_LD = 'submitted_to_ld';
 
     public const STATUS_APPROVED = 'approved';

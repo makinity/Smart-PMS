@@ -271,7 +271,7 @@ export default function Index() {
                         <table style={{ width:'100%', borderCollapse:'collapse' }}>
                             <thead>
                                 <tr style={{ background:'var(--admin-bg-secondary)' }}>
-                                    {['Employee','Position','System Score','Status',''].map(h => (
+                                    {['Employee','Position','IPCR Score','Status',''].map(h => (
                                         <th key={h} style={{ padding:'0.5rem 1rem', fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--admin-text-muted)', textAlign:'left', borderBottom:'1px solid var(--admin-border)', whiteSpace:'nowrap' }}>{h}</th>
                                     ))}
                                 </tr>

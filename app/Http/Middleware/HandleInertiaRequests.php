@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
                 'summary'       => $request->session()->get('summary'),
                 'just_logged_in'=> $request->session()->get('just_logged_in', false),
             ],
-            'ziggy' => fn () => (new Ziggy)->toArray(),
+            'ziggy' => fn () => cache()->remember('ziggy.routes.v1', 3600, fn () => (new Ziggy)->toArray()),
         ]);
     }
 }

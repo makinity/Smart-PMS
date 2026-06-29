@@ -26,8 +26,8 @@ const EVENT_ROUTE = {
     'development_plan.submitted_to_supervisor': '/supervisor/idp',
     'development_plan.supervisor_recommended': '/employee/idp',
     'development_plan.returned_by_supervisor': '/employee/idp',
-    'development_plan.submitted_to_dept_head': '/dept-head/idp',
-    'development_plan.approved':               '/employee/idp',
+    'development_plan.submitted_to_dept_head': '/dept-head/idp-office',
+    'development_plan.dept_head_approved':     '/employee/idp',
     'development_plan.returned_by_dept_head':  '/employee/idp',
 };
 
@@ -59,6 +59,7 @@ const roleLinks = {
         { href: '/dept-head/uwp', label: 'UWP', icon: 'bi-kanban-fill' },
         { href: '/dept-head/accomplishment-review', label: 'Accomplishment Review', icon: 'bi-award-fill' },
         { href: '/dept-head/idp', label: 'IDP Approval', icon: 'bi-journal-check' },
+        { href: '/dept-head/idp-office', label: 'Office IDP', icon: 'bi-building-fill-check' },
         { href: '/dept-head/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },
         { href: '/dept-head/profile', label: 'Profile', icon: 'bi-person-badge-fill' },
     ],

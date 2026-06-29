@@ -37,7 +37,8 @@ class IdpController extends Controller
         abort_if(in_array($idp->status, [
             DevelopmentPlan::STATUS_SUBMITTED,
             DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
-            DevelopmentPlan::STATUS_APPROVED,
+            DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
+            DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
             DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
         ]), 403, 'This IDP has already been submitted.');
 
@@ -79,6 +80,8 @@ class IdpController extends Controller
         abort_if(in_array($idp->status, [
             DevelopmentPlan::STATUS_SUBMITTED,
             DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
+            DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
+            DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
             DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
         ]), 403, 'Already submitted.');
 

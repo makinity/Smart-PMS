@@ -46,7 +46,7 @@ class IpcrObserver
         // Current workload: how many indicators already assigned this period
         $currentWorkload = $employee
             ? \App\Models\UwpIndicatorAssignment::where('employee_id', $employee->id)
-                ->whereHas('indicator.uwpMfo.unitWorkPlan', fn ($q) =>
+                ->whereHas('successIndicator.uwpMfo.uwpFunction.unitWorkPlan', fn ($q) =>
                     $q->where('performance_period_id', $ipcr->performance_period_id)
                 )
                 ->count()
@@ -65,9 +65,10 @@ class IpcrObserver
 
             EmployeePerformanceSnapshot::updateOrCreate(
                 [
-                    'employee_id'           => $ipcr->employee_id,
-                    'performance_period_id' => $ipcr->performance_period_id,
-                    'ipcr_id'               => $ipcr->id,
+                    'employee_id'              => $ipcr->employee_id,
+                    'performance_period_id'    => $ipcr->performance_period_id,
+                    'ipcr_id'                  => $ipcr->id,
+                    'uwp_success_indicator_id' => $item->uwp_success_indicator_id,
                 ],
                 [
                     // Employee context

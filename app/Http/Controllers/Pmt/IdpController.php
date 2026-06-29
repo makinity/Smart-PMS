@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pmt;
 
 use App\Http\Controllers\Controller;
 use App\Models\DevelopmentPlan;
+use App\Models\OpcraAccomplishmentSubmission;
 use App\Notifications\WorkflowEventNotification;
 use App\Services\LndHandoffService;
 use Illuminate\Http\Request;
@@ -12,55 +13,94 @@ use RuntimeException;
 
 class IdpController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $search = trim($request->get('search', ''));
-        $status = $request->get('status', '');
+        // Get all offices that have IDPs in submitted_to_pmt or later stages
+        $plans = DevelopmentPlan::with(['employee.office', 'office', 'performancePeriod:id,name'])
+            ->whereIn('status', [
+                DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
+                DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
+            ])
+            ->whereNotNull('office_id')
+            ->get();
 
-        $query = DevelopmentPlan::with(['employee.office', 'performancePeriod:id,name'])
-            ->whereNotNull('employee_id');
+        // Group by office
+        $offices = $plans->groupBy('office_id')->map(function ($officePlans, $officeId) {
+            $first = $officePlans->first();
+            $office = $first->office;
 
-        if ($status) {
-            $query->where('status', $status);
-        }
+            // Get office OPCR score for the period if available
+            $periodId = $first->performance_period_id;
+            $opcr = \App\Models\OpcraAccomplishmentSubmission::where('office_id', $officeId)
+                ->where('performance_period_id', $periodId)
+                ->whereNotNull('final_office_rating')
+                ->first();
 
-        if ($search !== '') {
-            $query->whereHas('employee', fn ($q) => $q
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('position', 'like', "%{$search}%")
-            );
-        }
-
-        $plans = $query->orderByRaw("FIELD(status, 'approved', 'supervisor_recommended', 'submitted', 'returned', 'pending_details', 'draft', 'submitted_to_ld')")
-            ->orderByDesc('updated_at')
-            ->get()
-            ->map(fn ($p) => [
-                'id'              => $p->id,
-                'status'          => $p->status,
-                'employee_name'   => $p->employee?->name ?? '—',
-                'employee_office' => $p->employee?->office?->name ?? '—',
-                'employee_avatar' => $p->employee?->profile_photo_url,
-                'position'        => $p->employee?->position ?? '—',
-                'source_score'    => $p->source_score ? round((float) $p->source_score, 2) : null,
-                'source_rating'   => $p->source_rating,
-                'period'          => $p->performancePeriod?->name ?? '—',
-                'updated_at'      => $p->updated_at?->toIso8601String(),
-            ]);
-
-        $counts = [
-            'all'                    => $plans->count(),
-            'approved'               => $plans->where('status', 'approved')->count(),
-            'supervisor_recommended' => $plans->where('status', 'supervisor_recommended')->count(),
-            'submitted'              => $plans->where('status', 'submitted')->count(),
-            'pending_details'        => $plans->where('status', 'pending_details')->count(),
-            'submitted_to_ld'        => $plans->where('status', 'submitted_to_ld')->count(),
-        ];
+            return [
+                'office_id'        => (int) $officeId,
+                'office_name'      => $office?->name ?? '—',
+                'period_name'      => $first->performancePeriod?->name ?? '—',
+                'period_id'        => $periodId,
+                'office_score'     => $opcr ? round((float) $opcr->final_office_rating, 2) : null,
+                'office_rating'    => $opcr?->final_adjectival_rating ?? null,
+                'total'          => $officePlans->count(),
+                'submitted_to_pmt' => $officePlans->where('status', DevelopmentPlan::STATUS_SUBMITTED_TO_PMT)->count(),
+                'submitted_to_ld'  => $officePlans->where('status', DevelopmentPlan::STATUS_SUBMITTED_TO_LD)->count(),
+            ];
+        })->values();
 
         return Inertia::render('Pmt/Idp/Index', [
-            'plans'   => $plans,
-            'counts'  => $counts,
-            'search'  => $search,
-            'status'  => $status,
+            'offices' => $offices,
+        ]);
+    }
+
+    public function officeShow(int $officeId)
+    {
+        $plans = DevelopmentPlan::where('office_id', $officeId)
+            ->whereIn('status', [
+                DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
+                DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
+            ])
+            ->with(['employee.office', 'performancePeriod:id,name'])
+            ->orderByRaw("FIELD(status, 'submitted_to_pmt', 'submitted_to_ld')")
+            ->orderByDesc('updated_at')
+            ->get();
+
+        if ($plans->isEmpty()) {
+            abort(404);
+        }
+
+        $first = $plans->first();
+        $office = $first->office;
+
+        $periodId = $first->performance_period_id;
+        $opcr = OpcraAccomplishmentSubmission::where('office_id', $officeId)
+            ->where('performance_period_id', $periodId)
+            ->whereNotNull('final_office_rating')
+            ->first();
+
+        $mappedPlans = $plans->map(fn ($p) => [
+            'id'              => $p->id,
+            'status'          => $p->status,
+            'employee_name'   => $p->employee?->name ?? '—',
+            'employee_avatar' => $p->employee?->profile_photo_url,
+            'position'        => $p->employee?->position ?? '—',
+            'source_score'    => $p->source_score ? round((float) $p->source_score, 2) : null,
+            'source_rating'   => $p->source_rating,
+            'period'          => $p->performancePeriod?->name ?? '—',
+            'pmt_remarks'     => $p->pmt_remarks ?? '',
+            'updated_at'      => $p->updated_at?->toIso8601String(),
+        ]);
+
+        return Inertia::render('Pmt/Idp/OfficeShow', [
+            'office' => [
+                'id'           => (int) $officeId,
+                'name'         => $office?->name ?? '—',
+                'period_name'  => $first->performancePeriod?->name ?? '—',
+                'office_score' => $opcr ? round((float) $opcr->final_office_rating, 2) : null,
+                'office_rating'=> $opcr?->final_adjectival_rating ?? null,
+            ],
+            'plans'  => $mappedPlans,
         ]);
     }
 
@@ -82,6 +122,7 @@ class IdpController extends Controller
                 'lnd_sync_status'     => $idp->lnd_sync_status,
                 'submitted_to_ld_at'  => $idp->submitted_to_ld_at?->format('M d, Y'),
                 'updated_at'          => $idp->updated_at?->format('M d, Y g:i A'),
+                'office_id'           => $idp->office_id,
             ],
             'employee' => [
                 'name'     => $idp->employee?->name ?? '—',
@@ -104,13 +145,12 @@ class IdpController extends Controller
         $ids = $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer']])['ids'];
 
         $plans = DevelopmentPlan::whereIn('id', $ids)
-            ->where('status', DevelopmentPlan::STATUS_APPROVED)
-            ->where('lnd_sync_status', DevelopmentPlan::LND_SYNC_NOT_SENT)
+            ->where('status', DevelopmentPlan::STATUS_SUBMITTED_TO_PMT)
             ->with('employee')
             ->get();
 
         if ($plans->isEmpty()) {
-            return back()->with('error', 'No approved IDPs found to submit.');
+            return back()->with('error', 'No submitted IDPs found to submit to L&D.');
         }
 
         $success = 0;
@@ -120,14 +160,14 @@ class IdpController extends Controller
             try {
                 $result = $lnd->sendDevelopmentPlan($plan);
                 $plan->update([
-                    'status'            => DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
-                    'submitted_to_ld_at'=> now(),
-                    'lnd_sync_status'   => ($result['status'] ?? 'sent') === 'acknowledged'
+                    'status'             => DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
+                    'submitted_to_ld_at' => now(),
+                    'lnd_sync_status'    => ($result['status'] ?? 'sent') === 'acknowledged'
                         ? DevelopmentPlan::LND_SYNC_ACKNOWLEDGED : DevelopmentPlan::LND_SYNC_SENT,
-                    'lnd_reference_id'  => $result['lnd_reference_id'] ?? null,
-                    'lnd_synced_at'     => now(),
-                    'lnd_last_error'    => null,
-                    'updated_by'        => auth()->id(),
+                    'lnd_reference_id'   => $result['lnd_reference_id'] ?? null,
+                    'lnd_synced_at'      => now(),
+                    'lnd_last_error'     => null,
+                    'updated_by'         => auth()->id(),
                 ]);
                 $plan->employee?->notify(new WorkflowEventNotification(
                     type: 'info',

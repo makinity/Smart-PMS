@@ -12,8 +12,9 @@ class IdpController extends Controller
 {
     private const LOCKED = [
         DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
+        DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
+        DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
         DevelopmentPlan::STATUS_RETURNED,
-        DevelopmentPlan::STATUS_APPROVED,
         DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
     ];
 
@@ -26,6 +27,8 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_SUBMITTED,
                 DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
                 DevelopmentPlan::STATUS_RETURNED,
+                DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
+                DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
             ->with(['employee.office', 'performancePeriod:id,name'])

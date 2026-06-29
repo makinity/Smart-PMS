@@ -15,6 +15,8 @@ const STATUS_CFG = {
     supervisor_recommended: { label: 'Supervisor Recommended', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)',  bc: 'rgba(139,92,246,0.3)' },
     returned:               { label: 'Returned — Please Revise', c: '#f87171', bg: 'rgba(239,68,68,0.12)', bc: 'rgba(239,68,68,0.3)' },
     approved:               { label: 'Approved',               c: '#10b981', bg: 'rgba(16,185,129,0.12)',  bc: 'rgba(16,185,129,0.3)' },
+    dept_head_approved:     { label: 'Approved',               c: '#10b981', bg: 'rgba(16,185,129,0.12)',  bc: 'rgba(16,185,129,0.3)' },
+    submitted_to_pmt:       { label: 'Under PMT Review',       c: '#a78bfa', bg: 'rgba(139,92,246,0.12)',  bc: 'rgba(139,92,246,0.3)' },
     submitted_to_ld:        { label: 'Submitted to L&D',       c: '#4ade80', bg: 'rgba(74,222,128,0.12)',  bc: 'rgba(74,222,128,0.3)' },
 };
 

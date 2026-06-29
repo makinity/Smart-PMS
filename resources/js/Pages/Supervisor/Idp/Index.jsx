@@ -4,10 +4,12 @@ import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
-    submitted:              { label: 'Pending Review',   c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
-    returned:               { label: 'Returned',         c: '#f87171', bg: 'rgba(239,68,68,0.12)',  bc: 'rgba(239,68,68,0.3)' },
-    supervisor_recommended: { label: 'Recommended',      c: '#60a5fa', bg: 'rgba(59,130,246,0.12)', bc: 'rgba(59,130,246,0.3)' },
-    submitted_to_ld:        { label: 'Submitted to L&D', c: '#4ade80', bg: 'rgba(74,222,128,0.12)', bc: 'rgba(74,222,128,0.3)' },
+    submitted:              { label: 'Pending Review',    c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
+    returned:               { label: 'Returned',          c: '#f87171', bg: 'rgba(239,68,68,0.12)',  bc: 'rgba(239,68,68,0.3)' },
+    supervisor_recommended: { label: 'Recommended',       c: '#60a5fa', bg: 'rgba(59,130,246,0.12)', bc: 'rgba(59,130,246,0.3)' },
+    dept_head_approved:     { label: 'DH Approved',       c: '#10b981', bg: 'rgba(16,185,129,0.12)', bc: 'rgba(16,185,129,0.3)' },
+    submitted_to_pmt:       { label: 'Submitted to PMT',  c: '#a78bfa', bg: 'rgba(139,92,246,0.12)', bc: 'rgba(139,92,246,0.3)' },
+    submitted_to_ld:        { label: 'Submitted to L&D',  c: '#4ade80', bg: 'rgba(74,222,128,0.12)', bc: 'rgba(74,222,128,0.3)' },
 };
 
 const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#f97316' };

@@ -53,7 +53,8 @@ class OpcraAccomplishmentController extends Controller
             'name' => $emp->name,
             'position' => $emp->position ?? '-',
             'avatar' => $emp->profile_photo_url,
-            'system_score' => $ipcrMap->get($emp->id)?->final_score ? (float) $ipcrMap->get($emp->id)->final_score : null,
+            'system_score' => $subMap->get($emp->id)?->final_rating
+                ?? ($ipcrMap->get($emp->id)?->final_score ? (float) $ipcrMap->get($emp->id)->final_score : null),
             'final_rating' => $subMap->get($emp->id)?->final_rating,
             'adjectival' => $subMap->get($emp->id)?->final_adjectival_rating,
             'status' => $subMap->get($emp->id)?->status ?? 'not_submitted',

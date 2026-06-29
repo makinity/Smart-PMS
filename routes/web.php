@@ -16,16 +16,7 @@ Route::get('/dashboard', function () {
         session()->reflash();
     }
 
-    // Force-refresh Spatie permission cache then resolve role
-    $user->unsetRelation('roles');
     $role = $user->getRoleNames()->first() ?? $user->role;
-
-    // Auto-heal: if spatie role missing but DB role column set, sync and retry
-    if (! $role && $user->role) {
-        \Spatie\Permission\Models\Role::findOrCreate($user->role, 'web');
-        $user->syncRoles([$user->role]);
-        $role = $user->role;
-    }
 
     return match (true) {
         $role === 'admin'      => redirect()->route('admin.dashboard'),
@@ -118,9 +109,10 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::patch('/development-planning/{plan}/remarks', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'savePmtRemarks'])->name('development-planning.remarks');
     Route::post('/development-planning/{plan}/submit-to-ld', [\App\Http\Controllers\Pmt\DevelopmentPlanningController::class, 'submitToLd'])->name('development-planning.submit-to-ld');
     Route::get('/idp', [\App\Http\Controllers\Pmt\IdpController::class, 'index'])->name('idp.index');
+    Route::get('/idp/office/{officeId}', [\App\Http\Controllers\Pmt\IdpController::class, 'officeShow'])->name('idp.office-show');
+    Route::post('/idp/bulk-submit', [\App\Http\Controllers\Pmt\IdpController::class, 'bulkSubmitToLd'])->name('idp.bulk-submit');
     Route::get('/idp/{idp}', [\App\Http\Controllers\Pmt\IdpController::class, 'show'])->name('idp.show');
     Route::patch('/idp/{idp}/remarks', [\App\Http\Controllers\Pmt\IdpController::class, 'savePmtRemarks'])->name('idp.remarks');
-    Route::post('/idp/bulk-submit', [\App\Http\Controllers\Pmt\IdpController::class, 'bulkSubmitToLd'])->name('idp.bulk-submit');
     // Performance Overview (merged Top Performers + Development Planning list)
     Route::get('/performance-overview', [\App\Http\Controllers\Pmt\PerformanceOverviewController::class, 'index'])->name('performance-overview.index');
     // Keep old index URLs working via redirect
@@ -164,6 +156,8 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::post('/opcr-accomplishment/reset', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'resetForReview'])->name('opcr-accomplishment.reset');
     Route::get('/opcr-accomplishment/export', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'export'])->name('opcr-accomplishment.export');
     Route::get('/idp', [\App\Http\Controllers\DeptHead\IdpController::class, 'index'])->name('idp.index');
+    Route::get('/idp-office', [\App\Http\Controllers\DeptHead\IdpController::class, 'officeIdp'])->name('idp.office');
+    Route::post('/idp/submit-to-pmt', [\App\Http\Controllers\DeptHead\IdpController::class, 'submitToPmt'])->name('idp.submit-to-pmt');
     Route::get('/idp/{idp}', [\App\Http\Controllers\DeptHead\IdpController::class, 'show'])->name('idp.show');
     Route::post('/idp/{idp}/approve', [\App\Http\Controllers\DeptHead\IdpController::class, 'approve'])->name('idp.approve');
     Route::post('/idp/{idp}/return', [\App\Http\Controllers\DeptHead\IdpController::class, 'return'])->name('idp.return');

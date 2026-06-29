@@ -275,6 +275,15 @@ class OpcraAccomplishmentController extends Controller
                 'pmt_action_at' => now(),
             ]);
 
+            // Trigger IpcrObserver so performance snapshots get populated
+            $ipcr = Ipcr::where('employee_id', $s->employee_id)
+                ->where('performance_period_id', $s->performance_period_id)
+                ->first();
+            if ($ipcr && $ipcr->status !== Ipcr::STATUS_RELEASED_BY_PMT) {
+                $ipcr->status = Ipcr::STATUS_RELEASED_BY_PMT;
+                $ipcr->save();
+            }
+
             $s->employee?->notify(new WorkflowEventNotification(
                 type: 'success',
                 event: 'accomplishment.released_by_pmt',

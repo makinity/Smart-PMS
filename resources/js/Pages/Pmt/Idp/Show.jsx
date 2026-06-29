@@ -11,7 +11,8 @@ const STATUS_CFG = {
     submitted:              { label: 'Under Review',           c: '#60a5fa', bg: 'rgba(59,130,246,0.12)', bc: 'rgba(59,130,246,0.3)' },
     supervisor_recommended: { label: 'Supervisor Recommended', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)', bc: 'rgba(139,92,246,0.3)' },
     returned:               { label: 'Returned',               c: '#f87171', bg: 'rgba(239,68,68,0.12)',  bc: 'rgba(239,68,68,0.3)' },
-    approved:               { label: 'Approved',               c: '#10b981', bg: 'rgba(16,185,129,0.12)', bc: 'rgba(16,185,129,0.3)' },
+    dept_head_approved:     { label: 'Dept Head Approved',     c: '#10b981', bg: 'rgba(16,185,129,0.12)', bc: 'rgba(16,185,129,0.3)' },
+    submitted_to_pmt:       { label: 'Submitted to PMT',       c: '#a78bfa', bg: 'rgba(139,92,246,0.12)', bc: 'rgba(139,92,246,0.3)' },
     submitted_to_ld:        { label: 'Submitted to L&D',       c: '#4ade80', bg: 'rgba(74,222,128,0.12)', bc: 'rgba(74,222,128,0.3)' },
 };
 
@@ -93,9 +94,9 @@ export default function Show() {
                 {/* Header card */}
                 <div style={{ ...card, borderLeft: `3px solid ${ratingColor}`, borderLeftWidth: 3, padding: isMobile ? '1rem' : '1.25rem 1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <button onClick={() => router.visit('/pmt/idp')}
+                        <button onClick={() => router.visit(plan.office_id ? `/pmt/idp/office/${plan.office_id}` : '/pmt/idp')}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0 }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg> Back to IDP list
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg> Back to office IDPs
                         </button>
                         <a href={`/employee/idp/${plan.id}/export`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 10, fontSize: '0.82rem', fontWeight: 600, border: '1px solid #16a34a', color: '#16a34a', background: 'transparent', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
