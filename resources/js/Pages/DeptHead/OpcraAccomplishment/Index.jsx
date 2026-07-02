@@ -1,7 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+
+function useBreakpoint() {
+    const [w, setW] = useState(() => (typeof window === 'undefined' ? 1024 : window.innerWidth));
+    useEffect(() => {
+        const h = () => setW(window.innerWidth);
+        window.addEventListener('resize', h);
+        return () => window.removeEventListener('resize', h);
+    }, []);
+    if (w >= 1024) return 'desktop';
+    if (w >= 768)  return 'tablet';
+    return 'mobile';
+}
 
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
 const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
@@ -112,6 +124,7 @@ function ScoreRing({ score, size = 64 }) {
 
 export default function Index() {
     const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections } = usePage().props;
+    const bp = useBreakpoint();
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
@@ -145,11 +158,6 @@ export default function Index() {
         });
     }
 
-    function resetForReview() {
-        if (!window.confirm('Reset this OPCR accomplishment to PMT review? This clears the released state.')) return;
-        router.post('/dept-head/opcr-accomplishment/reset', {}, { preserveScroll: true });
-    }
-
     if (!period) return (
         <AppLayout title="OPCR Accomplishment">
             <div style={{ ...card, padding:'3rem', textAlign:'center', color:'var(--admin-text-muted)' }}>
@@ -170,16 +178,11 @@ export default function Index() {
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                         {released && (
-                            <button type="button"
-                                onClick={resetForReview}
-                                style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 0.9rem', borderRadius:6, border:'1px solid #ef4444', background:'rgba(239,68,68,0.08)', color:'#ef4444', fontSize:'0.8rem', fontWeight:600 }}>
-                                <i className="bi bi-arrow-counterclockwise" /> Reset for PMT Review
-                            </button>
-                        )}
-                        {released && (
                             <a href="/dept-head/opcr-accomplishment/export"
-                               style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 0.9rem', borderRadius:6, background:'#16a34a', color:'#fff', fontSize:'0.8rem', fontWeight:600, textDecoration:'none' }}>
-                                <i className="bi bi-file-earmark-excel" /> Export Official OPCR
+                               title="Export Official OPCR"
+                               style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 1.1rem', borderRadius:8, background:'rgba(34,197,94,0.12)', border:'1px solid rgba(34,197,94,0.28)', color:'#4ade80', fontSize:'0.82rem', fontWeight:600, textDecoration:'none' }}>
+                                <i className="bi bi-file-earmark-excel" />
+                                {bp === 'desktop' && 'Export Official OPCR'}
                             </a>
                         )}
                         <span style={{ padding:'3px 12px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
