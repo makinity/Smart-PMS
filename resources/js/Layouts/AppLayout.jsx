@@ -191,8 +191,8 @@ export default function AppLayout({ children, title, description }) {
                     --admin-shadow: 0 18px 40px rgba(0,0,0,0.28);
                 }
                 :root[data-theme="light"] {
-                    --admin-bg-primary: #f0f4ff;
-                    --admin-bg-secondary: #e8edf8;
+                    --admin-bg-primary: #f9f9fb;
+                    --admin-bg-secondary: #f2f2f5;
                     --admin-sidebar: rgba(255,255,255,0.98);
                     --admin-card: rgba(255,255,255,0.96);
                     --admin-border: rgba(59,130,246,0.14);
@@ -208,9 +208,7 @@ export default function AppLayout({ children, title, description }) {
                     font-family: 'Inter', system-ui, sans-serif;
                     color: var(--admin-text-primary);
                     min-height: 100vh;
-                    background:
-                        radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 26%),
-                        linear-gradient(180deg, var(--admin-bg-primary) 0%, var(--admin-bg-secondary) 100%);
+                    background: var(--admin-bg-primary);
                 }
                 .admin-content { flex: 1; padding: 1rem 1.5rem; overflow: auto; }
 

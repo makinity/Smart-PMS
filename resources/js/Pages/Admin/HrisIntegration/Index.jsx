@@ -131,7 +131,7 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
     const failures = Array.isArray(sync.failures) ? sync.failures : [];
 
     return (
-        <AppLayout user={auth?.user} auth={auth}>
+        <AppLayout title="HRIS Integration">
             <Head title="HRIS Integration" />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

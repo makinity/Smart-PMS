@@ -676,7 +676,7 @@ export default function Index({
     };
 
     return (
-        <AppLayout user={auth?.user} auth={auth}>
+        <AppLayout title="Users">
             <Head title="Users" />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
