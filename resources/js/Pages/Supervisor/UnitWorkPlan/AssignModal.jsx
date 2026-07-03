@@ -20,7 +20,9 @@ function fitColor(label) {
     return '#f87171';
 }
 
-export default function AssignModal({ indicator, periodId = 1, employees, allIndicators = [], onSave, onClose }) {
+export default function AssignModal({ indicator, periodId = 1, employees, allIndicators = [], onSave, onClose, mode = 'online' }) {
+    const isOffline = mode === 'offline';
+
     const initialIds = new Set((indicator.assignments ?? []).map(a => a.employee_id));
     const [selected, setSelected]       = useState(initialIds);
     const [search, setSearch]           = useState('');
@@ -28,15 +30,16 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
     const [expandedEmp, setExpandedEmp] = useState(null);
     const [mlData, setMlData]           = useState(null);
     const [allMlData, setAllMlData]     = useState({});
-    const [mlLoading, setMlLoading]     = useState(true);
+    const [mlLoading, setMlLoading]     = useState(!isOffline); // offline: never shows loader
     const [saving, setSaving]           = useState(false);
     const [pendingConfirm, setPendingConfirm] = useState(null); // { emp, suggestion }
     const [quickAssigning, setQuickAssigning] = useState(false);
 
     useEffect(() => {
-        setMlData(null);
-        if (!indicator.id) { return; }
+        // Offline mode: skip ML fetch entirely
+        if (isOffline || !indicator.id) { setMlLoading(false); return; }
 
+        setMlData(null);
         const indicatorIds = allIndicators.map(si => si.id).filter(Boolean);
 
         // First, quickly check if ML is online by fetching the main indicator
@@ -65,7 +68,7 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
             })
             .catch(() => {})
             .finally(() => setMlLoading(false));
-    }, [indicator.id, periodId]);
+    }, [indicator.id, periodId, isOffline]);
 
     const recMap = useMemo(() => {
         const map = {};
@@ -198,7 +201,14 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
             <div style={s.modal}>
                 <div style={s.header}>
                     <div>
-                        <div style={s.title}>Assign Employees</div>
+                        <div style={s.title}>
+                            Assign Employees
+                            {isOffline && (
+                                <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0.15rem 0.5rem', borderRadius: 99, background: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.3)', verticalAlign: 'middle' }}>
+                                    Offline
+                                </span>
+                            )}
+                        </div>
                         <div style={s.sub}>Indicator: {indicator.indicator_text?.slice(0, 60)}...</div>
                     </div>
                     <button style={s.closeBtn} onClick={onClose}>&#x2715;</button>
@@ -355,8 +365,10 @@ export default function AssignModal({ indicator, periodId = 1, employees, allInd
 
                 <div style={s.footer}>
                     <div style={s.aiActive}>
-                        <span style={{ color: mlOnline ? 'var(--admin-accent)' : '#f87171', fontSize: '0.72rem' }}>●</span>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>{mlOnline ? 'AI OPTIMIZATION ACTIVE' : 'AI OFFLINE — Manual assignment mode'}</span>
+                        <span style={{ color: isOffline ? '#64748b' : mlOnline ? 'var(--admin-accent)' : '#f87171', fontSize: '0.72rem' }}>●</span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', fontWeight: 600 }}>
+                            {isOffline ? 'OFFLINE MODE — No AI analysis' : mlOnline ? 'AI OPTIMIZATION ACTIVE' : 'AI OFFLINE — Manual assignment mode'}
+                        </span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button style={s.btnOutline} onClick={onClose}>Cancel</button>

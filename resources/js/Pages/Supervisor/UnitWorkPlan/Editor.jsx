@@ -84,7 +84,19 @@ export default function Editor() {
     const [weightValidation, setWeightValidation] = useState(null);
     const [saving, setSaving]                   = useState(false);
     const [navOpen, setNavOpen]                 = useState(false);
+    const [mlOnline, setMlOnline]               = useState(null); // null = unknown, true/false after probe
     const bp = useBreakpoint();
+
+    // Probe ML status once on mount using the first available indicator
+    useEffect(() => {
+        const firstSiId = initialFunctions?.flatMap(f => f.mfos ?? [])
+            .flatMap(m => m.successIndicators ?? [])
+            .find(si => si.id)?.id;
+        if (!firstSiId) { setMlOnline(false); return; }
+        axios.get(`/supervisor/uwp/suggestions`, { params: { indicator_id: firstSiId, period_id: uwp?.performance_period_id ?? 1 }, timeout: 4000 })
+            .then(res => setMlOnline(res.data?.ml_online === true))
+            .catch(() => setMlOnline(false));
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const toast    = useToast();
     const confirm  = useConfirm();
@@ -463,10 +475,12 @@ export default function Editor() {
                                 fnId={displayFn.id}
                                 editable={uwp?.editable}
                                 bp={bp}
+                                mlOnline={mlOnline}
                                 onEditMfo={mfo => setAddMfoCtx({ fn: displayFn, mfo })}
                                 onDeleteMfo={mfoId => handleDeleteMfo(displayFn.id, mfoId)}
                                 onEditQet={si => setQetModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id })}
-                                onAssign={si => setAssignModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id })}
+                                onAssign={si => setAssignModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id, mode: 'online' })}
+                                onAssignOffline={si => setAssignModal({ indicator: si, fnId: displayFn.id, mfoId: mfo.id, mode: 'offline' })}
                                 onOpenContext={si => setActiveIndicator({ si, fnId: displayFn.id, mfoId: mfo.id })}
                                 onDeleteIndicator={siId => handleDeleteIndicator(displayFn.id, mfo.id, siId)}
                                 onAddIndicator={() => setAddIndicatorCtx({ mfo })}
@@ -519,6 +533,7 @@ export default function Editor() {
                     allIndicators={functions.flatMap(f => f.mfos?.flatMap(m => (m.successIndicators ?? []).map(si => ({ ...si, mfo_title: m.title, function_name: f.name, function_type: f.function_type }))) ?? [])}
                     onSave={handleSaveAssign}
                     onClose={() => setAssignModal(null)}
+                    mode={assignModal.mode ?? 'online'}
                 />
             )}
 
@@ -631,7 +646,7 @@ function EditorLeftNav({ functions, activeFnId, activeMfoId, editable, bp, setAc
     );
 }
 
-function MfoGroup({ mfo, fnId, editable, bp, onEditMfo, onDeleteMfo, onEditQet, onAssign, onOpenContext, onDeleteIndicator, onAddIndicator }) {
+function MfoGroup({ mfo, fnId, editable, bp, mlOnline, onEditMfo, onDeleteMfo, onEditQet, onAssign, onAssignOffline, onOpenContext, onDeleteIndicator, onAddIndicator }) {
     const count = mfo.successIndicators?.length ?? 0;
     return (
         <section style={s.mfoGroup}>
@@ -675,8 +690,10 @@ function MfoGroup({ mfo, fnId, editable, bp, onEditMfo, onDeleteMfo, onEditQet, 
                     key={si.id}
                     si={si}
                     editable={editable}
+                    mlOnline={mlOnline}
                     onEditQet={() => onEditQet(si)}
                     onAssign={() => onAssign(si)}
+                    onAssignOffline={() => onAssignOffline(si)}
                     onOpenContext={() => onOpenContext(si)}
                     onDelete={() => onDeleteIndicator(si.id)}
                 />
@@ -693,7 +710,7 @@ function MfoGroup({ mfo, fnId, editable, bp, onEditMfo, onDeleteMfo, onEditQet, 
 }
 
 // ── Single indicator card ──
-function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDelete }) {
+function IndicatorCard({ si, editable, mlOnline, onEditQet, onAssign, onAssignOffline, onOpenContext, onDelete }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const budget = formatBudget(si.allotted_budget ?? 0);
     const assignees = si.assignments ?? [];
@@ -727,10 +744,18 @@ function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDel
 
             {/* Actions */}
             <div style={s.siActions}>
-                <button style={{ ...s.siBtn, ...s.assignBtn }} onClick={onAssign}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
-                    Assign
-                </button>
+                {mlOnline === true && (
+                    <button style={{ ...s.siBtn, ...s.assignBtn }} onClick={onAssign} title="Assign with AI recommendations">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                        Assign (AI)
+                    </button>
+                )}
+                {mlOnline !== true && (
+                    <button style={{ ...s.siBtn, ...s.assignOfflineBtn }} onClick={onAssignOffline} title="Assign employees">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                        Assign
+                    </button>
+                )}
                 <button style={{ ...s.siBtn, ...s.qetBtn }} onClick={onEditQet}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                     QET Standards
@@ -748,10 +773,18 @@ function IndicatorCard({ si, editable, onEditQet, onAssign, onOpenContext, onDel
                                 View Details
                             </button>
                             {editable && <>
-                                <button style={s.menuItem} onClick={() => { onAssign(); setMenuOpen(false); }}>
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
-                                    Assign Employee
-                                </button>
+                                {mlOnline === true && (
+                                    <button style={s.menuItem} onClick={() => { onAssign(); setMenuOpen(false); }}>
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                                        Assign (AI)
+                                    </button>
+                                )}
+                                {mlOnline !== true && (
+                                    <button style={s.menuItem} onClick={() => { onAssignOffline(); setMenuOpen(false); }}>
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                                        Assign Employee
+                                    </button>
+                                )}
                                 <button style={s.menuItem} onClick={() => { onEditQet(); setMenuOpen(false); }}>
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                                     Edit QET Standards
@@ -1285,6 +1318,7 @@ const s = {
     siActions:      { display: 'flex', gap: '0.5rem', alignItems: 'center' },
     siBtn:          { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.42rem 0.85rem', borderRadius: 8, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', border: '1px solid transparent', whiteSpace: 'nowrap' },
     assignBtn:      { background: 'rgba(59,130,246,0.12)', color: 'var(--admin-accent)', borderColor: 'rgba(59,130,246,0.25)' },
+    assignOfflineBtn: { background: 'rgba(100,116,139,0.1)', color: 'var(--admin-text-muted)', borderColor: 'rgba(100,116,139,0.25)' },
     qetBtn:         { background: 'rgba(74,222,128,0.1)', color: '#4ade80', borderColor: 'rgba(74,222,128,0.25)' },
     moreBtn:        { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', display: 'flex', alignItems: 'center', padding: '0.25rem' },
     menuBackdrop:   { position: 'fixed', inset: 0, zIndex: 200 },
