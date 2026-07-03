@@ -179,8 +179,8 @@ The system supports **dark mode** (default on first load if no preference saved)
 
 /* â”€â”€ Light mode â”€â”€ */
 :root[data-theme="light"] {
-    --admin-bg-primary:    #f0f4ff;
-    --admin-bg-secondary:  #e8edf8;
+    --admin-bg-primary:    #f9f9fb;
+    --admin-bg-secondary:  #f2f2f5;
     --admin-sidebar:       rgba(255,255,255,0.98);
     --admin-card:          rgba(255,255,255,0.96);
     --admin-border:        rgba(59,130,246,0.14);
@@ -195,13 +195,11 @@ The system supports **dark mode** (default on first load if no preference saved)
 
 ### Body Background
 
-The page background uses a layered gradient with a subtle radial glow in the top-left corner:
+The page background is a flat solid color — no gradient, no radial glow. This keeps the background neutral and consistent from top to bottom:
 
 ```css
 body {
-    background:
-        radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 26%),
-        linear-gradient(180deg, var(--admin-bg-primary) 0%, var(--admin-bg-secondary) 100%);
+    background: var(--admin-bg-primary);
 }
 ```
 
@@ -322,9 +320,7 @@ body {
     font-family: 'Inter', system-ui, sans-serif;
     color: var(--admin-text-primary);
     min-height: 100vh;
-    background:
-        radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 26%),
-        linear-gradient(180deg, var(--admin-bg-primary) 0%, var(--admin-bg-secondary) 100%);
+    background: var(--admin-bg-primary);
 }
 
 .admin-content {
