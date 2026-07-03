@@ -123,7 +123,7 @@ function ScoreRing({ score, size = 64 }) {
 }
 
 export default function Index() {
-    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections } = usePage().props;
+    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections, projectedRating } = usePage().props;
     const bp = useBreakpoint();
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
@@ -181,8 +181,8 @@ export default function Index() {
                             <a href="/dept-head/opcr-accomplishment/export"
                                title="Export Official OPCR"
                                style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'0.45rem 1.1rem', borderRadius:8, background:'rgba(34,197,94,0.12)', border:'1px solid rgba(34,197,94,0.28)', color:'#4ade80', fontSize:'0.82rem', fontWeight:600, textDecoration:'none' }}>
-                                <i className="bi bi-file-earmark-excel" />
-                                {bp === 'desktop' && 'Export Official OPCR'}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                {bp !== 'mobile' && 'Download'}
                             </a>
                         )}
                         <span style={{ padding:'3px 12px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
@@ -221,7 +221,7 @@ export default function Index() {
                     )}
                 </div>
 
-                {/* Official rating — after release */}
+                {/* Official rating — after PMT release */}
                 {released && (
                     <div style={{ ...card, padding:'1.1rem 1.25rem', borderLeft:'3px solid #4ade80', background:'rgba(74,222,128,0.04)' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:'1rem', flexWrap:'wrap' }}>
@@ -233,6 +233,22 @@ export default function Index() {
                                     <i className="bi bi-patch-check-fill" /> Officially Released by PMT
                                 </div>
                                 {submission.pmt_remarks && <div style={{ marginTop:6, fontSize:'0.72rem', color:'var(--admin-text-muted)', fontStyle:'italic' }}>"{submission.pmt_remarks}"</div>}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Projected score — visible before PMT release as long as at least one employee is approved */}
+                {!released && projectedRating !== null && projectedRating !== undefined && (
+                    <div style={{ ...card, padding:'1.1rem 1.25rem', borderLeft:'3px solid var(--admin-accent)', background:'rgba(59,130,246,0.03)' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:'1rem', flexWrap:'wrap' }}>
+                            <ScoreRing score={parseFloat(projectedRating)} size={80} />
+                            <div>
+                                <div style={lbl}>Projected Office Rating</div>
+                                <div style={{ fontWeight:800, fontSize:'1.1rem', color:adjColor(projectedRating) }}>{adjLabel(projectedRating)}</div>
+                                <div style={{ fontSize:'0.7rem', color:'var(--admin-text-muted)', marginTop:4, display:'flex', alignItems:'center', gap:4 }}>
+                                    <i className="bi bi-info-circle" /> Based on {stats.approved} approved employee{stats.approved !== 1 ? 's' : ''} · Not yet official
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -75,6 +75,22 @@ class OpcraAccomplishmentController extends Controller
 
         $approved = $employeeData->where('approved', true)->count();
 
+        // Compute a live projected office rating from all approved employee scores
+        $approvedSubs = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
+            ->where('performance_period_id', $period->id)
+            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->get();
+
+        $liveScores = $approvedSubs->map(fn ($s) =>
+            $s->final_rating ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
+                \App\Models\Ipcr::where('employee_id', $s->employee_id)
+                    ->where('performance_period_id', $s->performance_period_id)
+                    ->first()
+            )
+        )->filter(fn ($v) => $v > 0);
+
+        $projectedRating = $liveScores->isNotEmpty() ? round($liveScores->avg(), 2) : null;
+
         // Office-level OPCR sections (only if approved OPCR exists)
         $opcrSections = [];
         if ($approvedOpcr) {
@@ -118,6 +134,7 @@ class OpcraAccomplishmentController extends Controller
             'hasApprovedOpcr' => (bool) $approvedOpcr,
             'approvedOpcrId' => $approvedOpcr?->id,
             'opcrSections' => $opcrSections,
+            'projectedRating' => $projectedRating,
         ]);
     }
 

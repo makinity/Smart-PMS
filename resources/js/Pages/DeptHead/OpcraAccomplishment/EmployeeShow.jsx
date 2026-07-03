@@ -205,11 +205,10 @@ function IpcrSections({ sections, ipcrMeta }) {
 
 
 function ApproveModal({ submissionId, onClose }) {
-    const [remarks, setRemarks] = useState('');
     const [submitting, setSubmitting] = useState(false);
     function submit() {
         setSubmitting(true);
-        router.post(`/dept-head/accomplishment-review/${submissionId}/approve`, { remarks: remarks || null }, {
+        router.post(`/dept-head/accomplishment-review/${submissionId}/approve`, {}, {
             preserveScroll: true,
             onSuccess: () => router.visit('/dept-head/accomplishment-review'),
             onError: () => setSubmitting(false),
@@ -218,20 +217,23 @@ function ApproveModal({ submissionId, onClose }) {
     return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 480 }}>
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 420 }}>
                 <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Approve Accomplishment</div>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}><i className="bi bi-x-lg" /></button>
                 </div>
-                <div style={{ padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' }}>
-                        Remarks <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span>
+                <div style={{ padding: '1.25rem 1.25rem', display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
+                    <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                        <i className="bi bi-check2-circle" style={{ fontSize: '1.1rem' }} />
                     </div>
-                    <textarea rows={3} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
-                        placeholder="Add any notes for this approval..."
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
+                    <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '0.35rem' }}>Confirm Approval</div>
+                        <div style={{ fontSize: '0.83rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>
+                            Are you sure you want to approve this accomplishment report? This will forward it to the PMT for final review.
+                        </div>
+                    </div>
                 </div>
-                <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                     <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
                     <button onClick={submit} disabled={submitting}
                         style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>

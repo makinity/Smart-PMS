@@ -252,8 +252,8 @@ export default function Index() {
                 {/* Right: actions */}
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
                     <a href="/stage-one/forms/ipcr-excel" style={{ ...s.exportBtn, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        {bp !== 'compact' && 'Export Excel'}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        {bp !== 'compact' && 'Download'}
                     </a>
                     {canCommit && (
                         <button style={s.commitBtn} onClick={handleCommit} disabled={committing} title="Commit IPCR">

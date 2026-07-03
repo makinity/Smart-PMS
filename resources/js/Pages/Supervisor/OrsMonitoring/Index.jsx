@@ -5,7 +5,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import ValidationModal from '@/Components/ValidationModal';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
-const RATING_LABELS = ['', 'Unsatisfactory', 'Needs Improvement', 'Satisfactory', 'Very Satisfactory', 'Outstanding'];
+const RATING_LABELS = ['', 'Poor', 'Unsatisfactory', 'Satisfactory', 'Very Satisfactory', 'Outstanding'];
 
 function relativeTime(iso) {
     if (!iso) return '—';

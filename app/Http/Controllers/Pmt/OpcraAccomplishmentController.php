@@ -187,10 +187,26 @@ class OpcraAccomplishmentController extends Controller
     {
         abort_if($opcraAccomplishment->status !== 'submitted', 422, 'Cannot release at this stage.');
 
-        $score = (float) $opcraAccomplishment->computed_office_rating;
+        // Re-average from current employee scores (respects any PMT calibrations)
+        $approvedSubs = AccomplishmentSubmission::where('office_id', $opcraAccomplishment->office_id)
+            ->where('performance_period_id', $opcraAccomplishment->performance_period_id)
+            ->where('status', 'dept_head_approved')
+            ->get();
+
+        $liveScores = $approvedSubs->map(fn ($s) =>
+            $s->final_rating
+                ?? app(PerformanceRatingService::class)->calculateComputedScore(
+                    Ipcr::where('employee_id', $s->employee_id)
+                        ->where('performance_period_id', $s->performance_period_id)
+                        ->first()
+                )
+        )->filter(fn ($v) => $v > 0);
+
+        $score = $liveScores->isNotEmpty() ? round($liveScores->avg(), 2) : (float) $opcraAccomplishment->computed_office_rating;
 
         $opcraAccomplishment->update([
             'status' => 'released',
+            'computed_office_rating' => $score, // update snapshot too
             'final_office_rating' => $score,
             'final_adjectival_rating' => $this->toAdjectival($score),
             'pmt_member_id' => auth()->id(),
