@@ -185,7 +185,6 @@ export default function Index() {
                                 {bp !== 'mobile' && 'Download'}
                             </a>
                         )}
-                        <span style={{ padding:'3px 12px', borderRadius:99, fontSize:'0.68rem', fontWeight:700, background:sc.bg, color:sc.c }}>{sc.label}</span>
                     </div>
                 </div>
 
