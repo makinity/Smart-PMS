@@ -77,13 +77,10 @@ class IdpController extends Controller
     public function submit(DevelopmentPlan $idp)
     {
         abort_unless($idp->employee_id === auth()->id(), 403);
-        abort_if(in_array($idp->status, [
-            DevelopmentPlan::STATUS_SUBMITTED,
-            DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
-            DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
-            DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
-            DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
-        ]), 403, 'Already submitted.');
+        abort_unless(in_array($idp->status, [
+            DevelopmentPlan::STATUS_DRAFT,
+            DevelopmentPlan::STATUS_RETURNED,
+        ]), 403, 'This IDP cannot be submitted at its current status.');
 
         if (empty($idp->idp_rows)) {
             return back()->with('error', 'Add at least one development goal before submitting.');

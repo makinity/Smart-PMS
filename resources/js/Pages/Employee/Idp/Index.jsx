@@ -199,7 +199,7 @@ export default function IdpIndex() {
     const [saving, setSaving]     = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const isSubmitted  = ['submitted', 'supervisor_recommended', 'approved', 'submitted_to_ld'].includes(plan?.status);
+    const isSubmitted  = !['draft', 'returned', 'pending_details'].includes(plan?.status);
     const ratingColor  = RATING_COLOR[plan?.source_rating] ?? '#ef4444';
     const statusCfg    = STATUS_CFG[plan?.status] ?? STATUS_CFG.pending_details;
 

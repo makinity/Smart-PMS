@@ -155,6 +155,7 @@ class IdpController extends Controller
 
         $success = 0;
         $failed  = 0;
+        $successfulOfficeIds = []; // track office IDs of successfully submitted plans
 
         foreach ($plans as $plan) {
             try {
@@ -169,17 +170,37 @@ class IdpController extends Controller
                     'lnd_last_error'     => null,
                     'updated_by'         => auth()->id(),
                 ]);
+
+                // Notify the employee
                 $plan->employee?->notify(new WorkflowEventNotification(
                     type: 'info',
                     event: 'development_plan.submitted_to_ld',
                     message: 'Your Individual Development Plan has been submitted to the Learning & Development Section.',
                     url: '/employee/idp',
                 ));
+
+                if ($plan->office_id) {
+                    $successfulOfficeIds[$plan->office_id] = ($successfulOfficeIds[$plan->office_id] ?? 0) + 1;
+                }
+
                 $success++;
             } catch (RuntimeException $e) {
                 $plan->update(['lnd_sync_status' => DevelopmentPlan::LND_SYNC_FAILED, 'lnd_last_error' => $e->getMessage()]);
                 $failed++;
             }
+        }
+
+        // Send one summary notification per dept-head office
+        foreach ($successfulOfficeIds as $officeId => $count) {
+            $deptHead = \App\Models\User::where('office_id', $officeId)
+                ->where('role', 'dept-head')
+                ->first();
+            $deptHead?->notify(new WorkflowEventNotification(
+                type: 'info',
+                event: 'development_plan.submitted_to_ld_dh',
+                message: "{$count} IDP(s) from your office have been submitted to the Learning & Development Section.",
+                url: '/dept-head/idp',
+            ));
         }
 
         $msg = "Submitted {$success} IDP(s) to L&D.";

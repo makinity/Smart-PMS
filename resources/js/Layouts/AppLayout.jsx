@@ -21,6 +21,7 @@ const EVENT_ROUTE = {
     'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
     'qar.submitted_to_pmt':                  '/pmt/qar',
     'development_plan.submitted_to_ld':      '/pmt/performance-overview',
+    'development_plan.submitted_to_ld_dh':   '/dept-head/idp',
     'mpor.approved':                         '/employee/mpor',
     'mpor.returned_to_employee':             '/employee/mpor',
     'accomplishment.returned_to_employee':   '/employee/accomplishment',
