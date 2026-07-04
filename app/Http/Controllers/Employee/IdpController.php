@@ -79,6 +79,7 @@ class IdpController extends Controller
         abort_unless($idp->employee_id === auth()->id(), 403);
         abort_unless(in_array($idp->status, [
             DevelopmentPlan::STATUS_DRAFT,
+            DevelopmentPlan::STATUS_PENDING_DETAILS,
             DevelopmentPlan::STATUS_RETURNED,
         ]), 403, 'This IDP cannot be submitted at its current status.');
 

@@ -234,6 +234,18 @@ class IdpController extends Controller
             ]);
         }
 
-        return back()->with('success', "Submitted {$toSubmit->count()} IDP(s) to PMT.");
+        // Notify all PMT users
+        $count = $toSubmit->count();
+        $officeName = $deptHead->office?->name ?? 'an office';
+        User::where('role', 'pmt')->each(function (User $pmt) use ($deptHead, $count, $officeName) {
+            $pmt->notify(new WorkflowEventNotification(
+                type: 'info',
+                event: 'development_plan.submitted_to_pmt',
+                message: "{$deptHead->name} submitted {$count} IDP(s) from {$officeName} for PMT review.",
+                url: '/pmt/idp',
+            ));
+        });
+
+        return back()->with('success', "Submitted {$count} IDP(s) to PMT.");
     }
 }
