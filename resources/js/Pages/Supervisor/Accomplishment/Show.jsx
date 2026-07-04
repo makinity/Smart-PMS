@@ -411,7 +411,7 @@ export default function Show() {
                         <button onClick={handleEndorse} disabled={endorsing}
                             style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: endorsing ? 'not-allowed' : 'pointer', fontSize: '0.88rem', fontWeight: 700, opacity: endorsing ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-check2-circle" />
-                            {endorsing ? 'Endorsing…' : 'Endorse Submission'}
+                            {endorsing ? 'Endorsing…' : 'Endorse'}
                         </button>
                     </div>
                 )}

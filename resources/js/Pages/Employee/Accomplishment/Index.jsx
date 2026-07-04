@@ -137,7 +137,7 @@ function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
                         <i className="bi bi-send-fill" style={{ color: 'var(--admin-accent)', fontSize: '1.1rem' }} />
                     </div>
                     <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: 6 }}>
-                        Submit Accomplishments?
+                        Submit?
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', lineHeight: 1.55 }}>
                         This will submit your <strong>SMPOR</strong> and <strong>IPCR</strong> to your supervisor for review. You will not be able to edit your submission after this.
@@ -295,7 +295,7 @@ export default function Index() {
                 ) : (
                 <div style={{ ...card, padding: '1.25rem' }}>
                     <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-send-check" style={{ color: 'var(--admin-accent)' }} /> Submit Accomplishments
+                        <i className="bi bi-send-check" style={{ color: 'var(--admin-accent)' }} /> Submit
                     </div>
 
                     {/* Files */}
@@ -354,7 +354,7 @@ export default function Index() {
                                 fontSize: '0.85rem', fontWeight: 700,
                                 display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-send-fill" />
-                            {locked ? 'Submitted' : 'Submit Accomplishments'}
+                            {locked ? 'Submitted' : 'Submit'}
                         </button>
                     </div>
                 </div>

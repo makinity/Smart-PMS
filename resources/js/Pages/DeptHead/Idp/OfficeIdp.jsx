@@ -198,7 +198,7 @@ export default function OfficeIdp() {
                                 boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
                             }}>
                                 <i className="bi bi-send-fill" style={{ fontSize: '0.8rem' }} />
-                                {submitting ? 'Submitting…' : `Submit to PMT (${approvedCount})`}
+                                {submitting ? 'Submitting…' : `Submit (${approvedCount})`}
                             </button>
                         )}
                     </div>

@@ -100,7 +100,7 @@ export default function OfficeShow() {
                                 boxShadow: '0 4px 12px rgba(59,130,246,0.3)',
                             }}>
                                 <i className="bi bi-send-fill" style={{ fontSize: '0.75rem' }} />
-                                {submitting ? 'Submitting…' : `Submit to L&D (${submittableIds.length})`}
+                                {submitting ? 'Submitting…' : `Submit (${submittableIds.length})`}
                             </button>
                         )}
                     </div>

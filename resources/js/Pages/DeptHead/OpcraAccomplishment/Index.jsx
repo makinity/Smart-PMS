@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import ValidationModal from '@/Components/ValidationModal';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => (typeof window === 'undefined' ? 1024 : window.innerWidth));
@@ -128,6 +129,7 @@ export default function Index() {
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
+    const [warning, setWarning]   = useState(null); // unapproved employees list
     const [saving, setSaving]     = useState(false);
     const [search, setSearch]     = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -156,6 +158,19 @@ export default function Index() {
             onSuccess: () => { setSaving(false); setConfirm(false); },
             onError:   () => setSaving(false),
         });
+    }
+
+    function handleSubmitClick() {
+        if (!canSubmit) return;
+        const unapproved = employees.filter(emp =>
+            !['dept_head_approved', 'released_by_pmt'].includes(emp.status)
+            && emp.status !== 'not_submitted'
+        );
+        if (unapproved.length > 0) {
+            setWarning(unapproved);
+        } else {
+            setConfirm(true);
+        }
     }
 
     if (!period) return (
@@ -374,7 +389,7 @@ export default function Index() {
                 ) : (
                     <div style={{ ...card, padding:'1.25rem' }}>
                         <div style={{ fontWeight:700, fontSize:'0.9rem', color:'var(--admin-text-primary)', marginBottom:'1rem', display:'flex', alignItems:'center', gap:6 }}>
-                            <i className="bi bi-send-check" style={{ color:'var(--admin-accent)' }} /> Submit OPCR Accomplishment
+                            <i className="bi bi-send-check" style={{ color:'var(--admin-accent)' }} /> Submit
                         </div>
 
                         {/* Returned notice */}
@@ -414,20 +429,40 @@ export default function Index() {
                                     <i className="bi bi-clock-history" /> Submitted · Awaiting PMT Review
                                 </span>
                             ) : (
-                                <button onClick={() => canSubmit && setConfirm(true)} disabled={!canSubmit}
+                                <button onClick={() => handleSubmitClick()} disabled={!canSubmit}
                                     style={{ padding:'0.6rem 1.75rem', borderRadius:8, border:'none',
                                         background: canSubmit ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
                                         color: canSubmit ? '#fff' : 'var(--admin-text-muted)',
                                         cursor: canSubmit ? 'pointer' : 'not-allowed',
                                         fontSize:'0.88rem', fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
                                     <i className="bi bi-send-fill" />
-                                    {stats.approved === 0 ? 'No Approved Employees Yet' : 'Submit to PMT'}
+                                    {stats.approved === 0 ? 'No Approved Employees Yet' : 'Submit'}
                                 </button>
                             )}
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* Warning modal — unapproved employees */}
+            {warning && (
+                <ValidationModal
+                    title="Some Employees Not Yet Approved"
+                    description={`${warning.length} employee(s) have not been approved yet. Their scores will NOT be included in the office rating. You may still proceed.`}
+                    items={warning.map(emp => ({
+                        name: emp.name,
+                        reason: emp.status?.replace(/_/g, ' ') ?? 'pending',
+                    }))}
+                    onClose={() => setWarning(null)}
+                    extra={
+                        <button
+                            onClick={() => { setWarning(null); setConfirm(true); }}
+                            style={{ padding:'0.5rem 1.25rem', borderRadius:8, border:'none', background:'var(--admin-accent)', color:'#fff', fontSize:'0.85rem', fontWeight:700, cursor:'pointer', marginRight:'0.5rem' }}>
+                            Proceed Anyway
+                        </button>
+                    }
+                />
+            )}
 
             {/* Confirm modal */}
             {confirm && (
@@ -439,7 +474,7 @@ export default function Index() {
                         <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(59,130,246,0.12)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1rem' }}>
                             <i className="bi bi-send-fill" style={{ color:'var(--admin-accent)', fontSize:'1.25rem' }} />
                         </div>
-                        <div style={{ textAlign:'center', fontWeight:700, fontSize:'1rem', color:'var(--admin-text-primary)', marginBottom:8 }}>Submit OPCR Accomplishment?</div>
+                        <div style={{ textAlign:'center', fontWeight:700, fontSize:'1rem', color:'var(--admin-text-primary)', marginBottom:8 }}>Submit to PMT?</div>
                         <div style={{ textAlign:'center', fontSize:'0.85rem', color:'var(--admin-text-muted)', lineHeight:1.55, marginBottom:'1.25rem' }}>
                             This will submit your office's accomplishment report to PMT for review.
                             {flagged && <><br/><span style={{ color:'#a78bfa', fontWeight:600 }}>Flagged for PMT Calibration.</span></>}

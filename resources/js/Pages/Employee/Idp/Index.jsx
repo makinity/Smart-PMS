@@ -439,7 +439,7 @@ export default function IdpIndex() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
                             boxShadow: '0 4px 14px rgba(59,130,246,0.35)',
                         }}>
-                            {submitting ? 'Submitting…' : 'Submit IDP'}
+                            {submitting ? 'Submitting…' : 'Submit'}
                             {!submitting && <i className="bi bi-arrow-right" />}
                         </button>
                     </div>
