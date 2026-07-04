@@ -50,8 +50,9 @@ class NotificationController extends Controller
         $employee = \App\Models\User::findOrFail($validated['employee_id']);
 
         $messages = [
-            'qar_missing_mpor'          => 'Please submit your MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . '. It is required for the QAR submission.',
-            'qar_mpor_pending_approval' => 'An employee\'s MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . ' is pending your approval. It is required for QAR submission.',
+            'qar_missing_mpor'              => 'Please submit your MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . '. It is required for the QAR submission.',
+            'qar_mpor_pending_approval'     => 'An employee\'s MPOR' . ($validated['month'] ? ' for ' . \Carbon\Carbon::parse($validated['month'] . '-01')->format('F Y') : '') . ' is pending your approval. It is required for QAR submission.',
+            'accomplishment_not_submitted'  => 'One or more employees under your supervision have not yet submitted their accomplishment report. Please remind them to submit as soon as possible.',
         ];
 
         $message = $messages[$validated['context']] ?? 'You have a pending action required. Please check your portal.';
@@ -62,7 +63,9 @@ class NotificationController extends Controller
             message: $message,
             url: $validated['context'] === 'qar_mpor_pending_approval'
                 ? '/supervisor/mpor' . ($validated['mpor_id'] ? '/' . $validated['mpor_id'] : '')
-                : '/employee/mpor' . ($validated['month'] ? '?month=' . $validated['month'] : ''),
+                : ($validated['context'] === 'accomplishment_not_submitted'
+                    ? '/supervisor/accomplishment'
+                    : '/employee/mpor' . ($validated['month'] ? '?month=' . $validated['month'] : '')),
         ));
 
         return response()->json(['ok' => true]);

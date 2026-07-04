@@ -162,12 +162,42 @@ export default function Index() {
 
     function handleSubmitClick() {
         if (!canSubmit) return;
+
+        // Employees who haven't submitted their accomplishment at all
+        const notSubmitted = employees.filter(emp => emp.status === 'not_submitted');
+
+        // Employees who submitted but weren't approved yet (pending somewhere in the flow)
         const unapproved = employees.filter(emp =>
-            !['dept_head_approved', 'released_by_pmt'].includes(emp.status)
-            && emp.status !== 'not_submitted'
+            !['dept_head_approved', 'released_by_pmt', 'not_submitted'].includes(emp.status)
         );
-        if (unapproved.length > 0) {
-            setWarning(unapproved);
+
+        const hasIssues = notSubmitted.length > 0 || unapproved.length > 0;
+
+        if (hasIssues) {
+            // Build combined warning list
+            const warningItems = [
+                ...notSubmitted.map(emp => ({
+                    name: emp.name,
+                    sub: emp.position,
+                    avatar: emp.avatar,
+                    reason: 'No accomplishment submitted',
+                    // Notify the supervisor of this employee
+                    ...(emp.supervisor_id ? {
+                        notifyPayload: {
+                            _url: '/api/notify/reminder',
+                            employee_id: emp.supervisor_id,
+                            context: 'accomplishment_not_submitted',
+                        }
+                    } : {}),
+                })),
+                ...unapproved.map(emp => ({
+                    name: emp.name,
+                    sub: emp.position,
+                    avatar: emp.avatar,
+                    reason: emp.status?.replace(/_/g, ' ') ?? 'pending approval',
+                })),
+            ];
+            setWarning(warningItems);
         } else {
             setConfirm(true);
         }
@@ -447,12 +477,9 @@ export default function Index() {
             {/* Warning modal — unapproved employees */}
             {warning && (
                 <ValidationModal
-                    title="Some Employees Not Yet Approved"
-                    description={`${warning.length} employee(s) have not been approved yet. Their scores will NOT be included in the office rating. You may still proceed.`}
-                    items={warning.map(emp => ({
-                        name: emp.name,
-                        reason: emp.status?.replace(/_/g, ' ') ?? 'pending',
-                    }))}
+                    title="Some Employees Have Pending Issues"
+                    description={`${warning.length} employee(s) have not yet completed their accomplishment submission. Their scores will NOT be included in the office rating. You may notify their supervisor or proceed anyway.`}
+                    items={warning}
                     onClose={() => setWarning(null)}
                     extra={
                         <button

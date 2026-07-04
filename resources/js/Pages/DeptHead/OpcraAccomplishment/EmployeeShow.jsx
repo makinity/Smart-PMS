@@ -278,7 +278,7 @@ function ReturnModal({ submissionId, onClose }) {
                     <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
                     <button onClick={submit} disabled={!remarks.trim() || submitting}
                         style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: !remarks.trim() ? 'var(--admin-bg-secondary)' : '#ef4444', color: !remarks.trim() ? 'var(--admin-text-muted)' : '#fff', cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-arrow-counterclockwise" />{submitting ? 'Returning…' : 'Return to Employee'}
+                        <i className="bi bi-arrow-counterclockwise" />{submitting ? 'Returning…' : 'Return'}
                     </button>
                 </div>
             </div>

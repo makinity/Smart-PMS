@@ -273,7 +273,7 @@ function ReturnModal({ submissionId, onClose }) {
                             cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer',
                             fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <i className="bi bi-arrow-counterclockwise" />
-                        {submitting ? 'Returning…' : 'Return to Employee'}
+                        {submitting ? 'Returning…' : 'Return'}
                     </button>
                 </div>
             </div>

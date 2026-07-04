@@ -61,6 +61,7 @@ class OpcraAccomplishmentController extends Controller
             'approved' => in_array($subMap->get($emp->id)?->status, ['dept_head_approved', 'released_by_pmt']),
             'released' => $subMap->get($emp->id)?->status === 'released_by_pmt',
             'submission_id' => $subMap->get($emp->id)?->id,
+            'supervisor_id' => $subMap->get($emp->id)?->supervisor_id,
         ])->values();
 
         $submission = OpcraAccomplishmentSubmission::where('office_id', $deptHead->office_id)

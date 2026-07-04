@@ -128,7 +128,7 @@ function ReturnModal({ planId, onClose }) {
                             cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer',
                             fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <i className="bi bi-arrow-counterclockwise" />
-                        {submitting ? 'Returning…' : 'Return to Employee'}
+                        {submitting ? 'Returning…' : 'Return'}
                     </button>
                 </div>
             </div>
@@ -279,7 +279,7 @@ export default function Show() {
                             cursor: 'pointer', background: 'transparent', border: '1.5px solid #ef4444', color: '#ef4444',
                         }}>
                             <i className="bi bi-arrow-counterclockwise" style={{ marginRight: 5 }} />
-                            Return to Employee
+                            Return
                         </button>
                         <button onClick={handleApprove} disabled={loading} style={{
                             padding: '0.55rem 1.5rem', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem',

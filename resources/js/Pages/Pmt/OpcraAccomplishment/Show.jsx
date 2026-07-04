@@ -158,7 +158,7 @@ function ReturnModal({ submissionId, onClose }) {
                     <button onClick={submit} disabled={!remarks.trim()||saving} style={{ padding:'0.5rem 1.25rem', borderRadius:8, border:'none',
                         background:!remarks.trim()?'var(--admin-bg-secondary)':'#ef4444', color:!remarks.trim()?'var(--admin-text-muted)':'#fff',
                         cursor:!remarks.trim()||saving?'not-allowed':'pointer', fontSize:'0.85rem', fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
-                        <i className="bi bi-arrow-counterclockwise" />{saving?'Returning…':'Return to Dept Head'}
+                        <i className="bi bi-arrow-counterclockwise" />{saving?'Returning…':'Return'}
                     </button>
                 </div>
             </div>

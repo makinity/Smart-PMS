@@ -191,7 +191,7 @@ function ReturnModal({ onClose, onConfirm, loading }) {
                         </div>
                         <div>
                             <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>
-                                Return to Employee
+                                Return
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: 1 }}>
                                 The employee will be notified and can revise their MPOR.
@@ -311,7 +311,7 @@ function ActionPanel({ mpor }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
                         </svg>
-                        Return to Employee
+                        Return
                     </button>
                     <button onClick={handleApprove} disabled={!!loading}
                         style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>

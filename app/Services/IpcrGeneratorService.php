@@ -152,14 +152,13 @@ class IpcrGeneratorService
 
             $updateData = [
                 'status' => Ipcr::STATUS_FOR_COMMITMENT,
+                // Always set performance_period_id — critical for scoring date windows
+                'performance_period_id' => $opcr->performance_period_id
+                    ?? ($items[0]['performance_period_id'] ?? $sourceUwps->first()?->performance_period_id),
             ];
 
             if ($hasUnitWorkPlanId) {
                 $updateData['unit_work_plan_id'] = $items[0]['unit_work_plan_id'] ?? $sourceUwps->first()?->id;
-            }
-            if ($hasPerformancePeriodId) {
-                $updateData['performance_period_id'] = $opcr->performance_period_id
-                    ?? ($items[0]['performance_period_id'] ?? $sourceUwps->first()?->performance_period_id);
             }
             if ($hasOfficeId) {
                 $updateData['office_id'] = $opcr->office_id

@@ -56,7 +56,8 @@ class PerformanceRatingService
 
     /**
      * Calculate the weighted computed score for an IPCR.
-     * Uses per-quarter averaging: Q1 score and Q2 score are averaged equally.
+     * Only includes quarters whose QAR has been approved by PMT.
+     * This prevents Q2 ORS data from bleeding into the Q1 score.
      */
     public function calculateComputedScore(Ipcr $ipcr): float
     {
@@ -73,8 +74,21 @@ class PerformanceRatingService
         $q2Start = $q1End->copy()->addDay()->startOfDay();
         $q2End   = Carbon::parse($period->end_date)->endOfDay();
 
-        $q1Score = $this->computeScoreForWindow($ipcr, $q1Start, $q1End);
-        $q2Score = $this->computeScoreForWindow($ipcr, $q2Start, $q2End);
+        $q1Key = $year . '-Q1';
+        $q2Key = $year . '-Q2';
+
+        // Only score quarters whose QAR has been PMT-approved
+        $approvedQarKeys = \App\Models\QarHeader::where('performance_period_id', $period->id)
+            ->where('office_id', $ipcr->office_id ?? \App\Models\User::find($ipcr->employee_id)?->office_id)
+            ->where('pmt_status', 'validated')
+            ->pluck('quarter_key')
+            ->toArray();
+
+        $q1Approved = in_array($q1Key, $approvedQarKeys);
+        $q2Approved = in_array($q2Key, $approvedQarKeys);
+
+        $q1Score = $q1Approved ? $this->computeScoreForWindow($ipcr, $q1Start, $q1End) : 0.0;
+        $q2Score = $q2Approved ? $this->computeScoreForWindow($ipcr, $q2Start, $q2End) : 0.0;
 
         // If only one quarter has data, use that quarter's score
         if ($q1Score <= 0) return round($q2Score, 2);
@@ -101,7 +115,7 @@ class PerformanceRatingService
             $fn = $item->indicator?->uwpMfo?->uwpFunction;
             if (!$fn) continue;
             $fId   = (int) $fn->id;
-            $title = trim((string) ($item->indicator?->uwpMfo?->title ?? $item->output_title ?? ''));
+            $title = strtolower(trim((string) ($item->indicator?->uwpMfo?->title ?? $item->output_title ?? '')));
             if ($title === '') continue;
             if (!isset($functionMap[$fId])) {
                 $functionMap[$fId] = ['weight' => (float) ($fn->weight_percent ?? 0), 'titles' => []];
@@ -185,10 +199,10 @@ class PerformanceRatingService
             $quantity = (float) ($entry->quantity ?? 0);
             if ($quantity <= 0) continue;
 
-            $outputTitle = trim((string) ($entry->ipcrItem?->output_title
+            $outputTitle = strtolower(trim((string) ($entry->ipcrItem?->output_title
                 ?? $entry->ipcrItem?->indicator?->uwpMfo?->title
-                ?? ''));
-            if ($outputTitle === '') $outputTitle = 'Unassigned Output';
+                ?? '')));
+            if ($outputTitle === '') $outputTitle = 'unassigned output';
 
             $qualityPoints = $quantity * (float) $monitoring->quality_rating;
             $timelinessPoints = $quantity * (float) $monitoring->timeliness_rating;
@@ -421,7 +435,7 @@ class PerformanceRatingService
             $indicator = $item->indicator;
             $mfo = $indicator?->uwpMfo;
             if (!$mfo) continue;
-            $title = trim((string) $mfo->title);
+            $title = strtolower(trim((string) $mfo->title));
             if ($title === '') continue;
             // Sum indicator targets per MFO output
             $qty = is_numeric($indicator->target_quantity) ? (float) $indicator->target_quantity : 0.0;
