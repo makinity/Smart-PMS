@@ -123,6 +123,49 @@ function FileRow({ name, size, onRemove }) {
     );
 }
 
+// ── Validation Block Modal ────────────────────────────────────────────────────
+function ValidationBlockModal({ blockers, onClose }) {
+    return (
+        <>
+            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101,
+                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)',
+                boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 440 }}>
+                <div style={{ padding: '1.25rem 1.25rem 0.75rem' }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(239,68,68,0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.85rem' }}>
+                        <i className="bi bi-exclamation-triangle-fill" style={{ color: '#ef4444', fontSize: '1.1rem' }} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: 6 }}>
+                        Cannot Submit Yet
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', marginBottom: '1rem', lineHeight: 1.5 }}>
+                        Please resolve the following before submitting your accomplishment:
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {blockers.map((msg, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10,
+                                padding: '0.65rem 0.85rem', borderRadius: 8,
+                                background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                                <i className="bi bi-x-circle-fill" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: 2, flexShrink: 0 }} />
+                                <span style={{ fontSize: '0.83rem', color: 'var(--admin-text-primary)', lineHeight: 1.5 }}>{msg}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div style={{ padding: '0.75rem 1.25rem 1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={onClose}
+                        style={{ padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
+                            background: 'var(--admin-accent)', color: '#fff',
+                            cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700 }}>
+                        Understood
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
 // ── Confirm Submit Modal ──────────────────────────────────────────────────────
 function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
     return (
@@ -160,11 +203,12 @@ function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, submission, smporMeta, ipcrMeta } = usePage().props;
+    const { period, submission, smporMeta, ipcrMeta, submitBlockers } = usePage().props;
 
     const [remarks,    setRemarks]    = useState(submission?.remarks ?? '');
     const [files,      setFiles]      = useState([]);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showBlockers, setShowBlockers] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const toast = useToast();
     const fileRef = useRef(null);
@@ -172,6 +216,7 @@ export default function Index() {
     const status  = submission?.status ?? 'draft';
     const locked  = submission ? !['draft', 'returned_to_employee'].includes(status) : false;
     const sc      = STATUS_CFG[status] ?? STATUS_CFG.draft;
+    const hasBlockers = submitBlockers && submitBlockers.length > 0;
     const canSubmit = !locked && !!period;
 
     function onFilePick(e) {
@@ -346,7 +391,11 @@ export default function Index() {
                                 Submitted {new Date(submission.submitted_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                         )}
-                        <button onClick={() => canSubmit && setShowConfirm(true)} disabled={!canSubmit}
+                        <button onClick={() => {
+                            if (!canSubmit) return;
+                            if (hasBlockers) { setShowBlockers(true); return; }
+                            setShowConfirm(true);
+                        }} disabled={!canSubmit}
                             style={{ marginLeft: 'auto', padding: '0.5rem 1.5rem', borderRadius: 8, border: 'none',
                                 background: canSubmit ? 'var(--admin-accent)' : 'var(--admin-bg-secondary)',
                                 color: canSubmit ? '#fff' : 'var(--admin-text-muted)',
@@ -366,6 +415,12 @@ export default function Index() {
                     onConfirm={handleSubmit}
                     onCancel={() => setShowConfirm(false)}
                     submitting={submitting}
+                />
+            )}
+            {showBlockers && (
+                <ValidationBlockModal
+                    blockers={submitBlockers}
+                    onClose={() => setShowBlockers(false)}
                 />
             )}
         </AppLayout>

@@ -47,11 +47,15 @@ class SmporIpcrAccomplishmentController extends Controller
         // IPCR meta (score + rating for dashboard card)
         $ipcrMeta = $ipcr ? $this->buildIpcrMeta($ipcr) : null;
 
+        // Pre-compute submit blockers so the frontend can show a validation modal
+        $submitBlockers = $this->resolveSubmitBlockers($user, $period);
+
         return Inertia::render('Employee/Accomplishment/Index', [
             'period' => ['id' => $period->id, 'name' => $period->name, 'start_date' => $period->start_date->toDateString(), 'end_date' => $period->end_date->toDateString()],
             'submission' => $submission ? $this->formatSubmission($submission) : null,
             'smporMeta' => $smporMeta,
             'ipcrMeta' => $ipcrMeta,
+            'submitBlockers' => $submitBlockers,
         ]);
     }
 
@@ -291,6 +295,46 @@ class SmporIpcrAccomplishmentController extends Controller
             'total_qty' => (int) ($totals->total_qty ?? 0),
             'total_entries' => (int) ($totals->total_entries ?? 0),
         ];
+    }
+
+    private function resolveSubmitBlockers($user, $period): array
+    {
+        $blockers = [];
+
+        // Check missing approved MPORs
+        $periodStart  = $period->start_date->copy()->startOfMonth();
+        $currentMonth = now()->startOfMonth();
+        $missingMonths = [];
+        for ($m = $periodStart->copy(); $m->lt($currentMonth); $m->addMonth()) {
+            if ($m->gt($period->end_date)) break;
+            $month = $m->format('Y-m');
+            $exists = \App\Models\Mpor::where('employee_id', $user->id)
+                ->where('month', $month)
+                ->where('status', 'approved')
+                ->exists();
+            if (! $exists) {
+                $missingMonths[] = $m->format('F Y');
+            }
+        }
+        if (! empty($missingMonths)) {
+            $blockers[] = 'Missing approved MPOR for: ' . implode(', ', $missingMonths) . '.';
+        }
+
+        // Check missing PMT-approved QARs
+        $approvedQarKeys = QarHeader::where('office_id', $user->office_id)
+            ->where('performance_period_id', $period->id)
+            ->where('pmt_status', 'validated')
+            ->pluck('quarter_key');
+
+        $year = $period->start_date->year;
+        $missingQars = [];
+        if (! $approvedQarKeys->contains("{$year}-Q1")) $missingQars[] = 'Q1';
+        if (! $approvedQarKeys->contains("{$year}-Q2")) $missingQars[] = 'Q2';
+        if (! empty($missingQars)) {
+            $blockers[] = 'QAR ' . implode(' and ', $missingQars) . ' must be approved by PMT first.';
+        }
+
+        return $blockers;
     }
 
     private function buildIpcrMeta(Ipcr $ipcr): array
