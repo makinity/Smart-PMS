@@ -370,7 +370,20 @@ export default function EmployeeShow() {
                     </div>
                     <div style={{ ...card, padding: '1.1rem 1.25rem' }}>
                         <div style={{ marginBottom: '0.65rem' }}><div style={lbl}>IPCR Score</div></div>
-                        {ipcrMeta ? <div style={{ marginBottom: '0.65rem' }}><ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} /></div>
+                        {ipcrMeta ? <div style={{ marginBottom: '0.65rem' }}>
+                            <ScoreCircle score={ipcrMeta.score} rating={ipcrMeta.rating} />
+                            {ipcrMeta.is_calibrated && (
+                                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <i className="bi bi-patch-check-fill" style={{ color: '#a78bfa', fontSize: '0.78rem' }} />
+                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a78bfa' }}>Official PMT Rating</span>
+                                </div>
+                            )}
+                            {ipcrMeta.is_calibrated && ipcrMeta.pmt_remarks && (
+                                <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 3, fontStyle: 'italic' }}>
+                                    "{ipcrMeta.pmt_remarks}"
+                                </div>
+                            )}
+                        </div>
                             : <div style={{ fontSize: '0.82rem', color: 'var(--admin-text-muted)', marginBottom: '0.65rem' }}>No IPCR data.</div>}
                         <button onClick={() => setActiveTab('ipcr')} style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--admin-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <i className="bi bi-clipboard2-data" /> View IPCR

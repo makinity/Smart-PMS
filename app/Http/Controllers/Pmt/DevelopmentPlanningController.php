@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Pmt;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccomplishmentSubmission;
 use App\Models\DevelopmentPlan;
 use App\Models\Ipcr;
 use App\Models\PerformancePeriod;
@@ -49,24 +50,34 @@ class DevelopmentPlanningController extends Controller
 
         $ipcrs = $query->orderBy('final_score')->get();
 
+        // Load released submissions to get the official PMT score
+        $submissions = AccomplishmentSubmission::whereIn('ipcr_id', $ipcrs->pluck('id'))
+            ->where('status', 'released_by_pmt')
+            ->get(['ipcr_id', 'final_rating', 'final_adjectival_rating', 'pmt_remarks'])
+            ->keyBy('ipcr_id');
+
         $plans = DevelopmentPlan::whereIn('ipcr_id', $ipcrs->pluck('id'))
             ->get()
             ->keyBy('ipcr_id');
 
-        $performers = $ipcrs->map(function (Ipcr $ipcr) use ($plans) {
+        $performers = $ipcrs->map(function (Ipcr $ipcr) use ($plans, $submissions) {
             $plan = $plans->get($ipcr->id);
+            $submission = $submissions->get($ipcr->id);
+            $score = $this->forms->resolveIpcrScore($ipcr, $submission);
+            $rating = $submission?->final_adjectival_rating
+                ?: ($ipcr->pmt_adjusted_rating ?: $ipcr->adjectival_rating);
 
             return [
-                'ipcr_id' => $ipcr->id,
-                'name' => $ipcr->employee?->name ?? '—',
-                'position' => $ipcr->employee?->position ?? '—',
-                'office' => $ipcr->employee?->office?->name ?? '—',
-                'avatar' => $ipcr->employee?->profile_photo_url,
-                'score' => round((float) ($ipcr->pmt_adjusted_score ?? $ipcr->final_score), 2),
-                'rating' => $ipcr->pmt_adjusted_rating ?: $ipcr->adjectival_rating,
-                'plan_status' => $plan?->status ?? '',
-                'plan_status_label' => $this->statusLabel($plan?->status),
-                'lnd_sync_status' => $plan?->lnd_sync_status ?? DevelopmentPlan::LND_SYNC_NOT_SENT,
+                'ipcr_id'          => $ipcr->id,
+                'name'             => $ipcr->employee?->name ?? '—',
+                'position'         => $ipcr->employee?->position ?? '—',
+                'office'           => $ipcr->employee?->office?->name ?? '—',
+                'avatar'           => $ipcr->employee?->profile_photo_url,
+                'score'            => $score,
+                'rating'           => $rating,
+                'plan_status'      => $plan?->status ?? '',
+                'plan_status_label'=> $this->statusLabel($plan?->status),
+                'lnd_sync_status'  => $plan?->lnd_sync_status ?? DevelopmentPlan::LND_SYNC_NOT_SENT,
             ];
         })->values();
 
@@ -92,6 +103,11 @@ class DevelopmentPlanningController extends Controller
 
         abort_unless($employee, 404);
 
+        // Load the released submission for this IPCR (official PMT score)
+        $currentSubmission = AccomplishmentSubmission::where('ipcr_id', $current->id)
+            ->where('status', 'released_by_pmt')
+            ->first(['ipcr_id', 'final_rating', 'final_adjectival_rating', 'pmt_remarks']);
+
         // All rated IPCRs for this employee → performance history timeline (all periods)
         $history = Ipcr::with(['performancePeriod', 'items.indicator.uwpMfo.uwpFunction', 'items.indicator.qetStandards'])
             ->where('employee_id', $employee->id)
@@ -100,26 +116,39 @@ class DevelopmentPlanningController extends Controller
             ->sortByDesc(fn (Ipcr $i) => $i->performancePeriod?->start_date)
             ->values();
 
-        $periods = $history->map(function (Ipcr $i) {
+        // Load submissions for all history IPCRs
+        $historySubmissions = AccomplishmentSubmission::whereIn('ipcr_id', $history->pluck('id'))
+            ->where('status', 'released_by_pmt')
+            ->get(['ipcr_id', 'final_rating', 'final_adjectival_rating'])
+            ->keyBy('ipcr_id');
+
+        $periods = $history->map(function (Ipcr $i) use ($historySubmissions) {
             $period = $i->performancePeriod;
-            $score = $this->forms->resolveIpcrScore($i);
+            $sub = $historySubmissions->get($i->id);
+            $score = $this->forms->resolveIpcrScore($i, $sub);
+            $rating = $sub?->final_adjectival_rating
+                ?: ($i->pmt_adjusted_rating ?: ($i->adjectival_rating ?: $this->forms->toAdjectival($score)));
             $mpors = $period ? $this->forms->buildMporList($i->employee_id, $period) : [];
             $mporIds = array_column($mpors, 'id');
 
             return [
-                'ipcr_id' => $i->id,
-                'period_id' => $i->performance_period_id,
-                'period_name' => $period?->name ?? '—',
-                'start_date' => $period?->start_date?->toDateString(),
-                'end_date' => $period?->end_date?->toDateString(),
-                'score' => $score,
-                'rating' => $i->pmt_adjusted_rating ?: ($i->adjectival_rating ?: $this->forms->toAdjectival($score)),
-                'is_low' => in_array($i->pmt_adjusted_rating ?: $i->adjectival_rating, self::LOW_RATINGS, true),
+                'ipcr_id'      => $i->id,
+                'period_id'    => $i->performance_period_id,
+                'period_name'  => $period?->name ?? '—',
+                'start_date'   => $period?->start_date?->toDateString(),
+                'end_date'     => $period?->end_date?->toDateString(),
+                'score'        => $score,
+                'rating'       => $rating,
+                'is_low'       => in_array($rating, self::LOW_RATINGS, true),
                 'ipcrSections' => $period ? $this->forms->buildIpcrSections($i, $period) : [],
-                'smporTable' => $period ? $this->forms->buildSmporTable($mporIds, $period, $i) : ['months' => [], 'sections' => []],
-                'mpors' => $mpors,
+                'smporTable'   => $period ? $this->forms->buildSmporTable($mporIds, $period, $i) : ['months' => [], 'sections' => []],
+                'mpors'        => $mpors,
             ];
         });
+
+        $currentScore  = $this->forms->resolveIpcrScore($current, $currentSubmission);
+        $currentRating = $currentSubmission?->final_adjectival_rating
+            ?: ($current->pmt_adjusted_rating ?: $current->adjectival_rating);
 
         $skillGaps = $this->forms->buildSkillGaps($current);
         $plan = DevelopmentPlan::where('ipcr_id', $current->id)->first();
@@ -127,27 +156,28 @@ class DevelopmentPlanningController extends Controller
 
         return Inertia::render('Pmt/DevelopmentPlanning/Show', [
             'employee' => [
-                'id' => $employee->id,
-                'name' => $employee->name,
+                'id'       => $employee->id,
+                'name'     => $employee->name,
                 'position' => $employee->position ?? '—',
-                'office' => $employee->office?->name ?? '—',
-                'dept_head' => $head ?: '—',
-                'avatar' => $employee->profile_photo_url,
+                'office'   => $employee->office?->name ?? '—',
+                'dept_head'=> $head ?: '—',
+                'avatar'   => $employee->profile_photo_url,
             ],
             'current' => [
-                'ipcr_id' => $current->id,
-                'period_id' => $current->performance_period_id,
-                'period_name' => $current->performancePeriod?->name ?? '—',
-                'score' => $this->forms->resolveIpcrScore($current),
-                'rating' => $current->pmt_adjusted_rating ?: $current->adjectival_rating,
+                'ipcr_id'       => $current->id,
+                'period_id'     => $current->performance_period_id,
+                'period_name'   => $current->performancePeriod?->name ?? '—',
+                'score'         => $currentScore,
+                'rating'        => $currentRating,
+                'is_calibrated' => $currentSubmission && abs($currentScore - round((float) $current->final_score, 2)) >= 0.01,
             ],
-            'periods' => $periods,
-            'skillGaps' => $skillGaps,
-            'plan' => $plan ? $this->formatPlan($plan) : null,
+            'periods'    => $periods,
+            'skillGaps'  => $skillGaps,
+            'plan'       => $plan ? $this->formatPlan($plan) : null,
             'signatures' => [
-                'prepared_by' => $employee->name,
-                'recommended_by' => $head,
-                'approved_by' => $head,
+                'prepared_by'     => $employee->name,
+                'recommended_by'  => $head,
+                'approved_by'     => $head,
             ],
         ]);
     }
@@ -156,6 +186,14 @@ class DevelopmentPlanningController extends Controller
     {
         $current = Ipcr::with('employee.office.head')->findOrFail($ipcr);
         abort_unless($current->employee, 404);
+
+        $currentSubmission = AccomplishmentSubmission::where('ipcr_id', $current->id)
+            ->where('status', 'released_by_pmt')
+            ->first(['ipcr_id', 'final_rating', 'final_adjectival_rating']);
+
+        $resolvedScore  = $this->forms->resolveIpcrScore($current, $currentSubmission);
+        $resolvedRating = $currentSubmission?->final_adjectival_rating
+            ?: ($current->pmt_adjusted_rating ?: $current->adjectival_rating);
 
         $data = $request->validate([
             'pmt_remarks' => ['nullable', 'string', 'max:2000'],
@@ -197,8 +235,8 @@ class DevelopmentPlanningController extends Controller
                 'employee_id' => $employee->id,
                 'office_id' => $employee->office_id,
                 'performance_period_id' => $current->performance_period_id,
-                'source_score' => $this->forms->resolveIpcrScore($current),
-                'source_rating' => $current->pmt_adjusted_rating ?: $current->adjectival_rating,
+                'source_score'  => $resolvedScore,
+                'source_rating' => $resolvedRating,
                 'status' => $hasDetails ? DevelopmentPlan::STATUS_DRAFT : DevelopmentPlan::STATUS_PENDING_DETAILS,
                 'pmt_remarks' => $data['pmt_remarks'] ?? null,
                 'idp_rows' => $rows,

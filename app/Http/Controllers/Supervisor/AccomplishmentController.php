@@ -76,7 +76,7 @@ class AccomplishmentController extends Controller
             'submission'   => $this->formatSubmission($accomplishment),
             'smporTable'   => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period, $ipcr) : null,
             'ipcrSections' => $ipcrSections,
-            'ipcrMeta'     => $ipcr ? array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeScores]) : null,
+            'ipcrMeta'     => $ipcr ? array_merge($this->buildIpcrMeta($ipcr, $accomplishment), ['type_scores' => $typeScores]) : null,
         ]);
     }
 
@@ -146,11 +146,31 @@ class AccomplishmentController extends Controller
         ];
     }
 
-    private function buildIpcrMeta(Ipcr $ipcr): array
+    private function buildIpcrMeta(Ipcr $ipcr, AccomplishmentSubmission $accomplishment): array
     {
+        $systemScore = round((float) ($ipcr->final_score ?? 0), 2);
+
+        // Priority: PMT released final_rating → pmt_adjusted_score → final_score
+        if ($accomplishment->final_rating > 0) {
+            $score        = round((float) $accomplishment->final_rating, 2);
+            $rating       = $accomplishment->final_adjectival_rating
+                                ?: ($ipcr->pmt_adjusted_rating ?: $ipcr->adjectival_rating);
+            $isCalibrated = abs($score - $systemScore) >= 0.01 || $ipcr->pmt_adjusted_score > 0;
+        } elseif ($ipcr->pmt_adjusted_score > 0) {
+            $score        = round((float) $ipcr->pmt_adjusted_score, 2);
+            $rating       = $ipcr->pmt_adjusted_rating ?: $ipcr->adjectival_rating;
+            $isCalibrated = true;
+        } else {
+            $score        = $systemScore;
+            $rating       = $ipcr->adjectival_rating;
+            $isCalibrated = false;
+        }
+
         return [
-            'score' => round((float) ($ipcr->final_score ?? $ipcr->pmt_adjusted_score ?? 0), 2),
-            'rating' => $ipcr->adjectival_rating ?? $ipcr->pmt_adjusted_rating ?? null,
+            'score'         => $score,
+            'rating'        => $rating,
+            'is_calibrated' => $isCalibrated,
+            'pmt_remarks'   => $accomplishment->pmt_remarks,
         ];
     }
 

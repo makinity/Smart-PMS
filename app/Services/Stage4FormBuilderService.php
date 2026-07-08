@@ -28,9 +28,14 @@ class Stage4FormBuilderService
         return 'Poor';
     }
 
-    public function resolveIpcrScore(Ipcr $ipcr): float
+    public function resolveIpcrScore(Ipcr $ipcr, ?\App\Models\AccomplishmentSubmission $submission = null): float
     {
-        if ($ipcr->pmt_adjusted_score !== null) {
+        // Priority: PMT released submission final_rating → pmt_adjusted_score → final_score → recompute
+        if ($submission && $submission->final_rating > 0) {
+            return round((float) $submission->final_rating, 2);
+        }
+
+        if ($ipcr->pmt_adjusted_score !== null && $ipcr->pmt_adjusted_score > 0) {
             return round((float) $ipcr->pmt_adjusted_score, 2);
         }
 

@@ -153,6 +153,11 @@ class OpcraAccomplishmentController extends Controller
 
         $period = $accomplishment->period;
         $score  = $this->computeOverallScore($accomplishment);
+        $isCalibrated = $accomplishment->final_rating > 0
+            && abs(round((float) $accomplishment->final_rating, 2) - round((float) ($ipcr?->final_score ?? 0), 2)) >= 0.01;
+        $resolvedRating = $isCalibrated
+            ? ($accomplishment->final_adjectival_rating ?: $this->toAdjectival($score))
+            : $this->toAdjectival($score);
 
         $ipcrSections = $ipcr && $period ? $this->buildIpcrSections($ipcr, $period) : [];
         $typeScores   = [];
@@ -174,7 +179,13 @@ class OpcraAccomplishmentController extends Controller
             'submission'   => $this->formatSubmission($accomplishment),
             'smporTable'   => $period ? $this->buildSmporTable($accomplishment->mpors->pluck('id')->toArray(), $period, $ipcr) : null,
             'ipcrSections' => $ipcrSections,
-            'ipcrMeta'     => $ipcr ? ['score' => $score, 'rating' => $this->toAdjectival($score), 'type_scores' => $typeScores] : null,
+            'ipcrMeta'     => $ipcr ? [
+                'score'         => $score,
+                'rating'        => $resolvedRating,
+                'is_calibrated' => $isCalibrated,
+                'pmt_remarks'   => $accomplishment->pmt_remarks,
+                'type_scores'   => $typeScores,
+            ] : null,
         ]);
     }
 
@@ -320,6 +331,14 @@ class OpcraAccomplishmentController extends Controller
             ->where('performance_period_id', $accomplishment->performance_period_id)
             ->first();
         if (! $ipcr) return 0.0;
+
+        // Priority: PMT released final_rating → pmt_adjusted_score → final_score → recompute
+        if ($accomplishment->final_rating > 0) {
+            return round((float) $accomplishment->final_rating, 2);
+        }
+        if ($ipcr->pmt_adjusted_score > 0) {
+            return round((float) $ipcr->pmt_adjusted_score, 2);
+        }
         $score = (float) ($ipcr->final_score ?? 0);
         if ($score <= 0) $score = app(PerformanceRatingService::class)->calculateComputedScore($ipcr);
         return round($score, 2);

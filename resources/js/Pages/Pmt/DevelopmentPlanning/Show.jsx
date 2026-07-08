@@ -139,7 +139,15 @@ export default function Show() {
                                 </div>
                             </div>
                         </div>
-                        <ScoreCircle score={current.score} rating={current.rating} label="Evaluated Rating" />
+                        <div style={{ textAlign: 'right' }}>
+                            <ScoreCircle score={current.score} rating={current.rating} label="Evaluated Rating" />
+                            {current.is_calibrated && (
+                                <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
+                                    <i className="bi bi-patch-check-fill" style={{ color: '#a78bfa', fontSize: '0.78rem' }} />
+                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a78bfa' }}>Official PMT Rating</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
