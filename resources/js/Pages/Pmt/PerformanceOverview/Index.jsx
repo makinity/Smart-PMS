@@ -167,18 +167,32 @@ export default function Index() {
                                         <ScoreRing score={p.score} rating={p.rating} size={52} />
                                         <div style={{ flex:1, minWidth:0 }}>
                                             <div style={{ fontSize:'0.62rem', fontWeight:700, textTransform:'uppercase',
-                                                letterSpacing:'0.06em', color:'var(--admin-text-muted)' }}>Performance Score</div>
+                                                letterSpacing:'0.06em', color:'var(--admin-text-muted)' }}>
+                                                Performance Score
+                                            </div>
                                             <div style={{ fontWeight:800, fontSize:'0.88rem', color:cfg.color, marginTop:2 }}>
                                                 {cfg.icon} {p.rating}
                                             </div>
+                                            {/* Badges row — below the rating label */}
+                                            {(p.is_calibrated || p.plan_status) && (
+                                                <div style={{ display:'flex', flexWrap:'wrap', gap:4, marginTop:5 }}>
+                                                    {p.is_calibrated && (
+                                                        <span style={{ fontSize:'0.58rem', fontWeight:700, padding:'1px 6px', borderRadius:99,
+                                                            background:'rgba(139,92,246,0.12)', color:'#a78bfa', border:'1px solid rgba(139,92,246,0.25)' }}>
+                                                            Calibrated
+                                                        </span>
+                                                    )}
+                                                    {p.plan_status && (
+                                                        <span style={{ fontSize:'0.58rem', fontWeight:700, padding:'1px 6px', borderRadius:99,
+                                                            background: p.plan_status === 'submitted_to_ld' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                                                            color: p.plan_status === 'submitted_to_ld' ? '#10b981' : '#f59e0b',
+                                                            border: `1px solid ${p.plan_status === 'submitted_to_ld' ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)'}` }}>
+                                                            {p.plan_status_label}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        {p.plan_status && (
-                                            <span style={{ fontSize:'0.6rem', fontWeight:700, padding:'2px 8px', borderRadius:99, flexShrink:0,
-                                                background: p.plan_status === 'submitted_to_ld' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
-                                                color: p.plan_status === 'submitted_to_ld' ? '#10b981' : '#f59e0b' }}>
-                                                {p.plan_status_label}
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
                             );
