@@ -308,7 +308,8 @@ export default function Show() {
 
     return (
         <AppLayout title="Review Accomplishment" description={`${submission?.employee_name} — ${submission?.period}`}>
-            <div style={{ borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'clip', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: 'var(--admin-shadow)', overflow: 'clip' }}>
                 <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)', padding: '0.6rem 1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
@@ -338,7 +339,6 @@ export default function Show() {
                     )}
                 </div>
             </div>
-            <>
 
                 {/* Summary cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
@@ -428,7 +428,8 @@ export default function Show() {
                         </button>
                     </div>
                 )}
-            </>
+
+            </div>{/* end flex column */}
 
             {showReturn && <ReturnModal submissionId={submission.id} onClose={() => setShowReturn(false)} />}
         </AppLayout>
