@@ -4,7 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const RATING_CFG = {
-    'Unsatisfactory': { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', icon: '⚠️' },
+    'Unsatisfactory': { color: '#eab308', bg: 'rgba(234,179,8,0.12)',  icon: '⚠️' },
     'Poor':           { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  icon: '🔴' },
 };
 

@@ -395,10 +395,10 @@ class OpcrExcelExportController extends Controller
             : round(array_sum(array_column($typeWeightedRows, 'weighted')), 2);
         $officialAdjectival = trim((string) ($officialOfficeRating['final_adjectival_rating'] ?? ''));
         if ($officialAdjectival === '') {
-            $officialAdjectival = $officialOverall >= 4.5 ? 'Outstanding'
-                : ($officialOverall >= 3.5 ? 'Very Satisfactory'
-                : ($officialOverall >= 2.5 ? 'Satisfactory'
-                : ($officialOverall >= 1.5 ? 'Unsatisfactory' : 'Poor')));
+            $officialAdjectival = $officialOverall >= 5.0 ? 'Outstanding'
+                : ($officialOverall >= 4.0 ? 'Very Satisfactory'
+                : ($officialOverall >= 3.0 ? 'Satisfactory'
+                : ($officialOverall >= 2.0 ? 'Unsatisfactory' : 'Poor')));
         }
 
         $footerRows = array_merge(

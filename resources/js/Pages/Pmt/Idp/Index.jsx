@@ -3,14 +3,14 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
 const RATING_COLOR = {
-    'Outstanding': '#4ade80', 'Very Satisfactory': '#60a5fa',
-    'Satisfactory': '#f59e0b', 'Fair': '#f97316',
-    'Poor': '#ef4444', 'Unsatisfactory': '#ef4444',
+    'Outstanding': '#3b82f6', 'Very Satisfactory': '#10b981',
+    'Satisfactory': '#f59e0b', 'Fair': '#eab308',
+    'Poor': '#ef4444', 'Unsatisfactory': '#eab308',
 };
 const RATING_BG = {
-    'Outstanding': 'rgba(74,222,128,0.08)', 'Very Satisfactory': 'rgba(96,165,250,0.08)',
-    'Satisfactory': 'rgba(245,158,11,0.08)', 'Fair': 'rgba(249,115,22,0.08)',
-    'Poor': 'rgba(239,68,68,0.08)', 'Unsatisfactory': 'rgba(239,68,68,0.08)',
+    'Outstanding': 'rgba(59,130,246,0.08)', 'Very Satisfactory': 'rgba(16,185,129,0.08)',
+    'Satisfactory': 'rgba(245,158,11,0.08)', 'Fair': 'rgba(234,179,8,0.08)',
+    'Poor': 'rgba(239,68,68,0.08)', 'Unsatisfactory': 'rgba(234,179,8,0.08)',
 };
 
 const STATUS_FILTERS = [

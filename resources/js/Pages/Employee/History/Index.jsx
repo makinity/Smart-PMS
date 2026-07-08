@@ -5,10 +5,10 @@ import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultA
 import useBreakpoint from '@/Components/useBreakpoint';
 
 const RATING_CFG = {
-    'Outstanding':       { color: '#10b981', bg: 'rgba(16,185,129,0.12)', icon: '🏆' },
-    'Very Satisfactory': { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', icon: '⭐' },
+    'Outstanding':       { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: '🏆' },
+    'Very Satisfactory': { color: '#10b981', bg: 'rgba(16,185,129,0.12)', icon: '⭐' },
     'Satisfactory':      { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', icon: '✓' },
-    'Unsatisfactory':    { color: '#f97316', bg: 'rgba(249,115,22,0.12)', icon: '⚠' },
+    'Unsatisfactory':    { color: '#eab308', bg: 'rgba(234,179,8,0.12)',   icon: '⚠' },
     'Poor':              { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   icon: '✗' },
 };
 
@@ -217,9 +217,9 @@ export default function Index() {
                             {[
                                 { label: 'Periods Rated', value: stats.periods_rated, icon: 'bi-calendar-check', color: 'var(--admin-accent)' },
                                 { label: 'Average Rating', value: stats.avg_rating?.toFixed(2) ?? '—', icon: 'bi-bar-chart',
-                                  color: stats.avg_rating ? ratingCfg(stats.avg_rating >= 4.5 ? 'Outstanding' : stats.avg_rating >= 3.5 ? 'Very Satisfactory' : stats.avg_rating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
+                                  color: stats.avg_rating ? ratingCfg(stats.avg_rating >= 5.0 ? 'Outstanding' : stats.avg_rating >= 4.0 ? 'Very Satisfactory' : stats.avg_rating >= 3.0 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
                                 { label: 'Best Rating', value: stats.best_rating?.toFixed(2) ?? '—', sub: stats.best_period, icon: 'bi-trophy',
-                                  color: stats.best_rating ? ratingCfg(stats.best_rating >= 4.5 ? 'Outstanding' : stats.best_rating >= 3.5 ? 'Very Satisfactory' : stats.best_rating >= 2.5 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
+                                  color: stats.best_rating ? ratingCfg(stats.best_rating >= 5.0 ? 'Outstanding' : stats.best_rating >= 4.0 ? 'Very Satisfactory' : stats.best_rating >= 3.0 ? 'Satisfactory' : 'Unsatisfactory').color : 'var(--admin-text-muted)' },
                                 { label: 'IDPs Submitted', value: stats.idps_submitted, icon: 'bi-journal-check',
                                   color: stats.idps_submitted > 0 ? '#f59e0b' : 'var(--admin-text-muted)' },
                             ].map(s => (
@@ -337,7 +337,7 @@ export default function Index() {
                                                             </thead>
                                                             <tbody>
                                                                 {row.indicators.map((ind, j) => {
-                                                                    const aColor = !ind.A ? 'var(--admin-text-muted)' : ind.A >= 4.5 ? '#10b981' : ind.A >= 3.5 ? '#3b82f6' : ind.A >= 2.5 ? '#f59e0b' : '#ef4444';
+                                                                    const aColor = !ind.A ? 'var(--admin-text-muted)' : ind.A >= 5.0 ? '#3b82f6' : ind.A >= 4.0 ? '#10b981' : ind.A >= 3.0 ? '#f59e0b' : ind.A >= 2.0 ? '#eab308' : '#ef4444';
                                                                     return (
                                                                         <tr key={j} style={{ borderBottom: '1px solid var(--admin-border)' }}>
                                                                             <td style={{ padding: '0.45rem 0.75rem', fontSize: '0.78rem', color: 'var(--admin-text-primary)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={ind.text}>

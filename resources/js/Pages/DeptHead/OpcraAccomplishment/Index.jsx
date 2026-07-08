@@ -16,8 +16,8 @@ function useBreakpoint() {
     return 'mobile';
 }
 
-const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
-const adjLabel = (r) => !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
+const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 5.0 ? '#3b82f6' : r >= 4.0 ? '#10b981' : r >= 3.0 ? '#f59e0b' : r >= 2.0 ? '#eab308' : '#ef4444';
+const adjLabel = (r) => !r ? '—' : r >= 5.0 ? 'Outstanding' : r >= 4.0 ? 'Very Satisfactory' : r >= 3.0 ? 'Satisfactory' : r >= 2.0 ? 'Unsatisfactory' : 'Poor';
 
 // ── Office-Level OPCR Accomplishment Section ──────────────────────────────────
 const FN_LABELS = { core: 'A. CORE FUNCTIONS', support: 'B. SUPPORT FUNCTIONS', strategic: 'C. STRATEGIC FUNCTIONS' };
@@ -27,7 +27,7 @@ function OpcraOfficeSection({ opcrSections, officialScore }) {
     if (!opcrSections || opcrSections.length === 0) return null;
     const ratingCol = (v) => ({
         fontWeight: 700, fontSize: '0.82rem',
-        color: !v ? 'var(--admin-text-muted)' : v >= 4.5 ? '#10b981' : v >= 3.5 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444',
+        color: !v ? 'var(--admin-text-muted)' : v >= 5.0 ? '#3b82f6' : v >= 4.0 ? '#10b981' : v >= 3.0 ? '#f59e0b' : v >= 2.0 ? '#eab308' : '#ef4444',
     });
     const byType = {};
     opcrSections.forEach(fn => {

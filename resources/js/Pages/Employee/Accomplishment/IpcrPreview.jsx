@@ -121,7 +121,7 @@ function StandardsOverlay({ standards, title, onClose, bp, sidebarLeft }) {
 // ── Rating badge ──────────────────────────────────────────────────────────────
 function RatingBadge({ label, value }) {
     const color = !value ? 'var(--admin-text-muted)'
-        : value >= 4.5 ? '#10b981' : value >= 3.5 ? '#3b82f6' : value >= 2.5 ? '#f59e0b' : '#ef4444';
+        : value >= 5.0 ? '#3b82f6' : value >= 4.0 ? '#10b981' : value >= 3.0 ? '#f59e0b' : value >= 2.0 ? '#eab308' : '#ef4444';
     return (
         <div style={{ textAlign: 'center', minWidth: 44 }}>
             <div style={{ fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', marginBottom: 2 }}>{label}</div>
@@ -247,7 +247,7 @@ export default function IpcrPreview() {
     const score      = meta?.score ?? 0;
     const rating     = meta?.rating ?? null;
     const typeScores = meta?.type_scores ?? [];
-    const scoreColor = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
+    const scoreColor = score >= 5.0 ? '#3b82f6' : score >= 4.0 ? '#10b981' : score >= 3.0 ? '#f59e0b' : score >= 2.0 ? '#eab308' : '#ef4444';
     const bp          = useBreakpoint();
     const sidebarLeft = useSidebarLeft();
 
@@ -334,7 +334,7 @@ export default function IpcrPreview() {
                                     <span style={{ color: 'var(--admin-text-secondary)', fontStyle: 'italic' }}>
                                         Weighted Average Rating for {ts.label} ({ts.weight}%)
                                     </span>
-                                    <span style={{ fontWeight: 800, fontSize: '1rem', color: ts.weighted_score >= 4.5 ? '#10b981' : ts.weighted_score >= 3.5 ? '#3b82f6' : ts.weighted_score >= 2.5 ? '#f59e0b' : '#ef4444' }}>
+                                    <span style={{ fontWeight: 800, fontSize: '1rem', color: ts.weighted_score >= 5.0 ? '#3b82f6' : ts.weighted_score >= 4.0 ? '#10b981' : ts.weighted_score >= 3.0 ? '#f59e0b' : ts.weighted_score >= 2.0 ? '#eab308' : '#ef4444' }}>
                                         {ts.weighted_score.toFixed(2)}
                                     </span>
                                 </div>

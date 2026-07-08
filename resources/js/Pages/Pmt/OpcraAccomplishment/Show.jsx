@@ -3,7 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
-const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
+const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 5.0 ? '#3b82f6' : r >= 4.0 ? '#10b981' : r >= 3.0 ? '#f59e0b' : r >= 2.0 ? '#eab308' : '#ef4444';
 
 // ── Office-Level OPCR Accomplishment Section ──────────────────────────────────
 const FN_LABELS = { core: 'A. CORE FUNCTIONS', support: 'B. SUPPORT FUNCTIONS', strategic: 'C. STRATEGIC FUNCTIONS' };
@@ -13,7 +13,7 @@ function OpcraOfficeSection({ opcrSections, officialScore }) {
 
     const ratingCol = (v) => ({
         fontWeight: 700, fontSize: '0.82rem',
-        color: !v ? 'var(--admin-text-muted)' : v >= 4.5 ? '#10b981' : v >= 3.5 ? '#3b82f6' : v >= 2.5 ? '#f59e0b' : '#ef4444',
+        color: !v ? 'var(--admin-text-muted)' : v >= 5.0 ? '#3b82f6' : v >= 4.0 ? '#10b981' : v >= 3.0 ? '#f59e0b' : v >= 2.0 ? '#eab308' : '#ef4444',
     });
 
     const byType = {};
@@ -102,7 +102,7 @@ function OpcraOfficeSection({ opcrSections, officialScore }) {
 }
 
 function round2(v) { return Math.round(v * 100) / 100; }
-const adjLabel = (r) => !r ? '' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor';
+const adjLabel = (r) => !r ? '' : r >= 5.0 ? 'Outstanding' : r >= 4.0 ? 'Very Satisfactory' : r >= 3.0 ? 'Satisfactory' : r >= 2.0 ? 'Unsatisfactory' : 'Poor';
 
 const STATUS_CFG = {
     submitted: { label:'Pending PMT Review', c:'#f59e0b', bg:'rgba(245,158,11,0.12)' },

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
-const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 4.5 ? '#10b981' : r >= 3.5 ? '#3b82f6' : r >= 2.5 ? '#f59e0b' : '#ef4444';
+const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 5.0 ? '#3b82f6' : r >= 4.0 ? '#10b981' : r >= 3.0 ? '#f59e0b' : r >= 2.0 ? '#eab308' : '#ef4444';
 const STATUS_CFG = {
     submitted: { label: 'Pending Review', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
     released:  { label: 'Released',       c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },

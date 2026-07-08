@@ -4,10 +4,10 @@ import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 const RATING_CFG = {
-    'Outstanding':       { color: '#10b981', bg: 'rgba(16,185,129,0.12)',  icon: '🏆' },
-    'Very Satisfactory': { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: '⭐' },
+    'Outstanding':       { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: '🏆' },
+    'Very Satisfactory': { color: '#10b981', bg: 'rgba(16,185,129,0.12)',  icon: '⭐' },
     'Satisfactory':      { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: '✓'  },
-    'Unsatisfactory':    { color: '#f97316', bg: 'rgba(249,115,22,0.12)',   icon: '⚠️' },
+    'Unsatisfactory':    { color: '#eab308', bg: 'rgba(234,179,8,0.12)',    icon: '⚠️' },
     'Poor':              { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',    icon: '🔴' },
 };
 

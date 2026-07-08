@@ -23,7 +23,7 @@ function activeStep(status) {
     const i = STEP_KEYS.indexOf(status);
     return i === -1 ? 1 : i;
 }
-function adjLabel(r) { return !r ? '—' : r >= 4.5 ? 'Outstanding' : r >= 3.5 ? 'Very Satisfactory' : r >= 2.5 ? 'Satisfactory' : r >= 1.5 ? 'Unsatisfactory' : 'Poor'; }
+function adjLabel(r) { return !r ? '—' : r >= 5.0 ? 'Outstanding' : r >= 4.0 ? 'Very Satisfactory' : r >= 3.0 ? 'Satisfactory' : r >= 2.0 ? 'Unsatisfactory' : 'Poor'; }
 function formatBytes(b) {
     if (!b) return '';
     if (b < 1024) return b + ' B';
@@ -58,7 +58,7 @@ function PipelineStepper({ status }) {
 
 function ScoreCircle({ score, rating, label = 'IPCR SCORE' }) {
     const pct = Math.min((score / 5) * 100, 100);
-    const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
+    const color = score >= 5.0 ? '#3b82f6' : score >= 4.0 ? '#10b981' : score >= 3.0 ? '#f59e0b' : score >= 2.0 ? '#eab308' : '#ef4444';
     const r = 28;
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -123,7 +123,7 @@ function SmporTable({ table }) {
 }
 
 function RatingBadge({ label, value }) {
-    const color = !value ? 'var(--admin-text-muted)' : value >= 4.5 ? '#10b981' : value >= 3.5 ? '#3b82f6' : value >= 2.5 ? '#f59e0b' : '#ef4444';
+    const color = !value ? 'var(--admin-text-muted)' : value >= 5.0 ? '#3b82f6' : value >= 4.0 ? '#10b981' : value >= 3.0 ? '#f59e0b' : value >= 2.0 ? '#eab308' : '#ef4444';
     return (
         <div style={{ textAlign: 'center', minWidth: 40 }}>
             <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', marginBottom: 2 }}>{label}</div>
@@ -134,7 +134,7 @@ function RatingBadge({ label, value }) {
 
 function IpcrSections({ sections, ipcrMeta }) {
     const typeScores = ipcrMeta?.type_scores ?? [], score = ipcrMeta?.score ?? 0, rating = ipcrMeta?.rating ?? null;
-    const sColor = s => s >= 4.5 ? '#10b981' : s >= 3.5 ? '#3b82f6' : s >= 2.5 ? '#f59e0b' : '#ef4444';
+    const sColor = s => s >= 5.0 ? '#3b82f6' : s >= 4.0 ? '#10b981' : s >= 3.0 ? '#f59e0b' : s >= 2.0 ? '#eab308' : '#ef4444';
     if (!sections?.length) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.82rem' }}>No IPCR data available.</div>;
     return (
         <>
@@ -196,7 +196,7 @@ function CalibrateModal({ opcraId, submission, ipcrMeta, onClose }) {
         const n = parseFloat(v);
         if (!isNaN(n)) setAdj(adjLabel(n));
     }
-    const rColor = adj === 'Outstanding' ? '#10b981' : adj === 'Very Satisfactory' ? '#3b82f6' : adj === 'Satisfactory' ? '#f59e0b' : '#ef4444';
+    const rColor = adj === 'Outstanding' ? '#3b82f6' : adj === 'Very Satisfactory' ? '#10b981' : adj === 'Satisfactory' ? '#f59e0b' : adj === 'Unsatisfactory' ? '#eab308' : '#ef4444';
 
     function submit() {
         if (!remarks.trim() || !adj || !rating) return;

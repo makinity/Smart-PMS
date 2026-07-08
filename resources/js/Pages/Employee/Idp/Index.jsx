@@ -6,7 +6,7 @@ import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 import useBreakpoint from '@/Components/useBreakpoint';
 
-const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#f97316' };
+const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#eab308' };
 
 const STATUS_CFG = {
     pending_details:        { label: 'Pending Fill-up',        c: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  bc: 'rgba(245,158,11,0.3)' },

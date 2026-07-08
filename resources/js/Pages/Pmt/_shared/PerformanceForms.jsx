@@ -8,9 +8,10 @@ const SMPOR_TABS = [
 
 export function scoreColor(score) {
     if (!score) return 'var(--admin-text-muted)';
-    if (score >= 4.5) return '#10b981';
-    if (score >= 3.5) return '#3b82f6';
-    if (score >= 2.5) return '#f59e0b';
+    if (score >= 5.0) return '#3b82f6';
+    if (score >= 4.0) return '#10b981';
+    if (score >= 3.0) return '#f59e0b';
+    if (score >= 2.0) return '#eab308';
     return '#ef4444';
 }
 

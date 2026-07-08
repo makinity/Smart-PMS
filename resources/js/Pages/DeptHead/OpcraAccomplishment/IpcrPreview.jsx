@@ -2,7 +2,7 @@ import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 
 function RatingBadge({ label, value }) {
-    const color = !value ? 'var(--admin-text-muted)' : value >= 4.5 ? '#10b981' : value >= 3.5 ? '#3b82f6' : value >= 2.5 ? '#f59e0b' : '#ef4444';
+    const color = !value ? 'var(--admin-text-muted)' : value >= 5.0 ? '#3b82f6' : value >= 4.0 ? '#10b981' : value >= 3.0 ? '#f59e0b' : value >= 2.0 ? '#eab308' : '#ef4444';
     return (
         <div style={{ textAlign: 'center', minWidth: 40 }}>
             <div style={{ fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--admin-text-muted)', marginBottom: 2 }}>{label}</div>

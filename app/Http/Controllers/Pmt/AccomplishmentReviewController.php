@@ -159,16 +159,16 @@ class AccomplishmentReviewController extends Controller
 
     private function toAdjectival(float $score): string
     {
-        if ($score >= 4.5) {
+        if ($score >= 5.0) {
             return 'Outstanding';
         }
-        if ($score >= 3.5) {
+        if ($score >= 4.0) {
             return 'Very Satisfactory';
         }
-        if ($score >= 2.5) {
+        if ($score >= 3.0) {
             return 'Satisfactory';
         }
-        if ($score >= 1.5) {
+        if ($score >= 2.0) {
             return 'Unsatisfactory';
         }
 

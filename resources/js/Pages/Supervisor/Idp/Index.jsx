@@ -12,7 +12,7 @@ const STATUS_CFG = {
     submitted_to_ld:        { label: 'Submitted to L&D',  c: '#4ade80', bg: 'rgba(74,222,128,0.12)', bc: 'rgba(74,222,128,0.3)' },
 };
 
-const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#f97316' };
+const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#eab308' };
 
 const FILTERS = [
     { key: 'all',                    label: 'All' },

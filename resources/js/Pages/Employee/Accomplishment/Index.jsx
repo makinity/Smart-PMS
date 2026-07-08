@@ -79,7 +79,7 @@ function PipelineStepper({ status }) {
 function ScoreCircle({ score, rating }) {
     const bp    = useBreakpoint();
     const pct   = Math.min((score / 5) * 100, 100);
-    const color = score >= 4.5 ? '#10b981' : score >= 3.5 ? '#3b82f6' : score >= 2.5 ? '#f59e0b' : '#ef4444';
+    const color = score >= 5.0 ? '#3b82f6' : score >= 4.0 ? '#10b981' : score >= 3.0 ? '#f59e0b' : score >= 2.0 ? '#eab308' : '#ef4444';
     const r = 28;
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>

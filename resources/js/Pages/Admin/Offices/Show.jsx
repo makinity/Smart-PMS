@@ -37,9 +37,9 @@ function prettyStatus(s) {
 function ratingColor(score) {
     const n = parseFloat(score);
     if (Number.isNaN(n)) return { color: 'var(--admin-text-muted)' };
-    if (n >= 4.5) return { color: '#4ade80' };
-    if (n >= 3.5) return { color: 'var(--admin-accent)' };
-    if (n >= 2.5) return { color: '#ca8a04' };
+    if (n >= 5.0) return { color: '#4ade80' };
+    if (n >= 4.0) return { color: '#10b981' };
+    if (n >= 3.0) return { color: '#f59e0b' };
     return { color: '#f87171' };
 }
 

@@ -149,10 +149,10 @@ class PerformanceRatingService
      */
     public function resolveAdjectivalRating(float $score): string
     {
-        if ($score >= 4.50) return 'Outstanding';
-        if ($score >= 3.50) return 'Very Satisfactory';
-        if ($score >= 2.50) return 'Satisfactory';
-        if ($score >= 1.50) return 'Unsatisfactory';
+        if ($score >= 5.00) return 'Outstanding';
+        if ($score >= 4.00) return 'Very Satisfactory';
+        if ($score >= 3.00) return 'Satisfactory';
+        if ($score >= 2.00) return 'Unsatisfactory';
         return 'Poor';
     }
 

@@ -176,10 +176,10 @@ class MlTrainingDataSeeder extends Seeder
 
     private function toAdjectival(float $score): string
     {
-        if ($score >= 4.5) return 'Outstanding';
-        if ($score >= 3.5) return 'Very Satisfactory';
-        if ($score >= 2.5) return 'Satisfactory';
-        if ($score >= 1.5) return 'Unsatisfactory';
+        if ($score >= 5.0) return 'Outstanding';
+        if ($score >= 4.0) return 'Very Satisfactory';
+        if ($score >= 3.0) return 'Satisfactory';
+        if ($score >= 2.0) return 'Unsatisfactory';
         return 'Poor';
     }
 
