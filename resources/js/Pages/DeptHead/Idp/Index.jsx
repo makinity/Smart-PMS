@@ -92,26 +92,27 @@ export default function Index() {
                     return (
                         <div key={p.id}
                             onClick={() => router.visit(`/dept-head/idp/${p.id}`)}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.85rem 0.75rem', borderRadius: 10, cursor: 'pointer', borderLeft: `3px solid ${isPending ? '#f59e0b' : sc.c}`, background: isPending ? 'rgba(245,158,11,0.04)' : 'transparent', marginBottom: '0.4rem', transition: 'background 0.15s' }}
+                            style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', padding: '0.85rem 0.75rem', borderRadius: 10, cursor: 'pointer', borderLeft: `3px solid ${isPending ? '#f59e0b' : sc.c}`, background: isPending ? 'rgba(245,158,11,0.04)' : 'transparent', marginBottom: '0.4rem', transition: 'background 0.15s' }}
                             onMouseEnter={e => e.currentTarget.style.background = 'var(--admin-bg-secondary)'}
                             onMouseLeave={e => e.currentTarget.style.background = isPending ? 'rgba(245,158,11,0.04)' : 'transparent'}>
 
                             <img src={avatarSrc(p.employee_avatar)} alt={p.employee_name} onError={onAvatarError}
-                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border-strong)' }} />
+                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid var(--admin-border-strong)', marginTop: 2 }} />
 
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>{p.employee_name}</span>
-                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '1px 8px', borderRadius: 99, color: sc.c, background: sc.bg, border: `1px solid ${sc.bc}` }}>{sc.label}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', minWidth: 0 }}>
+                                        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--admin-text-primary)' }}>{p.employee_name}</span>
+                                        <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '1px 8px', borderRadius: 99, color: sc.c, background: sc.bg, border: `1px solid ${sc.bc}`, flexShrink: 0 }}>{sc.label}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                                        {p.source_score && <span style={{ fontSize: '0.85rem', fontWeight: 800, color: ratingColor }}>{p.source_score}</span>}
+                                        {p.source_rating && <span style={{ fontSize: '0.62rem', fontWeight: 700, color: ratingColor, background: `${ratingColor}1a`, border: `1px solid ${ratingColor}33`, padding: '1px 7px', borderRadius: 99, textTransform: 'uppercase' }}>{p.source_rating}</span>}
+                                        <i className="bi bi-chevron-right" style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)' }} />
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>{p.position} · {p.employee_office}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>{p.position} · {p.employee_office}</div>
                                 <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 1 }}>{p.period} · Updated {relativeTime(p.updated_at)}</div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem', flexShrink: 0 }}>
-                                {p.source_score && <span style={{ fontSize: '0.85rem', fontWeight: 800, color: ratingColor }}>{p.source_score}</span>}
-                                {p.source_rating && <span style={{ fontSize: '0.62rem', fontWeight: 700, color: ratingColor, background: `${ratingColor}1a`, border: `1px solid ${ratingColor}33`, padding: '1px 7px', borderRadius: 99, textTransform: 'uppercase' }}>{p.source_rating}</span>}
-                                <i className="bi bi-chevron-right" style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: 2 }} />
                             </div>
                         </div>
                     );
