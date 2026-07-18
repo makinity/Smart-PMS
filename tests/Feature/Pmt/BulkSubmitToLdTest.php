@@ -94,6 +94,47 @@ class BulkSubmitToLdTest extends TestCase
         $this->assertNotNull($plan->lnd_synced_at);
     }
 
+    public function test_payload_includes_idp_rows_and_ipcr_items(): void
+    {
+        config(['services.lnd.base_url' => 'http://lnd.test', 'services.lnd.token' => 'test-token']);
+
+        Http::fake([
+            '*' => Http::response(['status' => 'acknowledged', 'lnd_reference_id' => 'REF-001'], 201),
+        ]);
+
+        $pmt  = $this->makePmt();
+        $plan = $this->makePlan();
+
+        $this->actingAs($pmt)
+            ->post('/pmt/idp/bulk-submit', ['ids' => [$plan->id]]);
+
+        Http::assertSent(function ($request) {
+            $body = $request->data();
+
+            // idp_rows must be present and non-empty
+            $this->assertArrayHasKey('idp_rows', $body, 'Payload missing idp_rows');
+            $this->assertNotEmpty($body['idp_rows'], 'idp_rows should not be empty');
+            $firstRow = $body['idp_rows'][0];
+            $this->assertArrayHasKey('performance_gap', $firstRow);
+            $this->assertArrayHasKey('developmental_activity', $firstRow);
+
+            // ipcr block must be present
+            $this->assertArrayHasKey('ipcr', $body, 'Payload missing ipcr block');
+            $this->assertArrayHasKey('id', $body['ipcr']);
+            $this->assertArrayHasKey('functions', $body['ipcr'], 'Payload ipcr missing functions');
+            $this->assertArrayHasKey('weighted_summary', $body['ipcr'], 'Payload ipcr missing weighted_summary');
+
+            // performance block must include PMT-adjusted fields
+            $this->assertArrayHasKey('performance', $body);
+            $this->assertArrayHasKey('official_score', $body['performance']);
+            $this->assertArrayHasKey('official_rating', $body['performance']);
+            $this->assertArrayHasKey('pmt_adjusted_score', $body['performance']);
+            $this->assertArrayHasKey('pmt_adjusted_rating', $body['performance']);
+
+            return true;
+        });
+    }
+
     public function test_bulk_submit_marks_failed_when_lnd_returns_error(): void
     {
         Http::fake([

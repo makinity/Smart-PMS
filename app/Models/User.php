@@ -37,8 +37,10 @@ class User extends Authenticatable
         'is_active',
         'activated_at',
         'profile_photo_path',
-        'office_id', // Make sure this is added
-        'position',  // Make sure this is added
+        'office_id',
+        'position',
+        'training_locked',
+        'lnd_reference_id',
     ];
 
     protected $hidden = [

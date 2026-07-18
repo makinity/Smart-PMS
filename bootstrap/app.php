@@ -33,9 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => RoleMiddleware::class,
-            'permission' => PermissionMiddleware::class,
+            'role'               => RoleMiddleware::class,
+            'permission'         => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
+            'training.locked'    => \App\Http\Middleware\RedirectIfTrainingLocked::class,
+            'lnd.callback.token' => \App\Http\Middleware\VerifyLndCallbackToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

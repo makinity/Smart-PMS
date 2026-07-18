@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\LndCallbackController;
+use App\Http\Middleware\VerifyLndCallbackToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,6 +13,22 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
 
 });
+
+/*
+|--------------------------------------------------------------------------
+| L&D Inbound Callbacks
+|--------------------------------------------------------------------------
+| These routes are called by the L&D system, not by browser clients.
+| They use a static Bearer token (PMS_CALLBACK_TOKEN) for auth.
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(VerifyLndCallbackToken::class)
+    ->prefix('lnd-callback')
+    ->group(function () {
+        Route::post('/complete-training', [LndCallbackController::class, 'completeTraining'])
+            ->name('lnd-callback.complete-training');
+    });
 
 /*
 |--------------------------------------------------------------------------

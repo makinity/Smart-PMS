@@ -36,9 +36,14 @@ return [
     ],
 
     'lnd' => [
-        'base_url' => env('LND_API_BASE_URL', ''),
-        'token' => env('LND_API_TOKEN', ''),
-        'timeout' => env('LND_API_TIMEOUT', 20),
+        'base_url'             => env('LND_BASE_URL', ''),
+        'token'                => env('LND_API_TOKEN', ''),
+        'timeout'              => env('LND_TIMEOUT', 20),
+        'redirect_hmac_secret' => env('LND_REDIRECT_HMAC_SECRET', ''),
+    ],
+
+    'pms' => [
+        'callback_token' => env('PMS_CALLBACK_TOKEN', ''),
     ],
 
 ];

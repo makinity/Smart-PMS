@@ -171,6 +171,18 @@ class IdpController extends Controller
                     'updated_by'         => auth()->id(),
                 ]);
 
+                // Lock employee out of PMS — they will be redirected to L&D on next login
+                $plan->employee?->update([
+                    'training_locked'  => true,
+                    'lnd_reference_id' => $result['lnd_reference_id'] ?? null,
+                ]);
+
+                // Lock employee out of PMS — redirect to L&D on next login
+                $plan->employee?->update([
+                    'training_locked'  => true,
+                    'lnd_reference_id' => $result['lnd_reference_id'] ?? null,
+                ]);
+
                 // Notify the employee
                 $plan->employee?->notify(new WorkflowEventNotification(
                     type: 'info',
