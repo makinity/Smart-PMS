@@ -131,7 +131,7 @@ function AnnexCards({ rows }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, q, quarterKey, quarterMonths, coveredMonths, annexRows, mpors, qarHeader, deptHead } = usePage().props;
+    const { period, allPeriods, q, quarterKey, quarterMonths, coveredMonths, annexRows, mpors, qarHeader, deptHead } = usePage().props;
 
     const bp       = useBreakpoint();
     const isMobile = bp === 'mobile';
@@ -148,10 +148,23 @@ export default function Index() {
         return matchSearch && matchMonth;
     });
 
-    const canSubmit = annexRows.length > 0 && (!qarHeader || (qarHeader.status !== 'submitted' && qarHeader.status !== 'pmt_approved'));
+    // Determine if the currently viewed period is the active/current one
+    const isCurrentPeriod = !period || (allPeriods ?? []).find(p => p.id === period?.id)?.is_active;
+
+    const canSubmit = annexRows.length > 0 && isCurrentPeriod && (!qarHeader || (qarHeader.status !== 'submitted' && qarHeader.status !== 'pmt_approved'));
 
     function navQ(newQ) {
-        router.get('/dept-head/qar', { q: newQ }, { preserveState: false });
+        const params = { q: newQ };
+        if (period && !isCurrentPeriod) params.period_id = period.id;
+        router.get('/dept-head/qar', params, { preserveState: false });
+    }
+
+    function navPeriod(periodId) {
+        const params = { q: 1 };
+        // Only send period_id if it's not the active period
+        const selected = (allPeriods ?? []).find(p => p.id === Number(periodId));
+        if (selected && !selected.is_active) params.period_id = periodId;
+        router.get('/dept-head/qar', params, { preserveState: false });
     }
 
     async function handleSubmit() {
@@ -222,6 +235,25 @@ export default function Index() {
                             )}
                         </div>
                     </div>
+
+                    {/* Period selector */}
+                    {allPeriods && allPeriods.length > 1 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>Period</span>
+                            <select
+                                value={period?.id ?? ''}
+                                onChange={e => navPeriod(e.target.value)}
+                                style={{ flex: 1, maxWidth: 260, padding: '0.38rem 0.65rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', outline: 'none' }}
+                            >
+                                {allPeriods.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.name}{p.is_active ? ' (Current)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     {/* Quarter tabs */}
                     {period && (

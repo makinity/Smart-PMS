@@ -27,7 +27,16 @@ class QarController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $period = PerformancePeriod::current();
+
+        // All periods for the selector, newest first
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+
+        // Resolve the period: prefer the period_id param, otherwise fall back to current
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
+
         $q = (int) $request->get('q', $this->currentQuarter($period));
 
         if ($q < 1 || $q > 2) {
@@ -65,6 +74,7 @@ class QarController extends Controller
 
         return Inertia::render('DeptHead/Qar/Index', [
             'period' => $period ? ['id' => $period->id, 'name' => $period->name] : null,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'q' => $q,
             'quarterKey' => $quarterKey,
             'quarterMonths' => $quarterMonths,
