@@ -61,7 +61,7 @@ class MporController extends Controller
     public function show(Mpor $mpor)
     {
         $user = Auth::user();
-        abort_unless($mpor->office_id === $user->office_id, 403);
+        abort_unless($mpor->office_id === $user->employee?->office_id, 403);
 
         $mpor->load(['employee', 'approvedBy', 'returnedBy']);
 
@@ -194,8 +194,8 @@ class MporController extends Controller
     public function approve(Mpor $mpor)
     {
         $user = Auth::user();
-        $user->loadMissing('office');
-        abort_unless($mpor->office_id === $user->office_id, 403);
+        $user->loadMissing('employee.office');
+        abort_unless($mpor->office_id === $user->employee?->office_id, 403);
         abort_unless($mpor->status === 'submitted', 422, 'MPOR is not in submitted status.');
 
         $mpor->update([
@@ -227,7 +227,7 @@ class MporController extends Controller
     public function return(Request $request, Mpor $mpor)
     {
         $user = Auth::user();
-        abort_unless($mpor->office_id === $user->office_id, 403);
+        abort_unless($mpor->office_id === $user->employee?->office_id, 403);
         abort_unless($mpor->status === 'submitted', 422, 'MPOR is not in submitted status.');
 
         $request->validate(['return_remarks' => ['nullable', 'string', 'max:2000']]);

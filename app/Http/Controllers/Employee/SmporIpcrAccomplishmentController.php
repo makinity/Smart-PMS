@@ -215,7 +215,7 @@ class SmporIpcrAccomplishmentController extends Controller
                 'employee_remarks' => $data['remarks'] ?? null,
                 'attachments' => $attachments ?: null,
                 'submitted_at' => now(),
-                'supervisor_id' => User::where('office_id', $user->office_id)
+                'supervisor_id' => User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))
                     ->where('role', 'supervisor')
                     ->value('id'),
                 'dept_head_id' => $user->office?->head_id,

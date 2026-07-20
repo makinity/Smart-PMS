@@ -30,7 +30,7 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_RETURNED,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
-            ->with(['employee.office', 'performancePeriod:id,name'])
+            ->with(['employee.employee.office', 'performancePeriod:id,name'])
             ->orderByRaw("FIELD(status, 'supervisor_recommended', 'returned', 'dept_head_approved', 'submitted_to_pmt', 'submitted_to_ld')")
             ->orderByDesc('updated_at')
             ->get()
@@ -39,10 +39,10 @@ class IdpController extends Controller
                 'status'          => $p->status,
                 'employee_name'   => $p->employee?->name ?? '—',
                 'employee_id'     => $p->employee_id,
-                'employee_office' => $p->employee?->office?->name ?? '—',
+                'employee_office' => $p->employee?->employee?->office?->name ?? '—',
                 'employee_avatar' => $p->employee?->profile_photo_url,
                 'supervisor_id'   => $p->supervisor_id,
-                'position'        => $p->employee?->position ?? '—',
+                'position'        => $p->employee?->employee?->position ?? '—',
                 'source_score'    => $p->source_score ? round((float) $p->source_score, 2) : null,
                 'source_rating'   => $p->source_rating,
                 'period'          => $p->performancePeriod?->name ?? '—',
@@ -57,8 +57,8 @@ class IdpController extends Controller
     public function officeIdp()
     {
         $deptHead = auth()->user();
-        $deptHead->load('office');
-        $office = $deptHead->office;
+        $deptHead->load('employee.office');
+        $office = $deptHead->employee?->office;
 
         $opcr = null;
         if ($office) {
@@ -76,7 +76,7 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_RETURNED,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
-            ->with(['employee.office', 'performancePeriod:id,name'])
+            ->with(['employee.employee.office', 'performancePeriod:id,name'])
             ->orderByRaw("FIELD(status, 'supervisor_recommended', 'returned', 'dept_head_approved', 'submitted_to_pmt', 'submitted_to_ld')")
             ->orderByDesc('updated_at')
             ->get()
@@ -85,10 +85,10 @@ class IdpController extends Controller
                 'status'          => $p->status,
                 'employee_name'   => $p->employee?->name ?? '—',
                 'employee_id'     => $p->employee_id,
-                'employee_office' => $p->employee?->office?->name ?? '—',
+                'employee_office' => $p->employee?->employee?->office?->name ?? '—',
                 'employee_avatar' => $p->employee?->profile_photo_url,
                 'supervisor_id'   => $p->supervisor_id,
-                'position'        => $p->employee?->position ?? '—',
+                'position'        => $p->employee?->employee?->position ?? '—',
                 'source_score'    => $p->source_score ? round((float) $p->source_score, 2) : null,
                 'source_rating'   => $p->source_rating,
                 'period'          => $p->performancePeriod?->name ?? '—',
@@ -117,7 +117,7 @@ class IdpController extends Controller
     public function show(DevelopmentPlan $idp)
     {
         abort_unless($idp->dept_head_id === auth()->id(), 403);
-        $idp->load(['employee.office', 'performancePeriod:id,name']);
+        $idp->load(['employee.employee.office', 'performancePeriod:id,name']);
 
         return Inertia::render('DeptHead/Idp/Show', [
             'plan' => [
@@ -137,8 +137,8 @@ class IdpController extends Controller
             ],
             'employee' => [
                 'name'     => $idp->employee?->name ?? '—',
-                'position' => $idp->employee?->position ?? '—',
-                'office'   => $idp->employee?->office?->name ?? '—',
+                'position' => $idp->employee?->employee?->position ?? '—',
+                'office'   => $idp->employee?->employee?->office?->name ?? '—',
                 'avatar'   => $idp->employee?->profile_photo_url,
             ],
         ]);
@@ -197,7 +197,7 @@ class IdpController extends Controller
 
         // Get all low-performer IDPs under this dept head
         $allPlans = DevelopmentPlan::where('dept_head_id', $deptHead->id)
-            ->with(['employee.office', 'supervisor'])
+            ->with(['employee.employee.office', 'supervisor'])
             ->get();
 
         // Check for blockers: employees with non-approved status
@@ -211,7 +211,7 @@ class IdpController extends Controller
             $items = $blockers->map(fn ($p) => [
                 'employee_id'   => $p->employee_id,
                 'employee_name' => $p->employee?->name ?? '—',
-                'position'      => $p->employee?->position ?? '—',
+                'position'      => $p->employee?->employee?->position ?? '—',
                 'avatar'        => $p->employee?->profile_photo_url,
                 'status'        => $p->status,
                 'supervisor_id' => $p->supervisor_id,

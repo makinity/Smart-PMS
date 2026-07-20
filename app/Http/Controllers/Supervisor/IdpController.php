@@ -31,7 +31,7 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
-            ->with(['employee.office', 'performancePeriod:id,name'])
+            ->with(['employee.employee.office', 'performancePeriod:id,name'])
             ->orderByRaw("FIELD(status, 'submitted', 'returned', 'supervisor_recommended', 'submitted_to_ld')")
             ->orderByDesc('updated_at')
             ->get()
@@ -39,9 +39,9 @@ class IdpController extends Controller
                 'id'            => $p->id,
                 'status'        => $p->status,
                 'employee_name' => $p->employee?->name ?? '—',
-                'employee_office' => $p->employee?->office?->name ?? '—',
+                'employee_office' => $p->employee?->employee?->office?->name ?? '—',
                 'employee_avatar' => $p->employee?->profile_photo_url,
-                'position'      => $p->employee?->position ?? '—',
+                'position'      => $p->employee?->employee?->position ?? '—',
                 'source_score'  => $p->source_score ? round((float) $p->source_score, 2) : null,
                 'source_rating' => $p->source_rating,
                 'period'        => $p->performancePeriod?->name ?? '—',
@@ -57,7 +57,7 @@ class IdpController extends Controller
     {
         abort_unless($idp->supervisor_id === auth()->id(), 403);
 
-        $idp->load(['employee.office', 'performancePeriod:id,name']);
+        $idp->load(['employee.employee.office', 'performancePeriod:id,name']);
 
         return Inertia::render('Supervisor/Idp/Show', [
             'plan' => [
@@ -75,8 +75,8 @@ class IdpController extends Controller
             ],
             'employee' => [
                 'name'     => $idp->employee?->name ?? '—',
-                'position' => $idp->employee?->position ?? '—',
-                'office'   => $idp->employee?->office?->name ?? '—',
+                'position' => $idp->employee?->employee?->position ?? '—',
+                'office'   => $idp->employee?->employee?->office?->name ?? '—',
                 'avatar'   => $idp->employee?->profile_photo_url,
             ],
         ]);

@@ -16,7 +16,7 @@ class IdpController extends Controller
     public function index()
     {
         // Get all offices that have IDPs in submitted_to_pmt or later stages
-        $plans = DevelopmentPlan::with(['employee.office', 'office', 'performancePeriod:id,name'])
+        $plans = DevelopmentPlan::with(['employee.employee.office', 'office', 'performancePeriod:id,name'])
             ->whereIn('status', [
                 DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
@@ -61,7 +61,7 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
-            ->with(['employee.office', 'performancePeriod:id,name'])
+            ->with(['employee.employee.office', 'performancePeriod:id,name'])
             ->orderByRaw("FIELD(status, 'submitted_to_pmt', 'submitted_to_ld')")
             ->orderByDesc('updated_at')
             ->get();
@@ -106,7 +106,7 @@ class IdpController extends Controller
 
     public function show(DevelopmentPlan $idp)
     {
-        $idp->load(['employee.office', 'performancePeriod:id,name']);
+        $idp->load(['employee.employee.office', 'performancePeriod:id,name']);
 
         return Inertia::render('Pmt/Idp/Show', [
             'plan' => [
@@ -146,7 +146,7 @@ class IdpController extends Controller
 
         $plans = DevelopmentPlan::whereIn('id', $ids)
             ->where('status', DevelopmentPlan::STATUS_SUBMITTED_TO_PMT)
-            ->with('employee')
+            ->with('employee.employee')
             ->get();
 
         if ($plans->isEmpty()) {
@@ -172,13 +172,7 @@ class IdpController extends Controller
                 ]);
 
                 // Lock employee out of PMS — they will be redirected to L&D on next login
-                $plan->employee?->update([
-                    'training_locked'  => true,
-                    'lnd_reference_id' => $result['lnd_reference_id'] ?? null,
-                ]);
-
-                // Lock employee out of PMS — redirect to L&D on next login
-                $plan->employee?->update([
+                $plan->employee?->employee?->update([
                     'training_locked'  => true,
                     'lnd_reference_id' => $result['lnd_reference_id'] ?? null,
                 ]);
@@ -204,7 +198,7 @@ class IdpController extends Controller
 
         // Send one summary notification per dept-head office
         foreach ($successfulOfficeIds as $officeId => $count) {
-            $deptHead = \App\Models\User::where('office_id', $officeId)
+            $deptHead = \App\Models\User::whereHas('employee', fn ($q) => $q->where('office_id', $officeId))
                 ->where('role', 'dept-head')
                 ->first();
             $deptHead?->notify(new WorkflowEventNotification(

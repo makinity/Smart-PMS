@@ -25,7 +25,7 @@ class AccomplishmentReviewController extends Controller
         $submissions = AccomplishmentSubmission::whereIn('status', [
             'dept_head_endorsed', 'pmt_calibrated', 'released_by_pmt', 'returned_to_employee',
         ])
-            ->with(['employee.office', 'period'])
+            ->with(['employee.employee.office', 'period'])
             ->orderByRaw("FIELD(status, 'dept_head_endorsed', 'pmt_calibrated', 'returned_to_employee', 'released_by_pmt')")
             ->orderByDesc('dept_head_action_at')
             ->get()
@@ -50,7 +50,7 @@ class AccomplishmentReviewController extends Controller
 
     public function show(AccomplishmentSubmission $accomplishment)
     {
-        $accomplishment->load(['employee.office', 'period', 'mpors']);
+        $accomplishment->load(['employee.employee.office', 'period', 'mpors']);
 
         $ipcr = Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)
@@ -267,7 +267,7 @@ class AccomplishmentReviewController extends Controller
             'submitted_at' => $s->submitted_at?->toIso8601String(),
             'dept_head_action_at' => $s->dept_head_action_at?->toIso8601String(),
             'employee_name' => $s->employee?->name ?? '—',
-            'employee_office' => $s->employee?->office?->name ?? '—',
+            'employee_office' => $s->employee?->employee?->office?->name ?? '—',
             'employee_avatar' => $s->employee?->profile_photo_url,
             'period' => $s->period?->name ?? '—',
         ];

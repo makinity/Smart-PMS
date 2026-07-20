@@ -73,7 +73,7 @@ class QarExportController extends Controller
 
         // Department head who prepares the report
         $deptHead = $office
-            ? User::where('office_id', $office->id)->where('role', 'dept-head')->first()
+            ? User::whereHas('employee', fn ($q) => $q->where('office_id', $office->id))->where('role', 'dept-head')->first()
             : null;
 
         // ── Build spreadsheet ──────────────────────────────────────────────────

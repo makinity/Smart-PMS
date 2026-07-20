@@ -57,7 +57,7 @@ class LndHandoffService
     {
         $developmentPlan->loadMissing([
             'performancePeriod',
-            'employee.office',
+            'employee.employee.office',
             'ipcr.items.indicator.uwpMfo.uwpFunction',
             'ipcr.items.indicator.qetStandards',
         ]);

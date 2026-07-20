@@ -49,7 +49,7 @@ class OpcraAccomplishmentController extends Controller
     {
         $opcraAccomplishment->load(['office', 'period', 'deptHead']);
 
-        $employees = User::where('office_id', $opcraAccomplishment->office_id)
+        $employees = User::whereHas('employee', fn ($q) => $q->where('office_id', $opcraAccomplishment->office_id))
             ->where('role', 'employee')->get();
 
         $subMap = AccomplishmentSubmission::where('office_id', $opcraAccomplishment->office_id)
@@ -125,7 +125,7 @@ class OpcraAccomplishmentController extends Controller
     {
         abort_if($accomplishment->office_id !== $opcraAccomplishment->office_id, 403);
 
-        $accomplishment->load(['employee.office', 'period', 'mpors']);
+        $accomplishment->load(['employee.employee.office', 'period', 'mpors']);
 
         $ipcr = Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)
@@ -328,7 +328,7 @@ class OpcraAccomplishmentController extends Controller
             'source_score' => $s->final_rating,
             'source_rating' => $s->final_adjectival_rating,
             'status' => DevelopmentPlan::STATUS_PENDING_DETAILS,
-            'prepared_by_name' => $s->employee?->name,
+            'prepared_by_name' => $s->employee?->employee?->full_name ?? $s->employee?->name,
             'created_by' => auth()->id(),
             'updated_by' => auth()->id(),
         ]);
@@ -363,7 +363,7 @@ class OpcraAccomplishmentController extends Controller
 
     private function employeeStats(OpcraAccomplishmentSubmission $s): array
     {
-        $total    = User::where('office_id', $s->office_id)->where('role', 'employee')->count();
+        $total    = User::whereHas('employee', fn($q) => $q->where('office_id', $s->office_id))->where('role', 'employee')->count();
         $approved = AccomplishmentSubmission::where('office_id', $s->office_id)
             ->where('performance_period_id', $s->performance_period_id)
             ->where('status', 'dept_head_approved')->count();

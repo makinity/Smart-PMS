@@ -22,7 +22,7 @@ class AccomplishmentController extends Controller
         $submissions = AccomplishmentSubmission::where('supervisor_id', $supervisor->id)
             ->whereIn('status', ['submitted_to_supervisor', 'supervisor_endorsed', 'dept_head_endorsed',
                 'recommended_by_pmt', 'pmt_approved', 'released_by_pmt', 'returned_to_employee'])
-            ->with(['employee.office', 'period'])
+            ->with(['employee.employee.office', 'period'])
             ->orderByRaw("FIELD(status, 'submitted_to_supervisor', 'returned_to_employee', 'supervisor_endorsed', 'dept_head_endorsed', 'recommended_by_pmt', 'pmt_approved', 'released_by_pmt')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -32,7 +32,7 @@ class AccomplishmentController extends Controller
                 'dataset_source' => $s->dataset_source,
                 'submitted_at' => $s->submitted_at?->toIso8601String(),
                 'employee_name' => $s->employee?->name ?? '—',
-                'employee_office' => $s->employee?->office?->name ?? '—',
+                'employee_office' => $s->employee?->employee?->office?->name ?? '—',
                 'employee_avatar' => $s->employee?->profile_photo_url,
                 'period' => $s->period?->name ?? '—',
             ]);
@@ -47,7 +47,7 @@ class AccomplishmentController extends Controller
         $supervisor = auth()->user();
         abort_if($accomplishment->supervisor_id !== $supervisor->id, 403);
 
-        $accomplishment->load(['employee.office', 'period', 'mpors']);
+        $accomplishment->load(['employee.employee.office', 'period', 'mpors']);
 
         $ipcr = Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)

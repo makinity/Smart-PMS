@@ -27,12 +27,13 @@ class IpcrObserver
 
         $ipcr->loadMissing([
             'items.indicator.uwpMfo.uwpFunction',
-            'employee.office',
+            'employee.employee.office',
         ]);
 
         $employee   = $ipcr->employee;
-        $officeSize = $employee?->office_id
-            ? \App\Models\User::where('office_id', $employee->office_id)->count()
+        $officeId   = $employee?->employee?->office_id;
+        $officeSize = $officeId
+            ? \App\Models\User::whereHas('employee', fn ($q) => $q->where('office_id', $officeId))->count()
             : null;
 
         // Previous period snapshot for trend feature

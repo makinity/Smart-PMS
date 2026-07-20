@@ -12,15 +12,19 @@ class LoginResponse implements LoginResponseContract
 
         $user = $request->user();
 
+        if ($user) {
+            $user->loadMissing('employee');
+        }
+
         // If this employee is currently locked for L&D training,
         // redirect them to the L&D website immediately on login.
-        if ($user && $user->training_locked) {
+        if ($user && ($user->employee?->training_locked ?? false)) {
             $lndBase = rtrim((string) config('services.lnd.base_url', ''), '/');
 
             if (! empty($lndBase)) {
                 $params = [
                     'pms_user_id' => $user->id,
-                    'plan'        => $user->lnd_reference_id ?? '',
+                    'plan'        => $user->employee?->lnd_reference_id ?? '',
                 ];
 
                 $secret = config('services.lnd.redirect_hmac_secret', '');

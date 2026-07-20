@@ -209,7 +209,7 @@ class MporController extends Controller
         }
 
         // Supervisor name (same office)
-        $supervisor = User::where('office_id', $user->office_id)
+        $supervisor = User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))
             ->where('role', 'supervisor')
             ->first();
 
@@ -283,7 +283,7 @@ class MporController extends Controller
         ])->save();
 
         // Notify supervisors in same office
-        $supervisors = User::where('office_id', $user->office_id)
+        $supervisors = User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))
             ->where('role', 'supervisor')
             ->get();
 

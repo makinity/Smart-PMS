@@ -21,7 +21,7 @@ class PerformanceOverviewController extends Controller
         $search = trim($request->get('search', ''));
         $rating = $request->get('rating', '');
 
-        $query = Ipcr::with(['employee:id,name,position,office_id,profile_photo_path', 'employee.office:id,name'])
+        $query = Ipcr::with(['employee:id,name', 'employee.employee.office:id,name'])
             ->where(function ($q) {
                 $q->whereIn('pmt_adjusted_rating', self::ALL_RATINGS)
                   ->orWhereIn('adjectival_rating', self::ALL_RATINGS);
@@ -39,8 +39,9 @@ class PerformanceOverviewController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('employee', fn ($q2) => $q2
                     ->where('name', 'like', "%{$search}%")
-                    ->orWhere('position', 'like', "%{$search}%")
-                )->orWhereHas('employee.office', fn ($q2) => $q2
+                )->orWhereHas('employee.employee', fn ($q2) => $q2
+                    ->where('position', 'like', "%{$search}%")
+                )->orWhereHas('employee.employee.office', fn ($q2) => $q2
                     ->where('name', 'like', "%{$search}%")
                 );
             });

@@ -20,8 +20,8 @@ class DevelopmentPlanningService
     {
         $query = Ipcr::query()
             ->with([
-                'employee:id,name,office_id,position',
-                'employee.office:id,name',
+                'employee:id,name',
+                'employee.employee.office:id,name',
                 'office:id,name',
                 'performancePeriod:id,name',
             ])
@@ -45,7 +45,7 @@ class DevelopmentPlanningService
     {
         $query = DevelopmentPlan::query()
             ->with([
-                'employee.office:id,name',
+                'employee.employee.office:id,name',
                 'office.head:id,name',
                 'performancePeriod:id,name',
                 'creator:id,name',

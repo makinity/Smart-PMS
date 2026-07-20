@@ -24,7 +24,7 @@ class IdpExcelExportController extends Controller
         abort_unless($idp->employee_id === auth()->id(), 403);
 
         $user   = auth()->user();
-        $user->load('office:id,name');
+        $user->load('employee.office:id,name');
         $rows   = $idp->idp_rows ?? [];
         $period = $idp->performancePeriod?->name ?? '—';
 

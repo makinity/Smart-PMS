@@ -49,7 +49,7 @@ class IpcrExcelExportController extends Controller
         abort_unless($period, 404, 'No active performance period.');
 
         $ipcr = Ipcr::with([
-            'employee.office',
+            'employee.employee.office',
             'period',
             'items.indicator.qetStandards',
             'items.indicator.uwpMfo.uwpFunction',
@@ -122,7 +122,7 @@ class IpcrExcelExportController extends Controller
 
         // ── Commitment text ────────────────────────────────────────────────────
         $empName = $ipcr->employee->name ?? '_______________';
-        $officeName = $ipcr->employee->office?->name ?? '_______________';
+        $officeName = $ipcr->employee->employee?->office?->name ?? '_______________';
         $periodName = $ipcr->period?->name ?? '_______________';
 
         $ws->mergeCells("A{$r}:{$lastCol}{$r}");

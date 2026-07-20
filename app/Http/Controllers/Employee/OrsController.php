@@ -71,13 +71,13 @@ class OrsController extends Controller
 
         // Supervisors
         $supervisors = User::where('role', 'supervisor')
-            ->where('is_active', true)
-            ->with('office')
+            ->whereHas('employee', fn ($q) => $q->where('is_active', true))
+            ->with('employee.office')
             ->orderBy('name')
             ->get()
-            ->map(fn($s) => [
+            ->map(fn ($s) => [
                 'id'    => $s->id,
-                'label' => $s->name . ($s->office ? ' — ' . $s->office->name : ''),
+                'label' => $s->name . ($s->employee?->office ? ' — ' . $s->employee->office->name : ''),
             ]);
 
         // Calendar entries (all for this period, grouped by date)

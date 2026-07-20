@@ -24,7 +24,7 @@ class MyTasksController extends Controller
             ->where('employee_id', $user->id)
             ->with([
                 'ipcrItem.indicator.uwpMfo',
-                'supervisor.office',
+                'supervisor.employee.office',
                 'evidences',
                 'monitoring.supervisor',
             ]);

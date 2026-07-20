@@ -19,7 +19,7 @@ class UwpSampleSeeder extends Seeder
         $office = Office::firstOrCreate(['name' => 'Human Resource Management Office']);
         $period = PerformancePeriod::where('name', 'Jan-Jun 2026')->first()
             ?? PerformancePeriod::create(['name' => 'Jan-Jun 2026', 'start_date' => '2026-01-01', 'end_date' => '2026-06-30', 'is_active' => true]);
-        $supervisor = User::where('role', 'supervisor')->where('office_id', $office->id)->first()
+        $supervisor = User::where('role', 'supervisor')->whereHas('employee', fn ($q) => $q->where('office_id', $office->id))->first()
             ?? User::where('role', 'supervisor')->first();
 
         UnitWorkPlan::where('office_id', $office->id)->each(fn($u) => $u->delete());
@@ -384,7 +384,7 @@ class UwpSampleSeeder extends Seeder
 
         // ── CBO UWP — draft, same structure, no assignments (test original flow) ──
         $cbo = Office::firstOrCreate(['code' => 'CBO'], ['name' => 'City Budget Office']);
-        $cboSupervisor = User::where('role', 'supervisor')->where('office_id', $cbo->id)->first();
+        $cboSupervisor = User::where('role', 'supervisor')->whereHas('employee', fn ($q) => $q->where('office_id', $cbo->id))->first();
 
         UnitWorkPlan::where('office_id', $cbo->id)->each(fn($u) => $u->delete());
 

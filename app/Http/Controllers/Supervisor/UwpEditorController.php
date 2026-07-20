@@ -17,7 +17,7 @@ class UwpEditorController extends Controller
 {
     private function authorizeUwp(UnitWorkPlan $uwp): void
     {
-        abort_unless($uwp->office_id === Auth::user()->office_id, 403);
+        abort_unless($uwp->office_id === Auth::user()->employee?->office_id, 403);
         abort_unless($uwp->isEditableBySupervisor(), 403, 'UWP is not editable.');
     }
 
@@ -38,7 +38,7 @@ class UwpEditorController extends Controller
         $this->authorizeUwp($uwp);
         $uwp->update(['status' => 'submitted']);
 
-        $deptHead = \App\Models\User::where('office_id', $uwp->office_id)
+        $deptHead = \App\Models\User::whereHas('employee', fn ($q) => $q->where('office_id', $uwp->office_id))
             ->where('role', 'dept-head')
             ->first();
         $deptHead?->notify(new \App\Notifications\WorkflowEventNotification(

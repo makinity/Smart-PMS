@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $user   = Auth::user();
         $period = PerformancePeriod::current();
 
-        $teamCount      = User::where('office_id', $user->office_id)->where('role', 'employee')->count();
+        $teamCount      = User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))->where('role', 'employee')->count();
         $uwpStatus      = UnitWorkPlan::where('office_id', $user->office_id)
             ->when($period, fn ($query) => $query->where('performance_period_id', $period->id), fn ($query) => $query->whereRaw('1 = 0'))
             ->value('status') ?? 'Not created';

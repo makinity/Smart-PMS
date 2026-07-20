@@ -45,7 +45,7 @@ class PerformancePeriodsController extends Controller
         $name = $performancePeriod->name;
 
         // All active employees in the system
-        $allEmployeeIds = \App\Models\User::where('role', 'employee')->where('is_active', true)->pluck('id');
+        $allEmployeeIds = \App\Models\User::where('role', 'employee')->whereHas('employee', fn($q) => $q->where('is_active', true))->pluck('id');
 
         // Employees with no IPCR at all for this period
         $withIpcr = Ipcr::where('performance_period_id', $pid)->pluck('employee_id');
@@ -90,7 +90,7 @@ class PerformancePeriodsController extends Controller
         $supervisorUwpIds = UnitWorkPlan::where('performance_period_id', $pid)
             ->whereIn('status', ['draft', 'returned'])
             ->pluck('office_id')
-            ->map(fn($oid) => \App\Models\User::where('office_id', $oid)->where('role', 'supervisor')->value('id'))
+            ->map(fn($oid) => \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $oid))->where('role', 'supervisor')->value('id'))
             ->filter()
             ->unique();
 
@@ -111,7 +111,7 @@ class PerformancePeriodsController extends Controller
         $noOpcrDeptHeadIds = \App\Models\Office::where('is_active', true)
             ->get()
             ->filter(fn($o) => ! Opcr::where('performance_period_id', $pid)->where('office_id', $o->id)->whereIn('status', ['approved'])->exists())
-            ->map(fn($o) => \App\Models\User::where('office_id', $o->id)->where('role', 'dept-head')->value('id'))
+            ->map(fn($o) => \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $o->id))->where('role', 'dept-head')->value('id'))
             ->filter();
 
         $deptHeadAccomplishmentIds = AccomplishmentSubmission::where('performance_period_id', $pid)
@@ -122,7 +122,7 @@ class PerformancePeriodsController extends Controller
         $deptHeadQarIds = QarHeader::where('performance_period_id', $pid)
             ->whereNotIn('status', ['submitted', 'pmt_approved'])
             ->pluck('office_id')
-            ->map(fn($oid) => \App\Models\User::where('office_id', $oid)->where('role', 'dept-head')->value('id'))
+            ->map(fn($oid) => \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $oid))->where('role', 'dept-head')->value('id'))
             ->filter();
 
         $deptHeadIds = collect()
@@ -221,7 +221,7 @@ class PerformancePeriodsController extends Controller
         $pid = $p->id;
 
         // Employees with no IPCR for this period
-        $allEmployeeIds = \App\Models\User::where('role', 'employee')->where('is_active', true)->pluck('id');
+        $allEmployeeIds = \App\Models\User::where('role', 'employee')->whereHas('employee', fn($q) => $q->where('is_active', true))->pluck('id');
         $withIpcr       = Ipcr::where('performance_period_id', $pid)->pluck('employee_id');
         $noIpcr         = $allEmployeeIds->diff($withIpcr)->count();
 

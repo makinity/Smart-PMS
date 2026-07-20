@@ -21,7 +21,7 @@ class TopPerformersController extends Controller
 
         $allowed = ['Outstanding', 'Very Satisfactory', 'Satisfactory'];
 
-        $query = Ipcr::with(['employee:id,name,position,office_id,profile_photo_path', 'employee.office:id,name'])
+        $query = Ipcr::with(['employee:id,name', 'employee.employee.office:id,name'])
             ->whereIn('adjectival_rating', $allowed)
             ->whereNotNull('final_score')
             ->where('final_score', '>', 0);
@@ -35,11 +35,10 @@ class TopPerformersController extends Controller
         }
 
         if ($search !== '') {
-            $query->whereHas('employee', fn ($q) => $q
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('position', 'like', "%{$search}%")
-            )->orWhereHas('employee.office', fn ($q) => $q
-                ->where('name', 'like', "%{$search}%")
+            $query->where(fn ($q) => $q
+                ->whereHas('employee', fn ($uq) => $uq->where('name', 'like', "%{$search}%"))
+                ->orWhereHas('employee.employee', fn ($eq) => $eq->where('position', 'like', "%{$search}%")
+                    ->orWhereHas('office', fn ($oq) => $oq->where('name', 'like', "%{$search}%")))
             );
         }
 
@@ -47,8 +46,8 @@ class TopPerformersController extends Controller
             'ipcr_id'  => $ipcr->id,
             'user_id'  => $ipcr->employee_id,
             'name'     => $ipcr->employee?->name ?? '—',
-            'position' => $ipcr->employee?->position ?? '—',
-            'office'   => $ipcr->employee?->office?->name ?? '—',
+            'position' => $ipcr->employee?->employee?->position ?? '—',
+            'office'   => $ipcr->employee?->employee?->office?->name ?? '—',
             'avatar'   => $ipcr->employee?->profile_photo_url,
             'score'    => round((float) ($ipcr->pmt_adjusted_score ?? $ipcr->final_score), 2),
             'rating'   => $ipcr->pmt_adjusted_rating ?: $ipcr->adjectival_rating,
@@ -72,7 +71,7 @@ class TopPerformersController extends Controller
 
     public function show(User $user)
     {
-        $user->load('office:id,name,code');
+        $user->load('employee.office:id,name,code');
 
         // All IPCRs with period info
         $ipcrs = Ipcr::with('period:id,name,start_date,end_date')
@@ -173,17 +172,17 @@ class TopPerformersController extends Controller
         return Inertia::render('Pmt/TopPerformers/Show', [
             'employee'  => [
                 'id'           => $user->id,
-                'employee_id'  => $user->employee_id,
+                'employee_id'  => $user->employee?->employee_id,
                 'name'         => $user->name,
                 'email'        => $user->email,
-                'position'     => $user->position,
+                'position'     => $user->employee?->position,
                 'role'         => $user->role,
-                'is_active'    => $user->is_active,
-                'is_disabled'  => $user->is_disabled,
-                'activated_at' => $user->activated_at?->format('M d, Y'),
+                'is_active'    => $user->employee?->is_active,
+                'is_disabled'  => $user->employee?->is_disabled,
+                'activated_at' => $user->employee?->activated_at?->format('M d, Y'),
                 'created_at'   => $user->created_at->format('M d, Y'),
                 'avatar'       => $user->profile_photo_url,
-                'office'       => $user->office ? ['name' => $user->office->name, 'code' => $user->office->code] : null,
+                'office'       => $user->employee?->office ? ['name' => $user->employee->office->name, 'code' => $user->employee->office->code] : null,
             ],
             'stats'     => $stats,
             'history'   => array_values($history),

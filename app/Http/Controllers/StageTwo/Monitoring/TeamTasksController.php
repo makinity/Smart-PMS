@@ -18,8 +18,8 @@ class TeamTasksController extends Controller
         $entries = OrsEntry::where('supervisor_id', $supervisor->id)
             ->when($period, fn ($q) => $q->where('performance_period_id', $period->id))
             ->with([
-                'employee:id,name,office_id,profile_photo_path',
-                'employee.office:id,name',
+                'employee:id,name',
+                'employee.employee.office:id,name',
                 'ipcrItem.indicator:id,indicator_text,uwp_mfo_id',
                 'ipcrItem.indicator.uwpMfo:id,title',
                 'evidences',

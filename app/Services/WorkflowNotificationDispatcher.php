@@ -9,7 +9,9 @@ class WorkflowNotificationDispatcher
 {
     public function notifyUser(User $user, Notification $notification): void
     {
-        if (!$user->is_active) {
+        $user->loadMissing('employee');
+
+        if (! ($user->employee?->is_active ?? false)) {
             return;
         }
 
@@ -20,11 +22,12 @@ class WorkflowNotificationDispatcher
     {
         $users = User::query()
             ->where('role', $role)
-            ->where('is_active', true)
+            ->whereHas('employee', fn ($q) => $q->where('is_active', true))
+            ->with('employee')
             ->get();
 
         foreach ($users as $user) {
-            if ($filter && !$filter($user)) {
+            if ($filter && ! $filter($user)) {
                 continue;
             }
 
@@ -32,4 +35,3 @@ class WorkflowNotificationDispatcher
         }
     }
 }
-

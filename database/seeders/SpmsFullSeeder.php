@@ -42,12 +42,12 @@ class SpmsFullSeeder extends Seeder
         $hrmo = Office::where('code', 'HRMO')->firstOrFail();
         $period = PerformancePeriod::where('name', 'Jan-Jun 2026')->firstOrFail();
 
-        $supervisor = User::where('office_id', $hrmo->id)->where('role', 'supervisor')->firstOrFail();
-        $deptHead   = User::where('office_id', $hrmo->id)->where('role', 'dept-head')->firstOrFail();
+        $supervisor = User::whereHas('employee', fn ($q) => $q->where('office_id', $hrmo->id))->where('role', 'supervisor')->firstOrFail();
+        $deptHead   = User::whereHas('employee', fn ($q) => $q->where('office_id', $hrmo->id))->where('role', 'dept-head')->firstOrFail();
         $pmt        = User::where('role', 'pmt')->firstOrFail();
 
         // All HRMO employees (excludes dept-head and supervisor)
-        $employees = User::where('office_id', $hrmo->id)
+        $employees = User::whereHas('employee', fn ($q) => $q->where('office_id', $hrmo->id))
             ->where('role', 'employee')
             ->get();
 

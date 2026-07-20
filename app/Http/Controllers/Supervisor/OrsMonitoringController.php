@@ -19,7 +19,7 @@ class OrsMonitoringController extends Controller
 
         $entries = OrsEntry::where('supervisor_id', $supervisor->id)
             ->whereIn('status', ['submitted', 'rated'])
-            ->with(['employee.office', 'ipcrItem.indicator.uwpMfo', 'ipcrItem.indicator.qetStandards', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
+            ->with(['employee.employee.office', 'ipcrItem.indicator.uwpMfo', 'ipcrItem.indicator.qetStandards', 'evidences', 'monitoring' => fn($q) => $q->where('supervisor_id', $supervisor->id)])
             ->orderByRaw("FIELD(status, 'submitted', 'rated')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -98,7 +98,7 @@ class OrsMonitoringController extends Controller
             'indicator_text'   => $e->ipcrItem?->indicator?->indicator_text ?? '—',
             'output_title'     => $e->ipcrItem?->indicator?->uwpMfo?->title ?? '—',
             'employee_name'    => $e->employee?->name ?? '—',
-            'employee_office'  => $e->employee?->office?->name ?? null,
+            'employee_office'  => $e->employee?->employee?->office?->name ?? null,
             'employee_avatar'  => $e->employee?->profile_photo_url ?? null,
             'evidence_count'   => $e->evidences->count(),
             'evidences'        => $e->evidences->map(fn($ev) => [

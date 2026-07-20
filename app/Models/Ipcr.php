@@ -59,6 +59,11 @@ class Ipcr extends Model
         return $this->hasMany(IpcrItem::class);
     }
 
+    public function accomplishmentSubmissions()
+    {
+        return $this->hasMany(AccomplishmentSubmission::class, 'ipcr_id');
+    }
+
     public function indicators()
     {
         return $this->belongsToMany(UwpSuccessIndicator::class, 'ipcr_items', 'ipcr_id', 'uwp_success_indicator_id')->withTimestamps();

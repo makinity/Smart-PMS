@@ -39,6 +39,7 @@ function Avatar({ name, avatar, size = 48 }) {
 
 const TABS = [
     { key: '',                  label: 'All',               iconCls: null },
+    { key: 'top',               label: 'Top Employees',     iconCls: 'bi-award-fill' },
     { key: 'Outstanding',       label: 'Outstanding',       iconCls: 'bi-trophy-fill' },
     { key: 'Very Satisfactory', label: 'Very Satisfactory', iconCls: 'bi-star-fill' },
     { key: 'Satisfactory',      label: 'Satisfactory',      iconCls: 'bi-check-lg' },
@@ -50,17 +51,28 @@ export default function Index() {
     const { performers, counts, search: initSearch, rating: initRating, period } = usePage().props;
     const [search, setSearch] = useState(initSearch ?? '');
     const [rating, setRating] = useState(initRating ?? '');
+    const [exporting, setExporting] = useState(false);
 
     const filtered = useMemo(() => {
         const s = search.toLowerCase();
+        const TOP_RATINGS = ['Outstanding', 'Very Satisfactory'];
         return performers.filter(p => {
-            const matchRating = !rating || p.rating === rating;
+            const matchRating = !rating
+                || (rating === 'top' ? TOP_RATINGS.includes(p.rating) : p.rating === rating);
             const matchSearch = !s || p.name.toLowerCase().includes(s)
                 || p.position.toLowerCase().includes(s)
                 || p.office.toLowerCase().includes(s);
             return matchRating && matchSearch;
         });
     }, [performers, search, rating]);
+
+    const topCount = (counts['Outstanding'] ?? 0) + (counts['Very Satisfactory'] ?? 0);
+
+    function handleExport() {
+        setExporting(true);
+        window.location.href = '/pmt/performance-overview/export-top-employees';
+        setTimeout(() => setExporting(false), 3000);
+    }
 
     const card = {
         background: 'var(--admin-card)',
@@ -81,6 +93,32 @@ export default function Index() {
         <AppLayout title="Performance Overview" description={period?.name}>
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
+                {/* Top bar: Export button */}
+                <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                    <button
+                        onClick={handleExport}
+                        disabled={exporting}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.4rem',
+                            padding: '0.42rem 1rem',
+                            background: exporting ? 'rgba(16,185,129,0.6)' : '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 8,
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: exporting ? 'not-allowed' : 'pointer',
+                            boxShadow: '0 1px 4px rgba(16,185,129,0.25)',
+                            transition: 'background 0.15s',
+                            fontFamily: 'inherit',
+                        }}
+                        title={`Export Outstanding & Very Satisfactory employees to Excel`}
+                    >
+                        <i className={exporting ? 'bi bi-hourglass-split' : 'bi bi-file-earmark-excel-fill'} style={{ fontSize: '0.85rem' }} />
+                        {exporting ? 'Preparing…' : `Export Top Employees${topCount > 0 ? ` (${topCount})` : ''}`}
+                    </button>
+                </div>
+
                 {/* Search + Filter container */}
                 <div style={{ background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)', padding: '1rem 1.25rem' }}>
                     {/* Search */}
@@ -95,8 +133,13 @@ export default function Index() {
                     <div style={{ display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none' }}>
                         {TABS.map(t => {
                             const active = rating === t.key;
-                            const cfg = RATING_CFG[t.key] ?? { color: 'var(--admin-accent)', bg: 'rgba(59,130,246,0.12)' };
-                            const count = t.key === '' ? counts.all : (counts[t.key] ?? 0);
+                            const isTop  = t.key === 'top';
+                            const cfg    = isTop
+                                ? { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' }
+                                : (RATING_CFG[t.key] ?? { color: 'var(--admin-accent)', bg: 'rgba(59,130,246,0.12)' });
+                            const count  = t.key === ''    ? counts.all
+                                         : t.key === 'top' ? topCount
+                                         : (counts[t.key] ?? 0);
                             return (
                                 <button key={t.key} onClick={() => setRating(t.key)} style={{
                                     flexShrink: 0, padding: '0.35rem 0.85rem', borderRadius: 99, border: '1px solid',

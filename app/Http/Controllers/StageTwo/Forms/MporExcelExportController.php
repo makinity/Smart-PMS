@@ -140,7 +140,7 @@ class MporExcelExportController extends Controller
 
         // Supervisor from same office
         $mpor       = Mpor::where('employee_id', $user->id)->where('month', $month)->first();
-        $supervisor = \App\Models\User::where('office_id', $user->office_id)->where('role', 'supervisor')->first();
+        $supervisor = \App\Models\User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))->where('role', 'supervisor')->first();
         $monthLabel = Carbon::parse($month . '-01')->format('F Y');
 
         // ── Build spreadsheet ──────────────────────────────────────────────────

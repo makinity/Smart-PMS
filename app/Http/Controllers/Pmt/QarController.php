@@ -143,7 +143,7 @@ class QarController extends Controller
         }
 
         // Notify dept head
-        $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
+        $deptHead = User::whereHas('employee', fn($q) => $q->where('office_id', $qar->office_id))->where('role', 'dept-head')->first();
         $deptHead?->notify(new WorkflowEventNotification(
             type: 'success',
             event: 'qar.pmt_approved',
@@ -190,7 +190,7 @@ class QarController extends Controller
             ]);
 
             // Notify supervisor once per office
-            $supervisor = User::where('office_id', $mpor->office_id)->where('role', 'supervisor')->first();
+            $supervisor = User::whereHas('employee', fn($q) => $q->where('office_id', $mpor->office_id))->where('role', 'supervisor')->first();
             if ($supervisor && ! in_array($supervisor->id, $notifiedSupervisors)) {
                 $supervisor->notify(new WorkflowEventNotification(
                     type: 'alert',
@@ -202,7 +202,7 @@ class QarController extends Controller
             }
         }
 
-        $deptHead = User::where('office_id', $qar->office_id)->where('role', 'dept-head')->first();
+        $deptHead = User::whereHas('employee', fn($q) => $q->where('office_id', $qar->office_id))->where('role', 'dept-head')->first();
         $deptHead?->notify(new WorkflowEventNotification(
             type: 'alert',
             event: 'qar.pmt_returned',
@@ -329,8 +329,8 @@ class QarController extends Controller
 
     private function deptHeadOf(int $officeId): ?array
     {
-        $dh = User::where('office_id', $officeId)->where('role', 'dept-head')->first();
+        $dh = User::whereHas('employee', fn($q) => $q->where('office_id', $officeId))->where('role', 'dept-head')->first();
 
-        return $dh ? ['name' => $dh->name, 'position' => $dh->position, 'avatar' => $dh->profile_photo_url] : null;
+        return $dh ? ['name' => $dh->name, 'position' => $dh->employee?->position, 'avatar' => $dh->profile_photo_url] : null;
     }
 }

@@ -15,7 +15,7 @@ class HistoryController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $user->load('office:id,name,code');
+        $user->load('employee.office:id,name,code');
 
         $ipcrs = Ipcr::with('period:id,name,start_date,end_date')
             ->where('employee_id', $user->id)

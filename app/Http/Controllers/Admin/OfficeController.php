@@ -28,10 +28,10 @@ class OfficeController extends Controller
         ];
 
         $offices = Office::query()
-            ->with(['head:id,name,position,profile_photo_path'])
+            ->with(['head:id,name,email'])
             ->withCount([
-                'employees as employees_count' => fn ($q) => $q->where('role', 'employee'),
-                'employees as supervisors_count' => fn ($q) => $q->where('role', 'supervisor'),
+                'employeeRecords as employees_count' => fn ($q) => $q->whereHas('user', fn ($uq) => $uq->where('role', 'employee')),
+                'employeeRecords as supervisors_count' => fn ($q) => $q->whereHas('user', fn ($uq) => $uq->where('role', 'supervisor')),
             ])
             ->when($filters['search'], function ($query, $search) {
                 $query->where(function ($q) use ($search) {
@@ -60,9 +60,9 @@ class OfficeController extends Controller
                 'employees_count' => $office->employees_count,
                 'supervisors_count' => $office->supervisors_count,
                 'head' => $office->head ? [
-                    'id' => $office->head->id,
-                    'name' => $office->head->name,
-                    'position' => $office->head->position,
+                    'id'                => $office->head->id,
+                    'name'              => $office->head->name,
+                    'position'          => $office->head->position,
                     'profile_photo_url' => $office->head->profile_photo_url,
                 ] : null,
             ]);
@@ -83,41 +83,42 @@ class OfficeController extends Controller
     public function show(Request $request, Office $office)
     {
         $office->loadCount([
-            'employees as employees_count' => fn ($q) => $q->where('role', 'employee'),
-            'employees as supervisors_count' => fn ($q) => $q->where('role', 'supervisor'),
+            'employeeRecords as employees_count' => fn ($q) => $q->whereHas('user', fn ($uq) => $uq->where('role', 'employee')),
+            'employeeRecords as supervisors_count' => fn ($q) => $q->whereHas('user', fn ($uq) => $uq->where('role', 'supervisor')),
         ]);
-        $office->load(['head:id,name,position,email,profile_photo_path']);
+        $office->load(['head:id,name,email']);
 
         $currentPeriod = PerformancePeriod::current();
 
         // ── People ───────────────────────────────────────────────────────────
         $supervisors = User::query()
-            ->where('office_id', $office->id)
+            ->whereHas('employee', fn ($q) => $q->where('office_id', $office->id))
             ->where('role', 'supervisor')
             ->orderBy('name')
-            ->get(['id', 'name', 'position', 'email', 'profile_photo_path'])
+            ->get(['id', 'name', 'email'])
             ->map(fn (User $u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'position' => $u->position,
-                'email' => $u->email,
-                'profile_photo_url' => $u->profile_photo_url,
-                'manages_count' => User::where('office_id', $office->id)->where('role', 'employee')->count(),
+                'id'                => $u->id,
+                'name'              => $u->name,
+                'position'          => $u->employee?->position,
+                'email'             => $u->email,
+                'profile_photo_url' => $u->employee?->profile_photo_url ?? \Illuminate\Support\Facades\Storage::url('profiles/default.jpeg'),
+                'manages_count'     => User::whereHas('employee', fn ($q) => $q->where('office_id', $office->id))->where('role', 'employee')->count(),
             ]);
 
         $empSearch = trim((string) $request->input('emp_search', ''));
 
         $employeesPaginator = User::query()
-            ->where('office_id', $office->id)
+            ->whereHas('employee', fn ($q) => $q->where('office_id', $office->id))
             ->where('role', 'employee')
             ->when($empSearch, function ($q, $term) {
                 $q->where(function ($w) use ($term) {
                     $w->where('name', 'like', "%{$term}%")
-                        ->orWhere('position', 'like', "%{$term}%");
+                        ->orWhereHas('employee', fn ($eq) => $eq->where('position', 'like', "%{$term}%"));
                 });
             })
+            ->with('employee')
             ->orderBy('name')
-            ->paginate(10, ['id', 'name', 'position', 'email', 'profile_photo_path'], 'emp_page')
+            ->paginate(10, ['id', 'name', 'email'], 'emp_page')
             ->withQueryString();
 
         // Latest IPCR score/adjectival per employee on this page
@@ -125,13 +126,13 @@ class OfficeController extends Controller
         $latestIpcr = $this->latestIpcrFor($employeeIds);
 
         $employeesPaginator->through(fn (User $u) => [
-            'id' => $u->id,
-            'name' => $u->name,
-            'position' => $u->position,
-            'email' => $u->email,
-            'profile_photo_url' => $u->profile_photo_url,
-            'ipcr_score' => $latestIpcr[$u->id]['score'] ?? null,
-            'ipcr_adjectival' => $latestIpcr[$u->id]['adjectival'] ?? null,
+            'id'                => $u->id,
+            'name'              => $u->name,
+            'position'          => $u->employee?->position,
+            'email'             => $u->email,
+            'profile_photo_url' => $u->employee?->profile_photo_url ?? \Illuminate\Support\Facades\Storage::url('profiles/default.jpeg'),
+            'ipcr_score'        => $latestIpcr[$u->id]['score'] ?? null,
+            'ipcr_adjectival'   => $latestIpcr[$u->id]['adjectival'] ?? null,
         ]);
 
         // ── History ──────────────────────────────────────────────────────────
@@ -307,7 +308,7 @@ class OfficeController extends Controller
 
     private function hasRelatedRecords(Office $office): bool
     {
-        return User::where('office_id', $office->id)->exists()
+        return \App\Models\Employee::where('office_id', $office->id)->exists()
             || UnitWorkPlan::where('office_id', $office->id)->exists()
             || Opcr::where('office_id', $office->id)->exists();
     }

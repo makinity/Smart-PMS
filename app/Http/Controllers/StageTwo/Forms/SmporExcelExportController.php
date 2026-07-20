@@ -46,7 +46,7 @@ class SmporExcelExportController extends Controller
         $months   = $table['months'];   // ['Jan','Feb',...]
         $sections = $table['sections']; // [{type, rows}]
 
-        $supervisor = \App\Models\User::where('office_id', $user->office_id)
+        $supervisor = \App\Models\User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))
             ->where('role', 'supervisor')->first();
 
         $ss = new Spreadsheet();

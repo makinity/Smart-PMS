@@ -19,7 +19,11 @@ class RedirectIfTrainingLocked
     {
         $user = $request->user();
 
-        if (! $user || ! $user->training_locked) {
+        if ($user) {
+            $user->loadMissing('employee');
+        }
+
+        if (! $user || ! ($user->employee?->training_locked ?? false)) {
             return $next($request);
         }
 
@@ -40,7 +44,7 @@ class RedirectIfTrainingLocked
         // Build redirect URL with identity params
         $params = [
             'pms_user_id' => $user->id,
-            'plan'        => $user->lnd_reference_id ?? '',
+            'plan'        => $user->employee?->lnd_reference_id ?? '',
         ];
 
         // Sign the redirect so L&D can verify it came from PMS

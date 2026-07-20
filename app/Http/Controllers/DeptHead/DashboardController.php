@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $period = PerformancePeriod::current();
 
         $officeStaff = $this->safe(fn() =>
-            User::where('office_id', $user->office_id)
+            User::whereHas('employee', fn($q) => $q->where('office_id', $user->employee?->office_id))
                 ->whereIn('role', ['employee', 'supervisor'])->count(), 0);
 
         $opcrStatus = $this->safe(fn() =>
@@ -64,8 +64,8 @@ class DashboardController extends Controller
         $staffChart = [
             'labels' => ['Employees', 'Supervisors'],
             'data'   => [
-                $this->safe(fn() => User::where('office_id', $user->office_id)->where('role', 'employee')->count(), 0),
-                $this->safe(fn() => User::where('office_id', $user->office_id)->where('role', 'supervisor')->count(), 0),
+                $this->safe(fn() => User::whereHas('employee', fn($q) => $q->where('office_id', $user->employee?->office_id))->where('role', 'employee')->count(), 0),
+                $this->safe(fn() => User::whereHas('employee', fn($q) => $q->where('office_id', $user->employee?->office_id))->where('role', 'supervisor')->count(), 0),
             ],
         ];
 

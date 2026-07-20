@@ -115,6 +115,7 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::patch('/idp/{idp}/remarks', [\App\Http\Controllers\Pmt\IdpController::class, 'savePmtRemarks'])->name('idp.remarks');
     // Performance Overview (merged Top Performers + Development Planning list)
     Route::get('/performance-overview', [\App\Http\Controllers\Pmt\PerformanceOverviewController::class, 'index'])->name('performance-overview.index');
+    Route::get('/performance-overview/export-top-employees', [\App\Http\Controllers\Pmt\TopPerformingEmployeeExportController::class, 'export'])->name('performance-overview.export-top-employees');
     // Keep old index URLs working via redirect
     Route::redirect('/top-performers', '/pmt/performance-overview');
     Route::redirect('/development-planning', '/pmt/performance-overview');

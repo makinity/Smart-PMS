@@ -140,7 +140,7 @@ class OpcrController extends Controller
         }
 
         // Notify the dept-head of this office
-        $deptHead = \App\Models\User::where('office_id', $opcr->office_id)
+        $deptHead = \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $opcr->office_id))
             ->where('role', 'dept-head')->first();
         $deptHead?->notify(new WorkflowEventNotification(
             type: 'success',
@@ -169,7 +169,7 @@ class OpcrController extends Controller
             'returned_by' => Auth::id(),
         ]);
 
-        $deptHead = \App\Models\User::where('office_id', $opcr->office_id)
+        $deptHead = \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $opcr->office_id))
             ->where('role', 'dept-head')->first();
         $deptHead?->notify(new WorkflowEventNotification(
             type: 'alert',

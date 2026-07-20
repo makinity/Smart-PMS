@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Actions\Fortify\PasswordValidationRules;
 use App\Http\Controllers\Controller;
 use App\Models\AccountActivationToken;
+use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,12 +24,14 @@ class ActivationController extends Controller
             'email'       => ['required', 'email'],
         ]);
 
-        $employeeId = trim($request->string('employee_id')->toString());
-        $email = Str::lower(trim($request->string('email')->toString()));
+        $employeeId = Str::lower(trim($request->string('employee_id')->toString()));
+        $email      = Str::lower(trim($request->string('email')->toString()));
 
+        // Look up via employees table, match on email via users
         $user = User::query()
-            ->whereRaw('LOWER(TRIM(employee_id)) = ?', [Str::lower($employeeId)])
+            ->whereHas('employee', fn ($q) => $q->whereRaw('LOWER(TRIM(employee_id)) = ?', [$employeeId]))
             ->whereRaw('LOWER(TRIM(email)) = ?', [$email])
+            ->with('employee')
             ->first();
 
         if (! $user) {
@@ -37,7 +40,7 @@ class ActivationController extends Controller
             ]);
         }
 
-        if ($user->is_active) {
+        if ($user->employee?->is_active) {
             return response()->json([
                 'message' => 'This account is already activated. Please log in instead.',
             ], 409);
@@ -51,29 +54,29 @@ class ActivationController extends Controller
             ->delete();
 
         AccountActivationToken::create([
-            'user_id'     => $user->id,
-            'token_hash'  => hash('sha256', $plainToken),
-            'expires_at'  => now()->addMinutes(10),
+            'user_id'    => $user->id,
+            'token_hash' => hash('sha256', $plainToken),
+            'expires_at' => now()->addMinutes(10),
         ]);
 
         return response()->json([
             'message' => 'Verification successful.',
-            'token' => $plainToken,
+            'token'   => $plainToken,
         ]);
     }
 
     public function complete(Request $request): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         $request->validate([
-            'token'                  => ['required', 'string'],
-            'password'               => ['required', 'string', PasswordValidationRules::strongPassword(), 'confirmed'],
-            'password_confirmation'  => ['required', 'string'],
+            'token'                 => ['required', 'string'],
+            'password'              => ['required', 'string', PasswordValidationRules::strongPassword(), 'confirmed'],
+            'password_confirmation' => ['required', 'string'],
         ]);
 
         $tokenHash = hash('sha256', $request->string('token')->toString());
 
         $activationToken = AccountActivationToken::query()
-            ->with('user')
+            ->with('user.employee')
             ->where('token_hash', $tokenHash)
             ->first();
 
@@ -89,19 +92,28 @@ class ActivationController extends Controller
 
         $user = $activationToken->user;
 
-        if (! $user || $user->is_active) {
+        if (! $user || ($user->employee?->is_active ?? false)) {
             throw ValidationException::withMessages([
                 'token' => 'This account is already activated. Please log in instead.',
             ]);
         }
 
+        // Get or create employee record
+        $employee = $user->employee ?? Employee::create(['user_id' => $user->id]);
+
+        // Store profile photo on the employee record
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo_path = $path;
+            $employee->profile_photo_path = $path;
         }
 
+        // Set password on user (auth concern)
         $user->forceFill([
-            'password'     => Hash::make($request->string('password')->toString()),
+            'password' => Hash::make($request->string('password')->toString()),
+        ])->save();
+
+        // Set activation state on employee (HR concern)
+        $employee->forceFill([
             'is_active'    => true,
             'activated_at' => now(),
         ])->save();
@@ -111,7 +123,7 @@ class ActivationController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        $dashboard = match($user->role) {
+        $dashboard = match ($user->role) {
             'admin'      => '/administrator',
             'pmt'        => '/pmt',
             'dept-head'  => '/dept-head',

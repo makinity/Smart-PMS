@@ -12,7 +12,7 @@ class IdpController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $user->load('office:id,name');
+        $user->load('employee.office:id,name');
 
         $plan = DevelopmentPlan::where('employee_id', $user->id)
             ->with('performancePeriod:id,name,start_date,end_date')

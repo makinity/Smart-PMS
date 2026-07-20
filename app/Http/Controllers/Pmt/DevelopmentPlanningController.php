@@ -27,7 +27,7 @@ class DevelopmentPlanningController extends Controller
         $search = trim($request->get('search', ''));
         $rating = $request->get('rating', '');
 
-        $query = Ipcr::with(['employee:id,name,position,office_id,profile_photo_path', 'employee.office:id,name'])
+        $query = Ipcr::with(['employee:id,name', 'employee.employee.office:id,name'])
             ->whereIn('adjectival_rating', self::LOW_RATINGS)
             ->whereNotNull('final_score');
 
@@ -42,8 +42,9 @@ class DevelopmentPlanningController extends Controller
         if ($search !== '') {
             $query->whereHas('employee', fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")
-                ->orWhere('position', 'like', "%{$search}%")
-            )->orWhereHas('employee.office', fn ($q) => $q
+            )->orWhereHas('employee.employee', fn ($q) => $q
+                ->where('position', 'like', "%{$search}%")
+            )->orWhereHas('employee.employee.office', fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")
             );
         }
@@ -98,7 +99,7 @@ class DevelopmentPlanningController extends Controller
 
     public function show(int $ipcr)
     {
-        $current = Ipcr::with(['employee.office.head', 'performancePeriod'])->findOrFail($ipcr);
+        $current = Ipcr::with(['employee.employee.office.head', 'performancePeriod'])->findOrFail($ipcr);
         $employee = $current->employee;
 
         abort_unless($employee, 404);
@@ -184,7 +185,7 @@ class DevelopmentPlanningController extends Controller
 
     public function storeOrUpdate(Request $request, int $ipcr)
     {
-        $current = Ipcr::with('employee.office.head')->findOrFail($ipcr);
+        $current = Ipcr::with('employee.employee.office.head')->findOrFail($ipcr);
         abort_unless($current->employee, 404);
 
         $currentSubmission = AccomplishmentSubmission::where('ipcr_id', $current->id)

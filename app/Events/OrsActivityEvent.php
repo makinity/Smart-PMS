@@ -17,7 +17,7 @@ class OrsActivityEvent implements ShouldBroadcastNow
 
     public function __construct(OrsEntry $orsEntry)
     {
-        $orsEntry->load(['ipcrItem.indicator.uwpMfo', 'employee.office', 'evidences', 'monitoring']);
+        $orsEntry->load(['ipcrItem.indicator.uwpMfo', 'employee.employee.office', 'evidences', 'monitoring']);
 
         $this->entry = [
             'id'             => $orsEntry->id,

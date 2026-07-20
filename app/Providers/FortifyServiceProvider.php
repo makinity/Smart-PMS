@@ -44,13 +44,15 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if (! $user->is_active) {
+            $user->loadMissing('employee');
+
+            if (! ($user->employee?->is_active ?? false)) {
                 throw ValidationException::withMessages([
                     'name' => 'Your account has not been activated yet.',
                 ]);
             }
 
-            if ($user->is_disabled) {
+            if ($user->employee?->is_disabled ?? false) {
                 throw ValidationException::withMessages([
                     'name' => 'Your account is disabled. Please contact the administrator.',
                 ]);

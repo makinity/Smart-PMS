@@ -116,9 +116,9 @@ class UnitWorkPlanController extends Controller
 
         $predictor = app(AssignmentPredictorInterface::class);
 
-        $employees = User::where('office_id', $user->office_id)
+        $employees = User::whereHas('employee', fn ($q) => $q->where('office_id', $user->employee?->office_id))
             ->where('role', 'employee')
-            ->select('id', 'name', 'position', 'profile_photo_path')
+            ->select('id', 'name')
             ->get()
             ->map(fn (User $employee) => [
                 'id' => $employee->id,

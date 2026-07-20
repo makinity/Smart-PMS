@@ -95,7 +95,7 @@ class QarController extends Controller
 
         // Rule: every office employee must have an approved MPOR for each month in the quarter
         $quarterMonthStrings = array_map(fn ($m) => $m->format('Y-m'), $this->qar->quarterMonths($period, $q));
-        $employeeIds = User::where('office_id', $user->office_id)
+        $employeeIds = User::whereHas('employee', fn($q) => $q->where('office_id', $user->employee?->office_id))
             ->where('role', 'employee')
             ->pluck('id');
 
@@ -111,7 +111,7 @@ class QarController extends Controller
                     $mpor = Mpor::where('employee_id', $empId)->where('month', $month)->first();
                     $isSubmitted = $mpor && $mpor->status === 'submitted';
                     $supervisor = $isSubmitted
-                        ? \App\Models\User::where('office_id', $emp?->office_id)->where('role', 'supervisor')->first()
+                        ? \App\Models\User::whereHas('employee', fn($q) => $q->where('office_id', $emp?->employee?->office_id))->where('role', 'supervisor')->first()
                         : null;
                     $missingItems[] = [
                         'employee_id'   => $supervisor ? $supervisor->id : $empId,

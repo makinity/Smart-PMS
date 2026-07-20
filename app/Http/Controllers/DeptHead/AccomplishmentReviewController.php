@@ -25,7 +25,7 @@ class AccomplishmentReviewController extends Controller
                 'supervisor_endorsed', 'dept_head_approved',
                 'released_by_pmt', 'returned_to_employee',
             ])
-            ->with(['employee.office', 'period'])
+            ->with(['employee.employee.office', 'period'])
             ->orderByRaw("FIELD(status, 'supervisor_endorsed', 'returned_to_employee', 'dept_head_approved', 'released_by_pmt')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -35,7 +35,7 @@ class AccomplishmentReviewController extends Controller
                 'submitted_at' => $s->submitted_at?->toIso8601String(),
                 'dept_head_flagged_for_calibration' => $s->dept_head_flagged_for_calibration,
                 'employee_name' => $s->employee?->name ?? '—',
-                'employee_office' => $s->employee?->office?->name ?? '—',
+                'employee_office' => $s->employee?->employee?->office?->name ?? '—',
                 'employee_avatar' => $s->employee?->profile_photo_url,
                 'period' => $s->period?->name ?? '—',
             ]);
@@ -50,7 +50,7 @@ class AccomplishmentReviewController extends Controller
         $deptHead = auth()->user();
         abort_if($accomplishment->dept_head_id !== $deptHead->id, 403);
 
-        $accomplishment->load(['employee.office', 'period', 'mpors']);
+        $accomplishment->load(['employee.employee.office', 'period', 'mpors']);
 
         $ipcr = Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)
@@ -208,7 +208,7 @@ class AccomplishmentReviewController extends Controller
             'submitted_at' => $s->submitted_at?->toIso8601String(),
             'supervisor_action_at' => $s->supervisor_action_at?->toIso8601String(),
             'employee_name' => $s->employee?->name ?? '—',
-            'employee_office' => $s->employee?->office?->name ?? '—',
+            'employee_office' => $s->employee?->employee?->office?->name ?? '—',
             'employee_avatar' => $s->employee?->profile_photo_url,
             'period' => $s->period?->name ?? '—',
         ];

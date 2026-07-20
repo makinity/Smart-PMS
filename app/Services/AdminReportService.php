@@ -237,7 +237,7 @@ class AdminReportService
     {
         $ipcrs = Ipcr::query()
             ->with([
-                'employee:id,name,position',
+                'employee:id,name',
                 'items' => function ($query): void {
                     $query->orderBy('function_type')->orderBy('output_title')->orderBy('id');
                 },

@@ -261,8 +261,8 @@ class StageFourPerformerService
     {
         $query = Ipcr::query()
             ->with([
-                'employee:id,name,office_id,position',
-                'employee.office:id,name',
+                'employee:id,name',
+                'employee.employee.office:id,name',
                 'performancePeriod:id,name',
             ])
             ->where('status', Ipcr::STATUS_RELEASED_BY_PMT);

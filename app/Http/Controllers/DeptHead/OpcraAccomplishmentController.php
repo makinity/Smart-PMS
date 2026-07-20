@@ -34,7 +34,7 @@ class OpcraAccomplishmentController extends Controller
             ]);
         }
 
-        $employees = User::where('office_id', $deptHead->office_id)
+        $employees = User::whereHas('employee', fn($q) => $q->where('office_id', $deptHead->employee?->office_id))
             ->where('role', 'employee')
             ->get();
 
@@ -144,7 +144,7 @@ class OpcraAccomplishmentController extends Controller
         $deptHead = auth()->user();
         abort_if($accomplishment->dept_head_id !== $deptHead->id, 403);
 
-        $accomplishment->load(['employee.office', 'period', 'mpors']);
+        $accomplishment->load(['employee.employee.office', 'period', 'mpors']);
 
         $ipcr = \App\Models\Ipcr::where('employee_id', $accomplishment->employee_id)
             ->where('performance_period_id', $accomplishment->performance_period_id)
