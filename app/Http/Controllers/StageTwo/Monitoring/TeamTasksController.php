@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\StageTwo\Monitoring;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\OrsEntry;
 use App\Models\PerformancePeriod;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,17 @@ class TeamTasksController extends Controller
         $supervisor = auth()->user();
         $period = PerformancePeriod::where('is_active', true)->first();
 
-        $entries = OrsEntry::where('supervisor_id', $supervisor->id)
+        // Show all employees in the same office as the supervisor,
+        // not just those who selected this supervisor in ORS Task Logging.
+        $officeId = $supervisor->employee?->office_id;
+
+        $officeEmployeeUserIds = $officeId
+            ? Employee::where('office_id', $officeId)
+                ->where('is_active', true)
+                ->pluck('user_id')
+            : collect();
+
+        $entries = OrsEntry::whereIn('employee_id', $officeEmployeeUserIds)
             ->when($period, fn ($q) => $q->where('performance_period_id', $period->id))
             ->with([
                 'employee:id,name',
@@ -23,7 +34,7 @@ class TeamTasksController extends Controller
                 'ipcrItem.indicator:id,indicator_text,uwp_mfo_id',
                 'ipcrItem.indicator.uwpMfo:id,title',
                 'evidences',
-                'monitoring',
+                'monitoring.supervisor:id,name',
             ])
             ->orderByDesc('work_date')
             ->orderByDesc('updated_at')
@@ -63,7 +74,7 @@ class TeamTasksController extends Controller
                         'quality_rating' => $mon->quality_rating,
                         'timeliness_rating' => $mon->timeliness_rating,
                         'remarks' => $mon->remarks,
-                        'reviewer_name' => $supervisor->name,
+                        'reviewer_name' => $mon->supervisor?->name ?? $supervisor->name,
                         'rated_at' => $mon->updated_at?->toIso8601String(),
                     ] : null,
                 ];

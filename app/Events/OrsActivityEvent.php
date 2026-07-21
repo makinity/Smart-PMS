@@ -2,8 +2,9 @@
 
 namespace App\Events;
 
+use App\Models\Employee;
 use App\Models\OrsEntry;
-use Illuminate\Broadcasting\Channel;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -14,6 +15,9 @@ class OrsActivityEvent implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets;
 
     public array $entry;
+
+    /** Supervisor user IDs to broadcast to (selected + all in same office). */
+    private array $supervisorIds;
 
     public function __construct(OrsEntry $orsEntry)
     {
@@ -44,14 +48,35 @@ class OrsActivityEvent implements ShouldBroadcastNow
                 'file_size' => $ev->file_size,
             ])->toArray(),
         ];
+
+        // Broadcast to: the employee's selected supervisor + every other supervisor
+        // in the same office (so Team Task Monitor updates for all of them).
+        $officeId = $orsEntry->employee?->employee?->office_id;
+
+        $officeSupervisorIds = $officeId
+            ? User::where('role', 'supervisor')
+                ->whereHas('employee', fn ($q) => $q->where('office_id', $officeId)->where('is_active', true))
+                ->pluck('id')
+                ->toArray()
+            : [];
+
+        // Always include the explicitly selected supervisor even if office lookup fails.
+        $this->supervisorIds = array_values(array_unique(
+            array_filter(array_merge($officeSupervisorIds, [$orsEntry->supervisor_id]))
+        ));
     }
 
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('supervisor.' . $this->entry['supervisor_id']),
+        $channels = [
             new PrivateChannel('App.Models.User.' . $this->entry['employee_id']),
         ];
+
+        foreach ($this->supervisorIds as $supervisorId) {
+            $channels[] = new PrivateChannel('supervisor.' . $supervisorId);
+        }
+
+        return $channels;
     }
 
     public function broadcastAs(): string
