@@ -69,6 +69,7 @@ function StatCard({ label, value, tone = 'sky' }) {
         sky: 'text-sky-700 bg-sky-50 border-sky-200',
         emerald: 'text-emerald-700 bg-emerald-50 border-emerald-200',
         amber: 'text-amber-700 bg-amber-50 border-amber-200',
+        orange: 'text-orange-700 bg-orange-50 border-orange-200',
         rose: 'text-rose-700 bg-rose-50 border-rose-200',
     };
 
@@ -93,16 +94,24 @@ function Field({ label, children, hint }) {
 }
 
 export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
+    // flash.summary is populated after a successful sync POST via back()->with('summary', ...)
+    // sync prop is populated from the last activity_log entry on page load
+    const latestSync = (flash.summary && Object.keys(flash.summary).length > 0) ? flash.summary : sync;
+
     const [form, setForm] = useState({
         base_url: defaults.base_url || '',
         token: '',
     });
     const [loading, setLoading] = useState(false);
-    const [notice, setNotice] = useState(flash.summary || flash.success || '');
+    const [notice, setNotice] = useState(
+        latestSync.fetched !== undefined ? `${latestSync.fetched} records fetched, ${latestSync.created ?? 0} created, ${latestSync.updated ?? 0} updated.` : ''
+    );
 
     useEffect(() => {
-        setNotice(flash.summary || flash.success || '');
-    }, [flash.summary, flash.success]);
+        if (latestSync.fetched !== undefined) {
+            setNotice(`${latestSync.fetched} records fetched, ${latestSync.created ?? 0} created, ${latestSync.updated ?? 0} updated.`);
+        }
+    }, [latestSync.fetched]);
 
     function submit(event) {
         event.preventDefault();
@@ -111,9 +120,6 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
         router.post('/administrator/hris/sync', form, {
             preserveScroll: true,
             onFinish: () => setLoading(false),
-            onSuccess: () => {
-                setNotice('HRIS sync completed.');
-            },
             onError: (errors) => {
                 const messages = Object.values(errors || {}).flat().filter(Boolean);
                 setNotice(messages[0] || 'Unable to complete HRIS sync.');
@@ -122,13 +128,14 @@ export default function Index({ auth, flash = {}, sync = {}, defaults = {} }) {
     }
 
     const stats = [
-        { label: 'Imported', value: sync.imported_count ?? sync.imported ?? 0, tone: 'sky' },
-        { label: 'Updated', value: sync.updated_count ?? sync.updated ?? 0, tone: 'emerald' },
-        { label: 'Sent IDs', value: sync.messaged_count ?? sync.sent_codes ?? 0, tone: 'amber' },
-        { label: 'Failures', value: sync.failed_count ?? sync.failed ?? 0, tone: 'rose' },
+        { label: 'Fetched', value: latestSync.fetched ?? 0, tone: 'sky' },
+        { label: 'Created', value: latestSync.created ?? 0, tone: 'emerald' },
+        { label: 'Updated', value: latestSync.updated ?? 0, tone: 'amber' },
+        { label: 'Skipped', value: latestSync.skipped ?? 0, tone: 'orange' },
+        { label: 'Failed', value: latestSync.failed ?? 0, tone: 'rose' },
     ];
 
-    const failures = Array.isArray(sync.failures) ? sync.failures : [];
+    const failures = Array.isArray(latestSync.failures) ? latestSync.failures : [];
 
     return (
         <AppLayout title="HRIS Integration">

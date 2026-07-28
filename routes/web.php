@@ -2,6 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
+
+// Release the session lock before handling broadcasting auth so it doesn't
+// block concurrent AJAX requests (e.g. "Save Rating") on first page load.
+// Laravel's database session driver serializes requests with the same session;
+// calling session()->save() early here releases the lock immediately.
+Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
+    session()->save();
+    return Broadcast::auth($request);
+})->middleware(['web', 'auth']);
 
 // Root redirect
 Route::get('/', fn () => redirect()->route('login'));

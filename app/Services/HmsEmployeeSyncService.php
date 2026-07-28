@@ -169,11 +169,15 @@ class HmsEmployeeSyncService
 
         if ($email !== '') {
             $generatedEmployeeId = Employee::where('user_id', $user->id)->value('employee_id');
-            Mail::to($email)->send(new PmsEmployeeIdIssuedMail(
-                name: $name,
-                employeeId: (string) $generatedEmployeeId,
-                email: $email,
-            ));
+            try {
+                Mail::to($email)->queue(new PmsEmployeeIdIssuedMail(
+                    name: $name,
+                    employeeId: (string) $generatedEmployeeId,
+                    email: $email,
+                ));
+            } catch (\Throwable $e) {
+                // Mail queue failure should not block the sync
+            }
         }
 
         $summary['created']++;

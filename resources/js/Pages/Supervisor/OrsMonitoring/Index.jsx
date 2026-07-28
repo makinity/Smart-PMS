@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { router, usePage } from '@inertiajs/react';
-import axios from 'axios';
+import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import ValidationModal from '@/Components/ValidationModal';
 
@@ -313,17 +312,24 @@ function RatingPanelContent({ entry, onSaved, isMobile }) {
         if (!timeliness) e.timeliness = 'Timeliness rating is required (1–5).';
         if (Object.keys(e).length) { setErrs(e); return; }
         setSaving(true);
-        axios.post(`/supervisor/ors-monitoring/${entry.id}/rate`,
+        router.post(
+            `/supervisor/ors-monitoring/${entry.id}/rate`,
             { quality_rating: quality, timeliness_rating: timeliness, remarks },
-            { headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content } }
-        ).then(() => {
-            setSaving(false); setEditing(false);
-            onSaved(entry.id, { quality_rating: quality, timeliness_rating: timeliness, remarks, rated_at: new Date().toISOString() });
-        }).catch(err => {
-            setSaving(false);
-            const msg = err.response?.data?.message;
-            if (msg) setLockError(msg);
-        });
+            {
+                preserveState:  true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSaving(false); setEditing(false);
+                    onSaved(entry.id, { quality_rating: quality, timeliness_rating: timeliness, remarks, rated_at: new Date().toISOString() });
+                },
+                onError: (errors) => {
+                    setSaving(false);
+                    const msg = Object.values(errors)[0];
+                    if (msg) setLockError(msg);
+                },
+                onFinish: () => setSaving(false),
+            }
+        );
     }
 
     const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border)',
@@ -753,7 +759,6 @@ export default function Index() {
 
     function onSaved(entryId, ratingData) {
         setEntries(prev => prev.map(e => e.id === entryId ? { ...e, status: 'rated', rating: ratingData } : e));
-        router.reload({ only: ['entries'] });
     }
 
     function handleCardClick(entryId) {

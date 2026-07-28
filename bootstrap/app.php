@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'training.locked'    => \App\Http\Middleware\RedirectIfTrainingLocked::class,
             'lnd.callback.token' => \App\Http\Middleware\VerifyLndCallbackToken::class,
+            'release.session'    => \App\Http\Middleware\ReleaseSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

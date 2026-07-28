@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Services\AdminUserManagementService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Spatie\Activitylog\Models\Activity;
 
 class HrisIntegrationController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Admin/HrisIntegration/Index');
+        $lastSync = Activity::query()
+            ->where('event', 'hris_sync')
+            ->latest()
+            ->first();
+
+        return Inertia::render('Admin/HrisIntegration/Index', [
+            'sync' => $lastSync?->properties?->toArray() ?? [],
+        ]);
     }
 
     public function sync(Request $request, AdminUserManagementService $service)
@@ -23,8 +31,6 @@ class HrisIntegrationController extends Controller
 
         $summary = $service->syncFromHris($data['base_url'], $data['token'], $request->user());
 
-        return back()
-            ->with('success', 'HRIS sync completed successfully.')
-            ->with('summary', $summary);
+        return back()->with('summary', $summary);
     }
 }

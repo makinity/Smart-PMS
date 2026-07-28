@@ -23,7 +23,7 @@ class AuditLogsController extends Controller
         ];
 
         $activities = Activity::query()
-            ->with(['causer:id,name,role,profile_photo_path', 'subject'])
+            ->with(['causer:id,name,role', 'causer.employee:user_id,profile_photo_path', 'subject'])
             ->when($filters['search'], function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('description', 'like', "%{$search}%")
