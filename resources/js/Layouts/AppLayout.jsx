@@ -16,7 +16,7 @@ const EVENT_ROUTE = {
     'mpor.submitted_to_supervisor':          '/supervisor/mpor',
     'uwp.submitted':                         '/dept-head/uwp',
     'opcr.returned':                         '/dept-head/opcr',
-    'accomplishment.supervisor_endorsed':    '/dept-head/accomplishment-review',
+    'accomplishment.supervisor_approved': '/dept-head/opcr-accomplishment',
     'opcr.submitted':                        '/pmt/opcr-review',
     'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
     'qar.submitted_to_pmt':                  '/pmt/qar',

@@ -20,10 +20,9 @@ class AccomplishmentController extends Controller
         $supervisor = auth()->user();
 
         $submissions = AccomplishmentSubmission::where('supervisor_id', $supervisor->id)
-            ->whereIn('status', ['submitted_to_supervisor', 'supervisor_endorsed', 'dept_head_endorsed',
-                'recommended_by_pmt', 'pmt_approved', 'released_by_pmt', 'returned_to_employee'])
+            ->whereIn('status', ['submitted_to_supervisor', 'supervisor_approved', 'released_by_pmt', 'returned_to_employee'])
             ->with(['employee.employee.office', 'period'])
-            ->orderByRaw("FIELD(status, 'submitted_to_supervisor', 'returned_to_employee', 'supervisor_endorsed', 'dept_head_endorsed', 'recommended_by_pmt', 'pmt_approved', 'released_by_pmt')")
+            ->orderByRaw("FIELD(status, 'submitted_to_supervisor', 'returned_to_employee', 'supervisor_approved', 'released_by_pmt')")
             ->orderByDesc('submitted_at')
             ->get()
             ->map(fn ($s) => [
@@ -80,26 +79,18 @@ class AccomplishmentController extends Controller
         ]);
     }
 
-    public function endorse(AccomplishmentSubmission $accomplishment)
+    public function approve(AccomplishmentSubmission $accomplishment)
     {
         $supervisor = auth()->user();
         abort_if($accomplishment->supervisor_id !== $supervisor->id, 403);
-        abort_if($accomplishment->status !== 'submitted_to_supervisor', 422, 'Cannot endorse at this stage.');
+        abort_if($accomplishment->status !== 'submitted_to_supervisor', 422, 'Cannot approve at this stage.');
 
         $accomplishment->update([
-            'status' => 'supervisor_endorsed',
+            'status' => 'supervisor_approved',
             'supervisor_action_at' => now(),
         ]);
 
-        $deptHead = User::find($accomplishment->dept_head_id);
-        $deptHead?->notify(new WorkflowEventNotification(
-            type: 'info',
-            event: 'accomplishment.supervisor_endorsed',
-            message: "{$accomplishment->employee->name}'s accomplishment has been endorsed by {$supervisor->name} and is ready for your review.",
-            url: route('dept-head.accomplishment-review.show', $accomplishment),
-        ));
-
-        return back()->with('success', 'Accomplishment endorsed.');
+        return redirect()->route('supervisor.accomplishment.index')->with('success', 'Accomplishment approved.');
     }
 
     public function return(Request $request, AccomplishmentSubmission $accomplishment)

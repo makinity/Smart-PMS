@@ -58,7 +58,7 @@ class OpcraAccomplishmentController extends Controller
             'final_rating' => $subMap->get($emp->id)?->final_rating,
             'adjectival' => $subMap->get($emp->id)?->final_adjectival_rating,
             'status' => $subMap->get($emp->id)?->status ?? 'not_submitted',
-            'approved' => in_array($subMap->get($emp->id)?->status, ['dept_head_approved', 'released_by_pmt']),
+            'approved' => in_array($subMap->get($emp->id)?->status, ['supervisor_approved', 'released_by_pmt']),
             'released' => $subMap->get($emp->id)?->status === 'released_by_pmt',
             'submission_id' => $subMap->get($emp->id)?->id,
             'supervisor_id' => $subMap->get($emp->id)?->supervisor_id,
@@ -79,7 +79,7 @@ class OpcraAccomplishmentController extends Controller
         // Compute a live projected office rating from all approved employee scores
         $approvedSubs = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
-            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->whereIn('status', ['supervisor_approved', 'released_by_pmt'])
             ->get();
 
         $liveScores = $approvedSubs->map(fn ($s) =>
@@ -139,7 +139,7 @@ class OpcraAccomplishmentController extends Controller
         ]);
     }
 
-    public function employeeShow(AccomplishmentSubmission $accomplishment)
+    public function employeeShow($opcraAccomplishmentId, AccomplishmentSubmission $accomplishment)
     {
         $deptHead = auth()->user();
         abort_if($accomplishment->dept_head_id !== $deptHead->id, 403);
@@ -186,7 +186,22 @@ class OpcraAccomplishmentController extends Controller
                 'pmt_remarks'   => $accomplishment->pmt_remarks,
                 'type_scores'   => $typeScores,
             ] : null,
+            'flaggedForCalibration' => (bool) $accomplishment->dept_head_flagged_for_calibration,
         ]);
+    }
+
+    public function flagForCalibration(\Illuminate\Http\Request $request, AccomplishmentSubmission $accomplishment)
+    {
+        $deptHead = auth()->user();
+        abort_if($accomplishment->dept_head_id !== $deptHead->id, 403);
+
+        $accomplishment->update([
+            'dept_head_flagged_for_calibration' => $request->boolean('flagged'),
+        ]);
+
+        return back()->with('success', $accomplishment->dept_head_flagged_for_calibration
+            ? 'Flagged for calibration.'
+            : 'Calibration flag removed.');
     }
 
     public function export()
@@ -226,7 +241,7 @@ class OpcraAccomplishmentController extends Controller
 
         $scores = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
-            ->where('status', 'dept_head_approved')
+            ->where('status', 'supervisor_approved')
             ->get()
             ->map(fn ($s) => $s->final_rating
                 ?? app(\App\Services\PerformanceRatingService::class)->calculateComputedScore(
@@ -248,11 +263,11 @@ class OpcraAccomplishmentController extends Controller
             'pmt_action_at' => null,
         ]);
 
-        // Reset released employees back to dept_head_approved
+        // Reset released employees back to supervisor_approved
         AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
             ->where('status', 'released_by_pmt')
-            ->update(['status' => 'dept_head_approved', 'pmt_id' => null, 'pmt_action_at' => null]);
+            ->update(['status' => 'supervisor_approved', 'pmt_id' => null, 'pmt_action_at' => null]);
 
         return back()->with('success', 'OPCR accomplishment reset to PMT review.');
     }
@@ -278,14 +293,14 @@ class OpcraAccomplishmentController extends Controller
         // Ensure at least one approved employee
         $hasApproved = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
-            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->whereIn('status', ['supervisor_approved', 'released_by_pmt'])
             ->exists();
 
         abort_if(! $hasApproved, 422, 'No approved employee accomplishments found. Please approve at least one employee first.');
 
         $approvedSubs = AccomplishmentSubmission::where('office_id', $deptHead->office_id)
             ->where('performance_period_id', $period->id)
-            ->whereIn('status', ['dept_head_approved', 'released_by_pmt'])
+            ->whereIn('status', ['supervisor_approved', 'released_by_pmt'])
             ->get();
 
         $scores = $approvedSubs->map(fn ($s) => $s->final_rating

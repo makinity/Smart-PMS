@@ -115,7 +115,7 @@ class PerformancePeriodsController extends Controller
             ->filter();
 
         $deptHeadAccomplishmentIds = AccomplishmentSubmission::where('performance_period_id', $pid)
-            ->whereIn('status', ['supervisor_endorsed'])
+            ->whereIn('status', ['supervisor_approved'])
             ->pluck('dept_head_id')
             ->filter();
 
@@ -156,7 +156,7 @@ class PerformancePeriodsController extends Controller
         \App\Models\User::whereIn('id', $deptHeadIds)->each(fn($u) =>
             $u->notify($notif(
                 "The performance period \"{$name}\" is closing. Please ensure your OPCR is approved and complete any pending endorsements or QAR submissions.",
-                '/dept-head/accomplishment-review'
+                '/dept-head/opcr-accomplishment'
             ))
         );
 

@@ -31,8 +31,8 @@ export default function Index() {
         return mf && (!q || s.office_name.toLowerCase().includes(q) || s.dept_head_name.toLowerCase().includes(q));
     });
 
-    const flagged   = filtered.filter(s => s.dept_head_flagged_for_calibration && s.status === 'submitted');
-    const standard  = filtered.filter(s => !s.dept_head_flagged_for_calibration && s.status === 'submitted');
+    const flagged   = filtered.filter(s => s.flagged_for_calibration && s.status === 'submitted');
+    const standard  = filtered.filter(s => !s.flagged_for_calibration && s.status === 'submitted');
     const processed = filtered.filter(s => s.status !== 'submitted');
     const pendingCount = submissions.filter(s => s.status === 'submitted').length;
 
@@ -54,7 +54,7 @@ export default function Index() {
             <div onClick={() => router.visit(`/pmt/opcr-accomplishment/${s.id}`)}
                 style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.85rem 1rem', borderRadius:10, cursor:'pointer', marginBottom:6,
                     background:'var(--admin-bg-secondary)', border:'1px solid var(--admin-border)',
-                    borderLeft:`3px solid ${s.dept_head_flagged_for_calibration ? '#a78bfa' : sc.c}` }}
+                    borderLeft:`3px solid ${s.flagged_for_calibration ? '#a78bfa' : sc.c}` }}
                 onMouseEnter={e => e.currentTarget.style.background='rgba(59,130,246,0.05)'}
                 onMouseLeave={e => e.currentTarget.style.background='var(--admin-bg-secondary)'}>
                 <img src={s.dept_head_avatar} alt={s.dept_head_name}
@@ -65,7 +65,7 @@ export default function Index() {
                     </div>
                     <div style={{ fontSize:'0.72rem', color:'var(--admin-text-muted)', marginTop:2, display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                         {s.period} · {s.employee_stats.released}/{s.employee_stats.total} employees · {relTime(s.submitted_at)}
-                        {s.dept_head_flagged_for_calibration && (
+                        {s.flagged_for_calibration && (
                             <span style={{ fontSize:'0.6rem', fontWeight:700, padding:'1px 6px', borderRadius:99, background:'rgba(167,139,250,0.15)', color:'#a78bfa' }}>
                                 <i className="bi bi-flag-fill" style={{ marginRight:3 }} />Flagged
                             </span>

@@ -157,12 +157,9 @@ Route::prefix('dept-head')->middleware(['auth', 'role:dept-head'])->name('dept-h
     Route::get('/qar', [\App\Http\Controllers\DeptHead\QarController::class, 'index'])->name('qar.index');
     Route::get('/qar/mpor/{mpor}', [\App\Http\Controllers\DeptHead\QarController::class, 'mporShow'])->name('qar.mpor.show');
     Route::post('/qar/submit', [\App\Http\Controllers\DeptHead\QarController::class, 'submit'])->name('qar.submit');
-    Route::get('/accomplishment-review', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'index'])->name('accomplishment-review.index');
-    Route::get('/accomplishment-review/{accomplishment}', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'employeeShow'])->name('accomplishment-review.show');
-    Route::post('/accomplishment-review/{accomplishment}/approve', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'approve'])->name('accomplishment-review.approve');
-    Route::post('/accomplishment-review/{accomplishment}/return', [\App\Http\Controllers\DeptHead\AccomplishmentReviewController::class, 'return'])->name('accomplishment-review.return');
     Route::get('/opcr-accomplishment', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'index'])->name('opcr-accomplishment.index');
     Route::get('/opcr-accomplishment/{opcraAccomplishment}/employee/{accomplishment}', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'employeeShow'])->name('opcr-accomplishment.employee-show');
+    Route::post('/opcr-accomplishment/employee/{accomplishment}/flag', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'flagForCalibration'])->name('opcr-accomplishment.flag');
     Route::post('/opcr-accomplishment/submit', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'submit'])->name('opcr-accomplishment.submit');
     Route::post('/opcr-accomplishment/reset', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'resetForReview'])->name('opcr-accomplishment.reset');
     Route::get('/opcr-accomplishment/export', [\App\Http\Controllers\DeptHead\OpcraAccomplishmentController::class, 'export'])->name('opcr-accomplishment.export');
@@ -214,7 +211,7 @@ Route::prefix('supervisor')->middleware(['auth', 'role:supervisor'])->name('supe
     Route::post('/mpor/{mpor}/return', [\App\Http\Controllers\Supervisor\MporController::class, 'return'])->name('mpor.return');
     Route::get('/accomplishment', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'index'])->name('accomplishment.index');
     Route::get('/accomplishment/{accomplishment}', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'show'])->name('accomplishment.show');
-    Route::post('/accomplishment/{accomplishment}/endorse', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'endorse'])->name('accomplishment.endorse');
+    Route::post('/accomplishment/{accomplishment}/approve', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'approve'])->name('accomplishment.approve');
     Route::post('/accomplishment/{accomplishment}/return', [\App\Http\Controllers\Supervisor\AccomplishmentController::class, 'return'])->name('accomplishment.return');
     Route::get('/ors-monitoring', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'index'])->name('ors-monitoring.index');
     Route::post('/ors-monitoring/{orsEntry}/rate', [\App\Http\Controllers\Supervisor\OrsMonitoringController::class, 'rate'])->name('ors-monitoring.rate');

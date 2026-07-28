@@ -6,13 +6,13 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
     { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
-    { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
+    { key: 'supervisor_approved',     label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'dept_head_approved',      label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
 ];
 const STEP_KEYS = STEPS.map(s => s.key);
 const STATUS_CFG = {
-    supervisor_endorsed:  { label: 'Pending Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    supervisor_approved:  { label: 'Pending Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
     dept_head_approved:   { label: 'Approved',         c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
     released_by_pmt:      { label: 'Released',         c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
     returned_to_employee: { label: 'Returned',         c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
@@ -204,97 +204,18 @@ function IpcrSections({ sections, ipcrMeta }) {
 }
 
 
-function ApproveModal({ submissionId, onClose }) {
-    const [submitting, setSubmitting] = useState(false);
-    function submit() {
-        setSubmitting(true);
-        router.post(`/dept-head/accomplishment-review/${submissionId}/approve`, {}, {
-            preserveScroll: true,
-            onSuccess: () => router.visit('/dept-head/accomplishment-review'),
-            onError: () => setSubmitting(false),
-        });
-    }
-    return (
-        <>
-            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 420 }}>
-                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Approve Accomplishment</div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}><i className="bi bi-x-lg" /></button>
-                </div>
-                <div style={{ padding: '1.25rem 1.25rem', display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
-                    <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: '50%', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
-                        <i className="bi bi-check2-circle" style={{ fontSize: '1.1rem' }} />
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--admin-text-primary)', marginBottom: '0.35rem' }}>Confirm Approval</div>
-                        <div style={{ fontSize: '0.83rem', color: 'var(--admin-text-muted)', lineHeight: 1.5 }}>
-                            Are you sure you want to approve this accomplishment report? This will forward it to the PMT for final review.
-                        </div>
-                    </div>
-                </div>
-                <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                    <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
-                    <button onClick={submit} disabled={submitting}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-check2-circle" />{submitting ? 'Approving…' : 'Approve'}
-                    </button>
-                </div>
-            </div>
-        </>
-    );
-}
 
-function ReturnModal({ submissionId, onClose }) {
-    const [remarks, setRemarks] = useState('');
-    const [submitting, setSubmitting] = useState(false);
-    function submit() {
-        if (!remarks.trim()) return;
-        setSubmitting(true);
-        router.post(`/dept-head/accomplishment-review/${submissionId}/return`, { remarks }, {
-            preserveScroll: true,
-            onSuccess: () => router.visit('/dept-head/accomplishment-review'),
-            onError: () => setSubmitting(false),
-        });
-    }
-    return (
-        <>
-            <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101, background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)', boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 480 }}>
-                <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--admin-text-primary)' }}>Return Submission</div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '1rem' }}><i className="bi bi-x-lg" /></button>
-                </div>
-                <div style={{ padding: '1rem 1.25rem' }}>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' }}>
-                        Reason / Remarks <span style={{ color: '#ef4444' }}>*</span>
-                    </div>
-                    <textarea rows={4} maxLength={2000} value={remarks} onChange={e => setRemarks(e.target.value)}
-                        placeholder="Explain why this submission is being returned..."
-                        style={{ width: '100%', boxSizing: 'border-box', padding: '0.65rem 0.9rem', background: 'var(--admin-bg-secondary)', border: `1px solid ${!remarks.trim() ? 'rgba(239,68,68,0.4)' : 'var(--admin-border)'}`, borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }} />
-                    <div style={{ textAlign: 'right', fontSize: '0.65rem', color: 'var(--admin-text-muted)', marginTop: 3 }}>{remarks.length}/2000</div>
-                </div>
-                <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                    <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
-                    <button onClick={submit} disabled={!remarks.trim() || submitting}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: !remarks.trim() ? 'var(--admin-bg-secondary)' : '#ef4444', color: !remarks.trim() ? 'var(--admin-text-muted)' : '#fff', cursor: !remarks.trim() || submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-arrow-counterclockwise" />{submitting ? 'Returning…' : 'Return'}
-                    </button>
-                </div>
-            </div>
-        </>
-    );
-}
+
+
 
 export default function EmployeeShow() {
-    const { submission, smporTable, ipcrSections, ipcrMeta } = usePage().props;
-    const [showApprove, setShowApprove] = useState(false);
-    const [showReturn,  setShowReturn]  = useState(false);
-    const [activeTab,   setActiveTab]   = useState('smpor');
+    const { submission, smporTable, ipcrSections, ipcrMeta, flaggedForCalibration } = usePage().props;
+        const [flagged, setFlagged] = useState(flaggedForCalibration ?? false);
+        const [flagging, setFlagging] = useState(false);
+        const [activeTab,   setActiveTab]   = useState('smpor');
 
     const status  = submission?.status;
     const sc      = STATUS_CFG[status] ?? { label: status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
-    const canAct  = status === 'supervisor_endorsed';
     const card    = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
     const lbl     = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
 
@@ -305,7 +226,7 @@ export default function EmployeeShow() {
                 <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--admin-card)', borderBottom: '1px solid var(--admin-border)', padding: '0.6rem 1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-                            <button onClick={() => router.visit('/dept-head/accomplishment-review')}
+                            <button onClick={() => router.visit('/dept-head/opcr-accomplishment')}
                                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-primary)', padding: '0.25rem', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                             </button>
@@ -429,24 +350,37 @@ export default function EmployeeShow() {
                     </div>
                 )}
 
-                {/* Actions */}
-                {canAct && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                        <button onClick={() => setShowReturn(true)}
-                            style={{ padding: '0.6rem 1.5rem', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <i className="bi bi-arrow-counterclockwise" /> Return
-                        </button>
-                        <button onClick={() => setShowApprove(true)}
-                            style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <i className="bi bi-check2-circle" /> Approve
-                        </button>
+                {/* Calibration Flag */}
+                {submission?.status !== 'not_submitted' && (
+                    <div style={{ ...card, padding: '1rem 1.25rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={flagged}
+                                disabled={flagging}
+                                onChange={() => {
+                                    setFlagging(true);
+                                    router.post(`/dept-head/opcr-accomplishment/employee/${submission.id}/flag`, { flagged: !flagged }, {
+                                        preserveScroll: true,
+                                        onFinish: () => setFlagging(false),
+                                        onSuccess: () => setFlagged(!flagged),
+                                    });
+                                }}
+                                style={{ marginTop: 2, accentColor: '#a78bfa', flexShrink: 0 }}
+                            />
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: flagged ? '#a78bfa' : 'var(--admin-text-primary)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <i className="bi bi-flag-fill" style={{ fontSize: '0.78rem' }} /> Flag for PMT Calibration
+                                </div>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 3, lineHeight: 1.5 }}>
+                                    Request PMT to review this employee's rating during calibration.
+                                </div>
+                            </div>
+                        </label>
                     </div>
                 )}
 
             </div>{/* end flex column */}
-
-            {showApprove && <ApproveModal submissionId={submission.id} onClose={() => setShowApprove(false)} />}
-            {showReturn  && <ReturnModal  submissionId={submission.id} onClose={() => setShowReturn(false)} />}
         </AppLayout>
     );
 }

@@ -5,7 +5,7 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
     submitted_to_supervisor: { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    supervisor_endorsed:     { label: 'Endorsed',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    supervisor_approved:     { label: 'Approved',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
     dept_head_endorsed:      { label: 'Awaiting PMT',    c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
     released_by_pmt:         { label: 'Released',        c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
     returned_to_employee:    { label: 'Returned',        c: '#f87171', bg: 'rgba(239,68,68,0.12)' },
@@ -14,7 +14,7 @@ const STATUS_CFG = {
 const FILTERS = [
     { key: 'all',                     label: 'All' },
     { key: 'submitted_to_supervisor', label: 'Pending' },
-    { key: 'supervisor_endorsed',     label: 'Endorsed' },
+    { key: 'supervisor_approved',     label: 'Approved' },
     { key: 'returned_to_employee',    label: 'Returned' },
 ];
 

@@ -14,7 +14,7 @@ const RATING_CFG = {
 const SUBMISSION_STATUS = {
     draft:                     { label: 'Draft',            c: 'var(--admin-text-muted)', bg: 'var(--admin-bg-secondary)' },
     submitted_to_supervisor:   { label: 'Submitted',        c: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-    supervisor_endorsed:       { label: 'Endorsed',         c: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+    supervisor_approved:     { label: 'Approved', c: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
     dept_head_endorsed:        { label: 'Dept Head ✓',      c: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
     released_by_pmt:           { label: 'Released',         c: '#10b981', bg: 'rgba(16,185,129,0.12)' },
     returned_to_employee:      { label: 'Returned',         c: '#ef4444', bg: 'rgba(239,68,68,0.12)' },

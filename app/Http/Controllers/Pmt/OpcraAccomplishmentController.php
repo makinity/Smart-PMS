@@ -66,7 +66,8 @@ class OpcraAccomplishmentController extends Controller
             'calibrated_rating' => $subMap->get($emp->id)?->pmt_remarks ? $subMap->get($emp->id)?->final_rating : null,
             'pmt_remarks' => $subMap->get($emp->id)?->pmt_remarks,
             'status' => $subMap->get($emp->id)?->status ?? 'not_submitted',
-            'approved' => $subMap->get($emp->id)?->status === 'dept_head_approved',
+            'approved' => $subMap->get($emp->id)?->status === 'supervisor_approved',
+            'dept_head_flagged_for_calibration' => (bool) $subMap->get($emp->id)?->dept_head_flagged_for_calibration,
         ])->values();
 
         // Office-level OPCR sections
@@ -172,7 +173,7 @@ class OpcraAccomplishmentController extends Controller
             'pmt_remarks' => ['required', 'string', 'max:2000'],
         ]);
 
-        // Store calibrated values as draft (status stays dept_head_approved until OPCR release)
+        // Store calibrated values as draft (status stays supervisor_approved until OPCR release)
         $accomplishment->update([
             'final_rating' => $data['final_rating'],
             'final_adjectival_rating' => $data['final_adjectival_rating'],
@@ -190,7 +191,7 @@ class OpcraAccomplishmentController extends Controller
         // Re-average from current employee scores (respects any PMT calibrations)
         $approvedSubs = AccomplishmentSubmission::where('office_id', $opcraAccomplishment->office_id)
             ->where('performance_period_id', $opcraAccomplishment->performance_period_id)
-            ->where('status', 'dept_head_approved')
+            ->where('status', 'supervisor_approved')
             ->get();
 
         $liveScores = $approvedSubs->map(fn ($s) =>
@@ -266,12 +267,12 @@ class OpcraAccomplishmentController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /** Finalize all dept_head_approved employees under this OPCR on release */
+    /** Finalize all supervisor_approved employees under this OPCR on release */
     private function finalizeEmployees(OpcraAccomplishmentSubmission $opcra): void
     {
         $submissions = AccomplishmentSubmission::where('office_id', $opcra->office_id)
             ->where('performance_period_id', $opcra->performance_period_id)
-            ->where('status', 'dept_head_approved')
+            ->where('status', 'supervisor_approved')
             ->get();
 
         foreach ($submissions as $s) {
@@ -366,7 +367,7 @@ class OpcraAccomplishmentController extends Controller
         $total    = User::whereHas('employee', fn($q) => $q->where('office_id', $s->office_id))->where('role', 'employee')->count();
         $approved = AccomplishmentSubmission::where('office_id', $s->office_id)
             ->where('performance_period_id', $s->performance_period_id)
-            ->where('status', 'dept_head_approved')->count();
+            ->where('status', 'supervisor_approved')->count();
         return ['approved' => $approved, 'total' => $total];
     }
 

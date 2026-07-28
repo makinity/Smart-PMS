@@ -50,7 +50,7 @@ export default function Dashboard({ activePeriod, officeStaff, opcrStatus, uwpCo
     const quickLinks = [
         { title: 'OPCR',                 desc: 'Manage office performance commitments', href: '/dept-head/opcr',                   icon: 'bi-clipboard-check-fill' },
         { title: 'Unit Work Plans',      desc: 'Review supervisor work plans',           href: '/dept-head/uwp',                    icon: 'bi-kanban-fill' },
-        { title: 'Accomplishment Review',desc: 'Endorse employee submissions',           href: '/dept-head/accomplishment-review',  icon: 'bi-award-fill' },
+        { title: 'OPCR Accomplishment',desc: 'Review employee accomplishments',           href: '/dept-head/opcr-accomplishment',  icon: 'bi-award-fill' },
         { title: 'QAR',                  desc: 'Quality assurance review entries',       href: '/dept-head/qar',                    icon: 'bi-file-earmark-check-fill' },
     ];
 

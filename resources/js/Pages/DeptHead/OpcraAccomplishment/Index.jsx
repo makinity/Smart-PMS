@@ -168,7 +168,7 @@ export default function Index() {
 
         // Employees who submitted but weren't approved yet (pending somewhere in the flow)
         const unapproved = employees.filter(emp =>
-            !['dept_head_approved', 'released_by_pmt', 'not_submitted'].includes(emp.status)
+            !['supervisor_approved', 'released_by_pmt', 'not_submitted'].includes(emp.status)
         );
 
         const hasIssues = notSubmitted.length > 0 || unapproved.length > 0;
@@ -323,7 +323,7 @@ export default function Index() {
                                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employee…" style={{ width:'100%', paddingLeft:'2rem', paddingRight:'0.65rem', paddingTop:'0.4rem', paddingBottom:'0.4rem', borderRadius:8, border:'1px solid var(--admin-border-strong)', background:'var(--admin-bg-secondary)', color:'var(--admin-text-primary)', fontSize:'0.82rem', outline:'none', boxSizing:'border-box' }} />
                             </div>
                             <div style={{ display:'flex', gap:'0.3rem', flexShrink:0 }}>
-                                {[['all','All'],['released_by_pmt','Released'],['approved','Approved'],['supervisor_endorsed','Pending'],['not_submitted','Not Submitted']].map(([val, label]) => (
+                                {[['all','All'],['released_by_pmt','Released'],['approved','Approved'],['supervisor_approved','Pending'],['not_submitted','Not Submitted']].map(([val, label]) => (
                                     <button key={val} onClick={() => setStatusFilter(val)} style={{ padding:'0.38rem 0.65rem', borderRadius:7, border:`1px solid ${statusFilter===val?'var(--admin-accent)':'var(--admin-border-strong)'}`, background:statusFilter===val?'rgba(59,130,246,0.12)':'var(--admin-bg-secondary)', color:statusFilter===val?'var(--admin-accent)':'var(--admin-text-muted)', fontWeight:statusFilter===val?700:500, fontSize:'0.75rem', cursor:'pointer', whiteSpace:'nowrap' }}>{label}</button>
                                 ))}
                             </div>
@@ -343,10 +343,10 @@ export default function Index() {
                                 {filteredEmployees.length === 0 ? (
                                     <tr><td colSpan={5} style={{ padding:'1.5rem', textAlign:'center', color:'var(--admin-text-muted)', fontSize:'0.85rem' }}>No employees match your filter.</td></tr>
                                 ) : filteredEmployees.map(emp => {
-                                    const canView = !!emp.submission_id;
+                                    const canView = !!emp.submission_id && !!approvedOpcrId;
                                     return (
                                         <tr key={emp.id}
-                                            onClick={() => canView && router.visit(`/dept-head/accomplishment-review/${emp.submission_id}`)}
+                                            onClick={() => canView && router.visit(`/dept-head/opcr-accomplishment/${approvedOpcrId}/employee/${emp.submission_id}`)}
                                             style={{ borderBottom:'1px solid var(--admin-border)', cursor: canView ? 'pointer' : 'default', transition:'background 0.15s' }}
                                             onMouseEnter={e => canView && (e.currentTarget.style.background='var(--admin-bg-secondary)')}
                                             onMouseLeave={e => (e.currentTarget.style.background='')}>
@@ -366,7 +366,7 @@ export default function Index() {
                                                     ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(59,130,246,0.12)', color:'#60a5fa' }}>✓ Released</span>
                                                     : emp.approved
                                                         ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(74,222,128,0.12)', color:'#4ade80' }}>✓ Approved</span>
-                                                        : emp.status === 'supervisor_endorsed'
+                                                        : emp.status === 'supervisor_approved'
                                                             ? <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(245,158,11,0.12)', color:'#f59e0b' }}>⏳ Pending</span>
                                                             : <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(100,116,139,0.12)', color:'var(--admin-text-muted)' }}>{emp.status === 'not_submitted' ? 'Not Submitted' : emp.status}</span>}
                                             </td>
@@ -387,7 +387,7 @@ export default function Index() {
                             const canView = !!emp.submission_id;
                             return (
                                 <div key={emp.id}
-                                    onClick={() => canView && router.visit(`/dept-head/accomplishment-review/${emp.submission_id}`)}
+                                    onClick={() => canView && router.visit(`/dept-head/opcr-accomplishment/${approvedOpcrId}/employee/${emp.submission_id}`)}
                                     style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.7rem 1rem', borderBottom:'1px solid var(--admin-border)', cursor: canView ? 'pointer' : 'default' }}>
                                     <div style={{ display:'flex', alignItems:'center', gap: 8 }}>
                                         <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
@@ -395,7 +395,7 @@ export default function Index() {
                                         <div>
                                             <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>{emp.name}</div>
                                             <div style={{ fontSize:'0.72rem', marginTop:2, color: emp.released ? '#60a5fa' : emp.approved ? '#4ade80' : 'var(--admin-text-muted)' }}>
-                                                {emp.released ? `Released · ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : emp.approved ? `Approved · ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : emp.status === 'supervisor_endorsed' ? 'Pending Approval' : 'Not Submitted'}
+                                                {emp.released ? `Released · ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : emp.approved ? `Approved · ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : emp.status === 'supervisor_approved' ? 'Pending Approval' : 'Not Submitted'}
                                             </div>
                                         </div>
                                     </div>

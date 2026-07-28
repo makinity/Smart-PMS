@@ -6,8 +6,7 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
     { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
-    { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
-    { key: 'dept_head_approved',      label: 'Approved',   icon: 'bi-patch-check' },
+    { key: 'supervisor_approved',     label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
 ];
 const STEP_KEYS = STEPS.map(s => s.key);
@@ -279,7 +278,7 @@ export default function EmployeeShow() {
     const [activeTab, setActiveTab]         = useState('smpor');
 
     const status   = submission?.status;
-    const canAct   = status === 'dept_head_approved';
+    const canAct   = status === 'supervisor_approved';
     const card     = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
     const lbl      = { fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.5rem' };
     const hasCalib = submission?.pmt_remarks && submission?.final_rating;

@@ -8,7 +8,7 @@ const EVENT_ROUTE = {
     'mpor.submitted_to_supervisor':          '/supervisor/mpor',
     'uwp.submitted':                         '/dept-head/uwp',
     'opcr.returned':                         '/dept-head/opcr',
-    'accomplishment.supervisor_endorsed':    '/dept-head/accomplishment-review',
+    'accomplishment.supervisor_approved': '/dept-head/opcr-accomplishment',
     'opcr.submitted':                        '/pmt/opcr-review',
     'accomplishment.dept_head_endorsed':     '/pmt/accomplishment-review',
     'qar.submitted_to_pmt':                  '/pmt/qar',
@@ -57,7 +57,7 @@ const roleLinks = {
         { href: '/dept-head/opcr', label: 'OPCR', icon: 'bi-clipboard-check-fill' },
         { href: '/dept-head/qar', label: 'QAR', icon: 'bi-file-earmark-check-fill' },
         { href: '/dept-head/uwp', label: 'UWP', icon: 'bi-kanban-fill' },
-        { href: '/dept-head/accomplishment-review', label: 'Accomplishment Review', icon: 'bi-award-fill' },
+        
         { href: '/dept-head/idp', label: 'IDP Approval', icon: 'bi-journal-check' },
         { href: '/dept-head/idp-office', label: 'Office IDP', icon: 'bi-building-fill-check' },
         { href: '/dept-head/opcr-accomplishment', label: 'OPCR Accomplishment', icon: 'bi-building-check' },

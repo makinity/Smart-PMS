@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { useToast } from '@/Components/Snackbar';
 
 function ParticleCanvas({ darkMode }) {
     const canvasRef = useRef(null);
@@ -69,6 +70,7 @@ function ParticleCanvas({ darkMode }) {
 }
 
 export default function Login() {
+    const toast = useToast();
     const [mode, setMode] = useState('login');
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'light') === 'dark');
     const [showPassword, setShowPassword] = useState(false);
@@ -112,7 +114,7 @@ export default function Login() {
                     setData('token', payload.token ?? '');
                     setMode('activate-complete');
                 })
-                .catch(payload => payload?.message && alert(payload.message))
+                .catch(payload => payload?.message && toast(payload.message, 'error'))
                 .finally(() => setFetching(false));
             return;
         }

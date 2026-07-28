@@ -9,8 +9,7 @@ import useBreakpoint from '@/Components/useBreakpoint';
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
     { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
-    { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
-    { key: 'dept_head_endorsed',      label: 'PMT',        icon: 'bi-patch-check' },
+    { key: 'supervisor_approved',     label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
 ];
 const STEP_KEYS = STEPS.map(s => s.key);
@@ -21,8 +20,8 @@ function activeStep(status) {
 }
 const STATUS_CFG = {
     submitted_to_supervisor: { label: 'Pending Review',  c: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    supervisor_endorsed:     { label: 'Endorsed',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    dept_head_endorsed:      { label: 'Awaiting PMT',    c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    supervisor_approved:     { label: 'Approved',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
+    
     recommended_by_pmt:      { label: 'PMT Recommended', c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
     pmt_approved:            { label: 'PMT Approved',    c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
     released_by_pmt:         { label: 'Released',        c: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
@@ -287,19 +286,20 @@ export default function Show() {
     const toast = useToast();
     const confirm = useConfirm();
     const [showReturn, setShowReturn] = useState(false);
-    const [endorsing,  setEndorsing]  = useState(false);
+    const [approving,  setApproving]  = useState(false);
     const [activeTab,  setActiveTab]  = useState('smpor');
 
     const status = submission?.status;
     const sc     = STATUS_CFG[status] ?? { label: status, c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' };
     const canAct = status === 'submitted_to_supervisor';
 
-    async function handleEndorse() {
-        if (!await confirm('Endorse this accomplishment to the Department Head?')) return;
-        setEndorsing(true);
-        router.post(`/supervisor/accomplishment/${submission.id}/endorse`, {}, {
+    async function handleApprove() {
+        if (!await confirm('Approve this accomplishment? It will be added to the OPCR Accomplishment pool.')) return;
+        setApproving(true);
+        router.post(`/supervisor/accomplishment/${submission.id}/approve`, {}, {
             preserveScroll: true,
-            onFinish: () => setEndorsing(false),
+            onSuccess: () => toast('Accomplishment approved.', 'success'),
+            onFinish: () => setApproving(false),
         });
     }
 
@@ -421,10 +421,10 @@ export default function Show() {
                             style={{ padding: '0.6rem 1.5rem', borderRadius: 8, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-arrow-counterclockwise" /> Return
                         </button>
-                        <button onClick={handleEndorse} disabled={endorsing}
-                            style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: endorsing ? 'not-allowed' : 'pointer', fontSize: '0.88rem', fontWeight: 700, opacity: endorsing ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button onClick={handleApprove} disabled={approving}
+                            style={{ padding: '0.6rem 1.75rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: approving ? 'not-allowed' : 'pointer', fontSize: '0.88rem', fontWeight: 700, opacity: approving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                             <i className="bi bi-check2-circle" />
-                            {endorsing ? 'Endorsing…' : 'Endorse'}
+                            {approving ? 'Approving…' : 'Approve'}
                         </button>
                     </div>
                 )}

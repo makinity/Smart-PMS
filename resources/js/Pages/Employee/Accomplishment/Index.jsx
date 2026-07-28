@@ -8,15 +8,14 @@ import useBreakpoint from '@/Components/useBreakpoint';
 const STEPS = [
     { key: 'draft',                   label: 'Draft',      icon: 'bi-pencil-square' },
     { key: 'submitted_to_supervisor', label: 'Supervisor', icon: 'bi-person-check' },
-    { key: 'supervisor_endorsed',     label: 'Dept Head',  icon: 'bi-building' },
-    { key: 'dept_head_endorsed',      label: 'PMT',        icon: 'bi-patch-check' },
+    { key: 'supervisor_approved',     label: 'Approved',   icon: 'bi-patch-check' },
     { key: 'released_by_pmt',         label: 'Released',   icon: 'bi-award' },
 ];
 
 const STATUS_CFG = {
     draft:                   { label: 'Draft',               c: '#94a3b8', bg: 'rgba(100,116,139,0.12)' },
     submitted_to_supervisor: { label: 'Submitted',           c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
-    supervisor_endorsed:     { label: 'Supervisor Endorsed', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)' },
+    supervisor_approved:     { label: 'Supervisor Approved', c: '#a78bfa', bg: 'rgba(139,92,246,0.12)' },
     dept_head_endorsed:      { label: 'Awaiting PMT',        c: '#60a5fa', bg: 'rgba(59,130,246,0.12)' },
     recommended_by_pmt:      { label: 'PMT Recommended',     c: '#34d399', bg: 'rgba(16,185,129,0.12)' },
     pmt_approved:            { label: 'PMT Approved',        c: '#34d399', bg: 'rgba(16,185,129,0.12)' },

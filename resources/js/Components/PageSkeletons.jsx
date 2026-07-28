@@ -1781,7 +1781,7 @@ const skeletons = [
     )],
 
     // Dept Head IDP + Accomplishment Review
-    [/\/dept-head\/(idp|accomplishment-review)$/, () => (
+    [/\/dept-head\/idp$/, () => (
         <>
             <style>{SHIMMER}</style>
             <div style={{ ...SK, padding:'1.25rem' }}>

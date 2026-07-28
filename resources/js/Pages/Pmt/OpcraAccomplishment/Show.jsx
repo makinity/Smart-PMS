@@ -345,6 +345,9 @@ export default function Show() {
                                                     : <span style={{ fontSize:'0.62rem', fontWeight:700, padding:'2px 8px', borderRadius:99, background:'rgba(100,116,139,0.12)', color:'var(--admin-text-muted)' }}>
                                                         {emp.status === 'not_submitted' ? 'Not Submitted' : emp.status}
                                                     </span>}
+                                                {emp.dept_head_flagged_for_calibration && (
+                                                    <i className="bi bi-flag-fill" style={{ marginLeft:6, color:'#a78bfa', fontSize:'0.75rem' }} title="Flagged for calibration" />
+                                                )}
                                             </td>
                                             <td style={{ padding:'0.6rem 1rem', textAlign:'right' }}>
                                                 {canView && <i className="bi bi-chevron-right" style={{ color:'var(--admin-text-muted)', fontSize:'0.75rem' }} />}
@@ -369,7 +372,12 @@ export default function Show() {
                                         <img src={avatarSrc(emp.avatar)} alt={emp.name} onError={onAvatarError}
                                             style={{ width:32, height:32, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
                                         <div>
-                                            <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>{emp.name}</div>
+                                            <div style={{ fontWeight:600, fontSize:'0.88rem', color:'var(--admin-text-primary)' }}>
+                                                {emp.name}
+                                                {emp.dept_head_flagged_for_calibration && (
+                                                    <i className="bi bi-flag-fill" style={{ marginLeft:5, color:'#a78bfa', fontSize:'0.7rem' }} title="Flagged for calibration" />
+                                                )}
+                                            </div>
                                             <div style={{ fontSize:'0.72rem', marginTop:2, color: emp.calibrated_rating ? '#a78bfa' : emp.approved ? '#4ade80' : 'var(--admin-text-muted)' }}>
                                                 {emp.calibrated_rating ? `Calibrated: ${Number(emp.calibrated_rating).toFixed(2)}` : emp.approved ? `System: ${emp.system_score ? Number(emp.system_score).toFixed(2) : '—'}` : 'Not Submitted'}
                                             </div>
