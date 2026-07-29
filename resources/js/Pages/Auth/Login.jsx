@@ -1,7 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { useToast } from '@/Components/Snackbar';
 
 function ParticleCanvas({ darkMode }) {
     const canvasRef = useRef(null);
@@ -70,7 +69,6 @@ function ParticleCanvas({ darkMode }) {
 }
 
 export default function Login() {
-    const toast = useToast();
     const [mode, setMode] = useState('login');
     const [darkMode, setDarkMode] = useState(() => (localStorage.getItem('theme') ?? 'light') === 'dark');
     const [showPassword, setShowPassword] = useState(false);
@@ -80,7 +78,7 @@ export default function Login() {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
     }, [darkMode]);
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+    const { data, setData, post, processing, errors, setError, reset, clearErrors } = useForm({
         name: '',
         password: '',
         employee_id: '',
@@ -110,11 +108,23 @@ export default function Login() {
             })
                 .then(async res => {
                     const payload = await res.json().catch(() => ({}));
-                    if (!res.ok) throw payload;
+                    if (!res.ok) {
+                        // Map Laravel validation errors (422) or conflict messages (409)
+                        // to inline field errors, matching login validation UX.
+                        if (payload?.errors) {
+                            Object.entries(payload.errors).forEach(([field, messages]) => {
+                                setError(field, Array.isArray(messages) ? messages[0] : messages);
+                            });
+                        } else if (payload?.message) {
+                            // Non-field errors (e.g. 409 already-activated) go on employee_id
+                            setError('employee_id', payload.message);
+                        }
+                        return;
+                    }
                     setData('token', payload.token ?? '');
                     setMode('activate-complete');
                 })
-                .catch(payload => payload?.message && toast(payload.message, 'error'))
+                .catch(() => setError('employee_id', 'Something went wrong. Please try again.'))
                 .finally(() => setFetching(false));
             return;
         }
