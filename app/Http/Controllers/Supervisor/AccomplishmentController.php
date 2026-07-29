@@ -90,6 +90,23 @@ class AccomplishmentController extends Controller
             'supervisor_action_at' => now(),
         ]);
 
+        // Notify dept-head that a new submission has entered their OPCR Accomplishment pool
+        $deptHead = User::find($accomplishment->dept_head_id);
+        $deptHead?->notify(new WorkflowEventNotification(
+            type: 'info',
+            event: 'accomplishment.supervisor_approved',
+            message: "{$accomplishment->employee->name}'s accomplishment has been approved by {$supervisor->name} and is now in your OPCR Accomplishment pool.",
+            url: '/dept-head/opcr-accomplishment',
+        ));
+
+        // Notify employee that their accomplishment was approved
+        $accomplishment->employee->notify(new WorkflowEventNotification(
+            type: 'success',
+            event: 'accomplishment.approved_by_supervisor',
+            message: "{$supervisor->name} approved your accomplishment submission.",
+            url: '/employee/accomplishment',
+        ));
+
         return redirect()->route('supervisor.accomplishment.index')->with('success', 'Accomplishment approved.');
     }
 
