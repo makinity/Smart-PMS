@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ipcr;
 use App\Models\Mpor;
 use App\Models\OrsEntry;
+use App\Models\PerformancePeriod;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
 use Carbon\Carbon;
@@ -22,10 +23,22 @@ class MporController extends Controller
         $month  = $request->get('month', '');
         $status = $request->get('status', '');
 
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId   = $request->get('period_id');
+        $period     = $periodId
+            ? (PerformancePeriod::find($periodId) ?? PerformancePeriod::current())
+            : (PerformancePeriod::current());
+
         $query = Mpor::with(['employee'])
             ->where('office_id', $user->office_id)
             ->whereIn('status', ['submitted', 'approved', 'returned'])
             ->orderBy('submitted_at', 'desc');
+
+        if ($period) {
+            $startMonth = $period->start_date->format('Y-m');
+            $endMonth   = $period->end_date->format('Y-m');
+            $query->whereBetween('month', [$startMonth, $endMonth]);
+        }
 
         if ($search) {
             $query->whereHas('employee', fn ($q) => $q->where('name', 'like', "%{$search}%"));
@@ -55,6 +68,8 @@ class MporController extends Controller
             'search' => $search,
             'month'  => $month,
             'status' => $status,
+            'period'     => $period?->only('id', 'name', 'is_active'),
+            'allPeriods' => $allPeriods->map(fn ($p) => $p->only('id', 'name', 'is_active')),
         ]);
     }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
 const STATUS_CFG = {
@@ -37,19 +38,20 @@ function useIsMobile() {
     return mobile;
 }
 
-export default function Index() {
-    const { submissions = [] } = usePage().props;
+export default function Index({ submissions = [], period, allPeriods }) {
+    const { submissions: pageSubmissions = [] } = usePage().props;
+    const items = submissions.length > 0 ? submissions : pageSubmissions;
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const isMobile = useIsMobile();
 
-    const filtered = submissions.filter(s => {
+    const filtered = items.filter(s => {
         const matchFilter = filter === 'all' || s.status === filter;
         const q = search.toLowerCase();
         return matchFilter && (!q || s.employee_name.toLowerCase().includes(q) || s.employee_office.toLowerCase().includes(q));
     });
 
-    const pendingCount = submissions.filter(s => s.status === 'submitted_to_supervisor').length;
+    const pendingCount = items.filter(s => s.status === 'submitted_to_supervisor').length;
     const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
 
     return (
@@ -60,9 +62,10 @@ export default function Index() {
                     <div>
                         <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>Employee Submissions</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
-                            {pendingCount} pending review · {submissions.length} total
+                            {pendingCount} pending review · {items.length} total
                         </div>
                     </div>
+                    <PeriodSelector period={period} allPeriods={allPeriods} route="/supervisor/accomplishment" />
                     {pendingCount > 0 && (
                         <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '2px 10px', borderRadius: 99, background: '#f59e0b', color: '#fff' }}>
                             {pendingCount} NEW

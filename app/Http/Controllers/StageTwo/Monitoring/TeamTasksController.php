@@ -6,15 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\OrsEntry;
 use App\Models\PerformancePeriod;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class TeamTasksController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $supervisor = auth()->user();
-        $period = PerformancePeriod::where('is_active', true)->first();
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? (PerformancePeriod::find($periodId) ?? PerformancePeriod::current())
+            : PerformancePeriod::current();
 
         // Show all employees in the same office as the supervisor,
         // not just those who selected this supervisor in ORS Task Logging.
@@ -82,7 +87,8 @@ class TeamTasksController extends Controller
 
         return Inertia::render('Supervisor/TeamTasks/Index', [
             'entries' => $entries,
-            'period' => $period?->name,
+            'period' => $period ? ['id' => $period->id, 'name' => $period->name] : null,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
         ]);
     }
 }

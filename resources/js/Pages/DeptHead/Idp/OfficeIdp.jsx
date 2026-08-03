@@ -5,6 +5,7 @@ import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import { useToast } from '@/Components/Snackbar';
 import ValidationModal from '@/Components/ValidationModal';
 import useBreakpoint from '@/Components/useBreakpoint';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const STATUS_CFG = {
     supervisor_recommended: { label: 'Awaiting Your Approval', c: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  bc: 'rgba(245,158,11,0.3)' },
@@ -59,7 +60,7 @@ function blockerReason(status) {
 }
 
 export default function OfficeIdp() {
-    const { plans = [], approvedCount = 0, pendingCount = 0, returnedCount = 0, office } = usePage().props;
+    const { plans = [], approvedCount = 0, pendingCount = 0, returnedCount = 0, office, period, allPeriods = [] } = usePage().props;
     const flash   = usePage().props.flash ?? {};
     const toast   = useToast();
     const bp      = useBreakpoint();
@@ -74,6 +75,7 @@ export default function OfficeIdp() {
     const pendingPlans = plans.filter(p => !['dept_head_approved', 'submitted_to_pmt', 'submitted_to_ld'].includes(p.status));
 
     const officeColor  = OFFICE_RATING_COLOR[office?.office_rating] ?? '#60a5fa';
+    const isPastPeriod = period && !period.is_active;
     const card = { background: 'var(--admin-card)', border: '1px solid var(--admin-border-strong)', borderRadius: 'var(--admin-radius)', boxShadow: 'var(--admin-shadow)' };
 
     const handleSubmitToPmt = () => {
@@ -147,6 +149,7 @@ export default function OfficeIdp() {
 
                             {/* Right: score + counts + submit btn */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                                <PeriodSelector period={period} allPeriods={allPeriods} route="/dept-head/idp/office" />
                                 {office.office_score != null && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <span style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, color: officeColor, lineHeight: 1 }}>{office.office_score.toFixed(2)}</span>

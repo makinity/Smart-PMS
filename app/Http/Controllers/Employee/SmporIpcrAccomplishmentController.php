@@ -19,14 +19,23 @@ use Inertia\Inertia;
 
 class SmporIpcrAccomplishmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $period = PerformancePeriod::current();
+
+        // All periods for the selector, newest first
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+
+        // Resolve the period: prefer the period_id param, otherwise fall back to current
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
 
         if (! $period) {
             return Inertia::render('Employee/Accomplishment/Index', [
                 'period' => null,
+                'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
                 'submission' => null,
                 'smporMeta' => null,
                 'ipcrMeta' => null,
@@ -52,6 +61,7 @@ class SmporIpcrAccomplishmentController extends Controller
 
         return Inertia::render('Employee/Accomplishment/Index', [
             'period' => ['id' => $period->id, 'name' => $period->name, 'start_date' => $period->start_date->toDateString(), 'end_date' => $period->end_date->toDateString()],
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'submission' => $submission ? $this->formatSubmission($submission) : null,
             'smporMeta' => $smporMeta,
             'ipcrMeta' => $ipcrMeta,

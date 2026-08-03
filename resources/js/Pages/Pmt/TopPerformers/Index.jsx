@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const RATING_CFG = {
     'Outstanding':       { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', icon: '🏆' },
@@ -35,9 +36,10 @@ function Avatar({ name, avatar, size = 48 }) {
 }
 
 export default function Index() {
-    const { performers, counts, search: initSearch, rating: initRating, period } = usePage().props;
+    const { performers, counts, search: initSearch, rating: initRating, period, allPeriods } = usePage().props;
     const [search, setSearch]   = useState(initSearch ?? '');
     const [rating, setRating]   = useState(initRating ?? '');
+    const isPastPeriod = period && !period.is_active;
 
     // Client-side filter for instant feel
     const filtered = useMemo(() => {
@@ -76,6 +78,7 @@ export default function Index() {
                         style={{ flex:1, border:'none', outline:'none', background:'transparent', fontSize:'0.9rem', color:'var(--admin-text-primary)' }}
                     />
                     {search && <button onClick={() => setSearch('')} style={{ border:'none', background:'none', cursor:'pointer', color:'var(--admin-text-muted)', fontSize:'1rem' }}>×</button>}
+                    <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/top-performers" />
                 </div>
 
                 {/* Filter tabs */}

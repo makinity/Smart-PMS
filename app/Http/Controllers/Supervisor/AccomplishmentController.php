@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AccomplishmentSubmission;
 use App\Models\Ipcr;
 use App\Models\OrsEntry;
+use App\Models\PerformancePeriod;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
 use Carbon\Carbon;
@@ -15,13 +16,25 @@ use Inertia\Inertia;
 
 class AccomplishmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $supervisor = auth()->user();
 
-        $submissions = AccomplishmentSubmission::where('supervisor_id', $supervisor->id)
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId   = $request->get('period_id');
+        $period     = $periodId
+            ? (PerformancePeriod::find($periodId) ?? PerformancePeriod::current())
+            : (PerformancePeriod::current());
+
+        $query = AccomplishmentSubmission::where('supervisor_id', $supervisor->id)
             ->whereIn('status', ['submitted_to_supervisor', 'supervisor_approved', 'released_by_pmt', 'returned_to_employee'])
-            ->with(['employee.employee.office', 'period'])
+            ->with(['employee.employee.office', 'period']);
+
+        if ($period) {
+            $query->where('performance_period_id', $period->id);
+        }
+
+        $submissions = $query
             ->orderByRaw("FIELD(status, 'submitted_to_supervisor', 'returned_to_employee', 'supervisor_approved', 'released_by_pmt')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -38,6 +51,8 @@ class AccomplishmentController extends Controller
 
         return Inertia::render('Supervisor/Accomplishment/Index', [
             'submissions' => $submissions,
+            'period'     => $period?->only('id', 'name', 'is_active'),
+            'allPeriods' => $allPeriods->map(fn ($p) => $p->only('id', 'name', 'is_active')),
         ]);
     }
 

@@ -17,7 +17,11 @@ class PerformanceOverviewController extends Controller
 
     public function index(Request $request)
     {
-        $period = PerformancePeriod::current();
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
         $search = trim($request->get('search', ''));
         $rating = $request->get('rating', '');
 
@@ -132,7 +136,8 @@ class PerformanceOverviewController extends Controller
             'counts'     => $counts,
             'search'     => $search,
             'rating'     => $rating,
-            'period'     => $period ? ['id' => $period->id, 'name' => $period->name] : null,
+            'period'     => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
         ]);
     }
 

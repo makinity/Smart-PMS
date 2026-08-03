@@ -34,12 +34,15 @@ locked to the currently active period.
 |---|---|---|
 | MPOR | `/supervisor/mpor` | See past monthly performance reports |
 | Accomplishment Review | `/supervisor/accomplishment` | See past rated employee submissions |
+| Team Tasks | `/supervisor/team-tasks` | See past team task entries |
+| IDP | `/supervisor/idp` | See past IDPs by employees |
 
 ### Employee
 | Page | Route | Notes |
 |---|---|---|
 | Accomplishment / SMPOR | `/employee/accomplishment` | See past submitted ratings |
 | IPCR Target | `/employee/ipcr-target` | See past committed targets |
+| IDP | `/employee/idp` | See past IDPs |
 
 ### PMT
 | Page | Route | Notes |
@@ -55,8 +58,6 @@ locked to the currently active period.
 - All dashboards
 - Profile pages
 - My Tasks
-
----
 
 ## Implementation Pattern
 
@@ -185,10 +186,13 @@ Build the shared component first, then roll out by role:
 - [ ] DeptHead — OPCR Accomplishment
 - [ ] DeptHead — Office IDP
 - [ ] DeptHead — IDP Approval
-- [ ] Supervisor — MPOR
-- [ ] Supervisor — Accomplishment Review
-- [ ] Employee — Accomplishment / SMPOR
-- [ ] Employee — IPCR Target
+- [x] Supervisor — MPOR
+- [x] Supervisor — Accomplishment Review
+- [x] Supervisor — Team Tasks
+- [x] Supervisor — IDP
+- [x] Employee — Accomplishment / SMPOR
+- [x] Employee — IPCR Target
+- [x] Employee — IDP
 - [ ] PMT — OPCR Accomplishment
 - [ ] PMT — Performance Overview
 - [ ] PMT — IDP

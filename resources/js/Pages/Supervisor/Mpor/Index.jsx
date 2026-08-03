@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 
 function useBreakpoint() {
@@ -35,7 +36,7 @@ function Avatar({ name, src, size = 40 }) {
 const STATUSES = ['', 'submitted', 'approved', 'returned'];
 const STATUS_LABELS = { '': 'All', submitted: 'Submitted', approved: 'Approved', returned: 'Returned' };
 
-export default function Index({ mpors, search: initSearch, month: initMonth, status: initStatus }) {
+export default function Index({ mpors, search: initSearch, month: initMonth, status: initStatus, period, allPeriods }) {
     const bp = useBreakpoint();
     const [search, setSearch] = useState(initSearch ?? '');
     const [month, setMonth]   = useState(initMonth ?? '');
@@ -58,7 +59,9 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
 
                 {/* Filters — single row across all breakpoints */}
                 <div style={{ ...card, padding: isMobile ? '0.85rem 0.9rem' : '1rem 1.25rem' }}>
-                    <div style={{ display: 'flex', gap: isMobile ? '0.4rem' : '0.65rem', alignItems: 'center', marginBottom: '0.6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/supervisor/mpor" />
+                        <div style={{ flex: 1 }} />
                         {/* Search */}
                         <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>

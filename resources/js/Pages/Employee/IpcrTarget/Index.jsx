@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { useToast } from '@/Components/Snackbar';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => window.innerWidth);
@@ -189,7 +190,7 @@ function IndicatorRow({ si, index, bp, sidebarLeft }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { ipcr, functions: fns = [], period, employee } = usePage().props;
+    const { ipcr, functions: fns = [], period, employee, allPeriods } = usePage().props;
     const toast   = useToast();
     const [committing, setCommitting] = useState(false);
     const [localStatus, setLocalStatus] = useState(ipcr?.status ?? 'draft');
@@ -215,6 +216,11 @@ export default function Index() {
         return (
             <AppLayout title="IPCR Target">
                 <style>{css}</style>
+                {allPeriods && allPeriods.length > 0 && (
+                    <div style={{ marginBottom: '1rem' }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/ipcr-target" />
+                    </div>
+                )}
                 <div style={s.emptyCard}>
                     <div style={s.emptyIcon}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--admin-accent)" strokeWidth="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -234,6 +240,9 @@ export default function Index() {
     return (
         <AppLayout title="IPCR Target">
             <style>{css}</style>
+            <div style={{ ...s.topbar, marginBottom: '0.75rem', padding: '0.6rem 1rem' }}>
+                <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/ipcr-target" />
+            </div>
 
             {/* ── Top bar ── */}
             <div style={{ ...s.topbar }} className="ipcr-topbar">

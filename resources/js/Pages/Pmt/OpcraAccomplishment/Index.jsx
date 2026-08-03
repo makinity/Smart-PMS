@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const adjColor = (r) => !r ? 'var(--admin-text-muted)' : r >= 5.0 ? '#3b82f6' : r >= 4.0 ? '#10b981' : r >= 3.0 ? '#f59e0b' : r >= 2.0 ? '#eab308' : '#ef4444';
 const STATUS_CFG = {
@@ -21,7 +22,8 @@ function relTime(iso) {
 }
 
 export default function Index() {
-    const { submissions = [] } = usePage().props;
+    const { submissions = [], period, allPeriods = [] } = usePage().props;
+    const isPastPeriod = period && !period.is_active;
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
 
@@ -92,6 +94,7 @@ export default function Index() {
                         <div style={{ fontSize:'0.72rem', color:'var(--admin-text-muted)', marginTop:2 }}>{pendingCount} pending review · {submissions.length} total</div>
                     </div>
                     {pendingCount > 0 && <span style={{ fontSize:'0.62rem', fontWeight:800, padding:'2px 10px', borderRadius:99, background:'#f59e0b', color:'#fff' }}>{pendingCount} TO REVIEW</span>}
+                    <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/opcr-accomplishment" />
                 </div>
 
                 <div style={{ position:'relative', marginBottom:'0.75rem' }}>

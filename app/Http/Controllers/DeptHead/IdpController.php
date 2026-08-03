@@ -4,6 +4,7 @@ namespace App\Http\Controllers\DeptHead;
 
 use App\Http\Controllers\Controller;
 use App\Models\DevelopmentPlan;
+use App\Models\PerformancePeriod;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
 use Illuminate\Http\Request;
@@ -18,11 +19,15 @@ class IdpController extends Controller
         DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
     ];
 
-    public function index()
+    public function index(Request $request)
     {
         $deptHead = auth()->user();
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current() : PerformancePeriod::current();
 
         $plans = DevelopmentPlan::where('dept_head_id', $deptHead->id)
+            ->where('performance_period_id', $period->id)
             ->whereIn('status', [
                 DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
                 DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
@@ -51,24 +56,31 @@ class IdpController extends Controller
 
         return Inertia::render('DeptHead/Idp/Index', [
             'plans' => $plans,
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
         ]);
     }
 
-    public function officeIdp()
+    public function officeIdp(Request $request)
     {
         $deptHead = auth()->user();
         $deptHead->load('employee.office');
         $office = $deptHead->employee?->office;
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current() : PerformancePeriod::current();
 
         $opcr = null;
         if ($office) {
             $opcr = \App\Models\OpcraAccomplishmentSubmission::where('office_id', $office->id)
+                ->where('performance_period_id', $period->id)
                 ->whereNotNull('final_office_rating')
                 ->latest('performance_period_id')
                 ->first();
         }
 
         $plans = DevelopmentPlan::where('dept_head_id', $deptHead->id)
+            ->where('performance_period_id', $period->id)
             ->whereIn('status', [
                 DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
                 DevelopmentPlan::STATUS_DEPT_HEAD_APPROVED,
@@ -104,6 +116,8 @@ class IdpController extends Controller
             'approvedCount' => $approvedCount,
             'pendingCount'  => $pendingCount,
             'returnedCount' => $returnedCount,
+            'period'        => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
+            'allPeriods'    => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'office'        => $office ? [
                 'id'           => $office->id,
                 'name'         => $office->name,

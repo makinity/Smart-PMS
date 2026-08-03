@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
 use App\Models\DevelopmentPlan;
+use App\Models\PerformancePeriod;
 use App\Notifications\WorkflowEventNotification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,11 +19,16 @@ class IdpController extends Controller
         DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
     ];
 
-    public function index()
+    public function index(Request $request)
     {
         $supervisor = auth()->user();
 
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current() : PerformancePeriod::current();
+
         $plans = DevelopmentPlan::where('supervisor_id', $supervisor->id)
+            ->when($period, fn ($q) => $q->where('performance_period_id', $period->id))
             ->whereIn('status', [
                 DevelopmentPlan::STATUS_SUBMITTED,
                 DevelopmentPlan::STATUS_SUPERVISOR_RECOMMENDED,
@@ -50,6 +56,8 @@ class IdpController extends Controller
 
         return Inertia::render('Supervisor/Idp/Index', [
             'plans' => $plans,
+            'period' => $period,
+            'allPeriods' => $allPeriods,
         ]);
     }
 

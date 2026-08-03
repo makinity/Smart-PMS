@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pmt;
 use App\Http\Controllers\Controller;
 use App\Models\DevelopmentPlan;
 use App\Models\OpcraAccomplishmentSubmission;
+use App\Models\PerformancePeriod;
 use App\Notifications\WorkflowEventNotification;
 use App\Services\LndHandoffService;
 use Illuminate\Http\Request;
@@ -13,8 +14,14 @@ use RuntimeException;
 
 class IdpController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
+
         // Get all offices that have IDPs in submitted_to_pmt or later stages
         $plans = DevelopmentPlan::with(['employee.employee.office', 'office', 'performancePeriod:id,name'])
             ->whereIn('status', [
@@ -22,6 +29,7 @@ class IdpController extends Controller
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
             ->whereNotNull('office_id')
+            ->where('performance_period_id', $period->id)
             ->get();
 
         // Group by office
@@ -51,6 +59,8 @@ class IdpController extends Controller
 
         return Inertia::render('Pmt/Idp/Index', [
             'offices' => $offices,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
+            'period' => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
         ]);
     }
 

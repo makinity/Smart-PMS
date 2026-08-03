@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const RATING_COLOR = {
     'Outstanding': '#3b82f6', 'Very Satisfactory': '#10b981',
@@ -76,9 +77,10 @@ function OfficeCard({ office }) {
 }
 
 export default function Index() {
-    const { offices = [] } = usePage().props;
+    const { offices = [], period, allPeriods = [] } = usePage().props;
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const isPastPeriod = period && !period.is_active;
 
     const filtered = offices.filter(o => {
         const matchSearch = !search || o.office_name.toLowerCase().includes(search.toLowerCase());
@@ -100,6 +102,7 @@ export default function Index() {
                                 {offices.length} office{offices.length !== 1 ? 's' : ''} with submitted IDPs
                             </div>
                         </div>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/idp" />
                     </div>
 
                     {/* Live search */}

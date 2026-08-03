@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 import TaskDetailsModal from '@/Pages/Employee/MyTask/TaskDetailsModal';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 
@@ -104,7 +105,7 @@ function Chip({ icon, children, live }) {
 }
 
 export default function Index() {
-    const { entries: initialEntries = [], period, auth } = usePage().props;
+    const { entries: initialEntries = [], period, allPeriods = [], auth } = usePage().props;
     const [entries, setEntries] = useState(initialEntries);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
@@ -112,6 +113,7 @@ export default function Index() {
     const [page, setPage] = useState(1);
     const channelRef = useRef(null);
     const PER_PAGE = 20;
+    const isPastPeriod = period && !allPeriods.find(p => p.id === period.id)?.is_active;
 
     useEffect(() => {
         const userId = auth?.user?.id;
@@ -157,17 +159,26 @@ export default function Index() {
                     <div>
                         <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>Team Task Monitor</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
-                            {entries.length} entries{period ? ` · ${period}` : ''}
+                            {entries.length} entries
                         </div>
                     </div>
-                    {countOf('recording') > 0 && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.65rem', fontWeight: 700,
-                            padding: '3px 10px', borderRadius: 99, background: 'rgba(245,158,11,0.15)',
-                            color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
-                            <span className="live-dot" />
-                            {countOf('recording')} Recording
-                        </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        {isPastPeriod && (
+                            <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: 99,
+                                background: 'rgba(245,158,11,0.12)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                                Past Period
+                            </span>
+                        )}
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/supervisor/team-tasks" />
+                        {countOf('recording') > 0 && (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.65rem', fontWeight: 700,
+                                padding: '3px 10px', borderRadius: 99, background: 'rgba(245,158,11,0.15)',
+                                color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+                                <span className="live-dot" />
+                                {countOf('recording')} Recording
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 <div style={{ position: 'relative', marginBottom: '0.6rem' }}>

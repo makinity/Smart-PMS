@@ -14,18 +14,25 @@ use Inertia\Inertia;
 
 class IpcrTargetController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $employee = Auth::user();
 
-        // Find the active performance period
-        $period = PerformancePeriod::current();
+        // All periods for the selector, newest first
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+
+        // Resolve the period: prefer the period_id param, otherwise fall back to current
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
 
         if (! $period) {
             return Inertia::render('Employee/IpcrTarget/Index', [
                 'ipcr'      => null,
                 'functions' => [],
                 'period'    => null,
+                'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             ]);
         }
 
@@ -139,6 +146,7 @@ class IpcrTargetController extends Controller
                 'committed_at' => $ipcr->committed_at?->toDateTimeString(),
             ] : null,
             'functions' => $functions,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'period'    => $period ? [
                 'id'   => $period->id,
                 'name' => $period->name,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const STATUS_CFG = {
     submitted:              { label: 'Pending Review',    c: '#f59e0b', bg: 'rgba(245,158,11,0.12)', bc: 'rgba(245,158,11,0.3)' },
@@ -31,7 +32,7 @@ function relativeTime(iso) {
 }
 
 export default function Index() {
-    const { plans = [] } = usePage().props;
+    const { plans = [], period = null, allPeriods = [] } = usePage().props;
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
 
@@ -57,11 +58,14 @@ export default function Index() {
                             {pendingCount} pending review · {plans.length} total
                         </div>
                     </div>
-                    {pendingCount > 0 && (
-                        <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '2px 10px', borderRadius: 99, background: '#f59e0b', color: '#fff' }}>
-                            {pendingCount} NEW
-                        </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/supervisor/idp" />
+                        {pendingCount > 0 && (
+                            <span style={{ fontSize: '0.62rem', fontWeight: 800, padding: '2px 10px', borderRadius: 99, background: '#f59e0b', color: '#fff' }}>
+                                {pendingCount} NEW
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Search */}

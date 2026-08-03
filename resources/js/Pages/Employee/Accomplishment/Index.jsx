@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useToast } from '@/Components/Snackbar';
 import AppLayout from '@/Layouts/AppLayout';
 import useBreakpoint from '@/Components/useBreakpoint';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -202,7 +203,7 @@ function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, submission, smporMeta, ipcrMeta, submitBlockers } = usePage().props;
+    const { period, submission, smporMeta, ipcrMeta, submitBlockers, allPeriods } = usePage().props;
 
     const [remarks,    setRemarks]    = useState(submission?.remarks ?? '');
     const [files,      setFiles]      = useState([]);
@@ -244,12 +245,20 @@ export default function Index() {
             <div style={{ ...card, padding: '3rem', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
                 <i className="bi bi-calendar-x" style={{ fontSize: '2rem', display: 'block', marginBottom: 8 }} />
                 No active performance period.
+                {allPeriods && allPeriods.length > 0 && (
+                    <div style={{ marginTop: '1rem' }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/accomplishment" />
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
 
     return (
-        <AppLayout title="Accomplishments" description={`Period: ${period.name}`}>
+        <AppLayout title="Accomplishments">
+            <div style={{ ...card, padding: '0.75rem 1.25rem', marginBottom: '1rem' }}>
+                <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/accomplishment" />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
                 {/* ── Pipeline ── */}

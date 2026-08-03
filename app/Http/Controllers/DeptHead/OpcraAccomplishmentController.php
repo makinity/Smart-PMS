@@ -20,14 +20,17 @@ use Inertia\Inertia;
 
 class OpcraAccomplishmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $deptHead = auth()->user();
-        $period = PerformancePeriod::current();
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current() : PerformancePeriod::current();
 
         if (! $period) {
             return Inertia::render('DeptHead/OpcraAccomplishment/Index', [
                 'period' => null,
+                'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
                 'submission' => null,
                 'employees' => [],
                 'stats' => ['approved' => 0, 'total' => 0],
@@ -118,7 +121,8 @@ class OpcraAccomplishmentController extends Controller
         }
 
         return Inertia::render('DeptHead/OpcraAccomplishment/Index', [
-            'period' => ['id' => $period->id, 'name' => $period->name],
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'submission' => $submission ? [
                 'id' => $submission->id,
                 'status' => $submission->status,

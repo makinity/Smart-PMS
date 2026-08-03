@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import ValidationModal from '@/Components/ValidationModal';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 function useBreakpoint() {
     const [w, setW] = useState(() => (typeof window === 'undefined' ? 1024 : window.innerWidth));
@@ -124,8 +125,9 @@ function ScoreRing({ score, size = 64 }) {
 }
 
 export default function Index() {
-    const { period, submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections, projectedRating } = usePage().props;
+    const { period, allPeriods = [], submission, employees, stats, hasApprovedOpcr, approvedOpcrId, opcrSections, projectedRating } = usePage().props;
     const bp = useBreakpoint();
+    const isPastPeriod = period && !period.is_active;
     const [remarks, setRemarks]   = useState(submission?.dept_head_remarks ?? '');
     const [flagged, setFlagged]   = useState(submission?.flagged_for_calibration ?? false);
     const [confirm, setConfirm]   = useState(false);
@@ -216,12 +218,13 @@ export default function Index() {
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
                 {/* Header */}
-                <div style={{ ...card, padding:'1rem 1.25rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
+                <div style={{ ...card, padding:'1rem 1.25rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap: 8 }}>
                     <div>
                         <div style={{ fontWeight:700, fontSize:'1rem', color:'var(--admin-text-primary)' }}>OPCR Accomplishment</div>
                         <div style={{ fontSize:'0.75rem', color:'var(--admin-text-muted)' }}>{period.name}</div>
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/dept-head/opcr-accomplishment" />
                         {released && (
                             <a href="/dept-head/opcr-accomplishment/export"
                                title="Export Official OPCR"

@@ -8,6 +8,7 @@ use App\Models\DevelopmentPlan;
 use App\Models\Ipcr;
 use App\Models\OpcraAccomplishmentSubmission;
 use App\Models\OrsEntry;
+use App\Models\PerformancePeriod;
 use App\Models\User;
 use App\Notifications\WorkflowEventNotification;
 use App\Services\OpcrOfficeRatingService;
@@ -19,9 +20,16 @@ use Inertia\Inertia;
 
 class OpcraAccomplishmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
+
         $submissions = OpcraAccomplishmentSubmission::with(['office', 'period', 'deptHead'])
+            ->where('performance_period_id', $period->id)
             ->orderByRaw("FIELD(status,'submitted','returned','released')")
             ->orderByDesc('submitted_at')
             ->get()
@@ -42,6 +50,8 @@ class OpcraAccomplishmentController extends Controller
 
         return Inertia::render('Pmt/OpcraAccomplishment/Index', [
             'submissions' => $submissions,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
+            'period' => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
         ]);
     }
 

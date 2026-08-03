@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const RATING_CFG = {
     'Outstanding':       { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: '🏆' },
@@ -48,10 +49,11 @@ const TABS = [
 ];
 
 export default function Index() {
-    const { performers, counts, search: initSearch, rating: initRating, period } = usePage().props;
+    const { performers, counts, search: initSearch, rating: initRating, period, allPeriods } = usePage().props;
     const [search, setSearch] = useState(initSearch ?? '');
     const [rating, setRating] = useState(initRating ?? '');
     const [exporting, setExporting] = useState(false);
+    const isPastPeriod = period && !period.is_active;
 
     const filtered = useMemo(() => {
         const s = search.toLowerCase();
@@ -94,7 +96,8 @@ export default function Index() {
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
                 {/* Top bar: Export button */}
-                <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/performance-overview" />
                     <button
                         onClick={handleExport}
                         disabled={exporting}

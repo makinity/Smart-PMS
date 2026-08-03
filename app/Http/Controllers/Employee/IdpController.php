@@ -4,22 +4,36 @@ namespace App\Http\Controllers\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\DevelopmentPlan;
+use App\Models\PerformancePeriod;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class IdpController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $user->load('employee.office:id,name');
 
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? (PerformancePeriod::find($periodId) ?? PerformancePeriod::current())
+            : PerformancePeriod::current();
+
         $plan = DevelopmentPlan::where('employee_id', $user->id)
+            ->where('performance_period_id', $period->id)
             ->with('performancePeriod:id,name,start_date,end_date')
             ->latest()
             ->first();
 
         return Inertia::render('Employee/Idp/Index', [
+            'allPeriods' => $allPeriods->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'is_active' => $p->is_active,
+            ]),
+            'period' => ['id' => $period->id, 'name' => $period->name],
             'employee' => [
                 'id'       => $user->id,
                 'name'     => $user->name,

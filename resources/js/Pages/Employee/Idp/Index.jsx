@@ -5,6 +5,7 @@ import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
 import useBreakpoint from '@/Components/useBreakpoint';
+import PeriodSelector from '@/Components/PeriodSelector';
 
 const RATING_COLOR = { 'Poor': '#ef4444', 'Unsatisfactory': '#eab308' };
 
@@ -189,7 +190,7 @@ function GoalCard({ index, row, onChange, onRemove, readOnly }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function IdpIndex() {
     const { props } = usePage();
-    const { employee, plan } = props;
+    const { employee, plan, allPeriods, period } = props;
     const toast   = useToast();
     const confirm = useConfirm();
     const bp      = useBreakpoint();
@@ -257,7 +258,8 @@ export default function IdpIndex() {
                             Individual Development Plan{plan?.period ? ` · ${plan.period}` : ''}
                         </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/idp" />
                         {plan && (
                             <span style={{
                                 fontSize: '0.65rem', fontWeight: 700, padding: '3px 10px', borderRadius: 99,
