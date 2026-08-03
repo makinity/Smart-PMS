@@ -238,38 +238,37 @@ export default function Index() {
                         </div>
                     </div>
 
-                    {/* Period selector */}
-                    {allPeriods && allPeriods.length > 1 && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' }}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--admin-text-muted)" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>Period</span>
-                            <select
-                                value={period?.id ?? ''}
-                                onChange={e => navPeriod(e.target.value)}
-                                style={{ flex: 1, maxWidth: 260, padding: '0.38rem 0.65rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', outline: 'none' }}
-                            >
-                                {allPeriods.map(p => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.name}{p.is_active ? ' (Current)' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
-                    {/* Quarter tabs */}
+                    {/* Quarter tabs + Period selector row */}
                     {period && (
-                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
-                            {[1,2].map(n => (
-                                <button key={n} onClick={() => navQ(n)} style={{
-                                    padding: '0.45rem 1rem', borderRadius: 8, border: `1px solid ${q===n ? 'var(--admin-accent)' : 'var(--admin-border-strong)'}`,
-                                    background: q===n ? 'rgba(59,130,246,0.12)' : 'var(--admin-bg-secondary)',
-                                    color: q===n ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
-                                    fontWeight: q===n ? 700 : 500, fontSize: '0.82rem', cursor: 'pointer',
-                                }}>
-                                    {resolvedQuarterLabels[n]}
-                                </button>
-                            ))}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                {[1,2].map(n => (
+                                    <button key={n} onClick={() => navQ(n)} style={{
+                                        padding: '0.45rem 1rem', borderRadius: 8, border: `1px solid ${q===n ? 'var(--admin-accent)' : 'var(--admin-border-strong)'}`,
+                                        background: q===n ? 'rgba(59,130,246,0.12)' : 'var(--admin-bg-secondary)',
+                                        color: q===n ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
+                                        fontWeight: q===n ? 700 : 500, fontSize: '0.82rem', cursor: 'pointer',
+                                    }}>
+                                        {resolvedQuarterLabels[n]}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {allPeriods && allPeriods.length > 1 && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <select
+                                        value={period?.id ?? ''}
+                                        onChange={e => navPeriod(e.target.value)}
+                                        style={{ padding: '0.38rem 0.65rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', outline: 'none' }}
+                                    >
+                                        {allPeriods.map(p => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name}{p.is_active ? ' (Current)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
