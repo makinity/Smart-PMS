@@ -6,6 +6,9 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Database\Seeders\UwpSampleSeeder;
 use Database\Seeders\SpmsFullSeeder;
+use Database\Seeders\SpmsH1CompleteSeeder;
+use Database\Seeders\UwpSampleSeederH2;
+use Database\Seeders\SpmsFullSeederH2;
 use Illuminate\Support\Facades\Http;
 
 class DatabaseSeeder extends Seeder
@@ -41,6 +44,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             UwpSampleSeeder::class,
             SpmsFullSeeder::class,
+            SpmsH1CompleteSeeder::class,   // closes out Jan-Jun 2026 as full history
+            UwpSampleSeederH2::class,
+            SpmsFullSeederH2::class,
             // OrsSampleSeeder::class, // replaced by SpmsFullSeeder
             // MlTrainingDataSeeder::class,
         ]);

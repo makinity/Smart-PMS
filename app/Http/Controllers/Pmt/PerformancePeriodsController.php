@@ -244,7 +244,7 @@ class PerformancePeriodsController extends Controller
             'Employees with no IPCR set up'          => $noIpcr,
             'IPCR not yet committed'                 => Ipcr::where('performance_period_id', $pid)->whereNotIn('status', ['committed', 'released_by_pmt'])->count(),
             'Employees with no accomplishment filed' => $noAccomplishment,
-            'Accomplishments in progress'            => AccomplishmentSubmission::where('performance_period_id', $pid)->whereNotIn('status', ['pmt_approved', 'returned_to_employee'])->count(),
+            'Accomplishments in progress'            => AccomplishmentSubmission::where('performance_period_id', $pid)->whereNotIn('status', ['released_by_pmt', 'returned_to_employee'])->count(),
             'ORS entries unsubmitted'                => OrsEntry::where('performance_period_id', $pid)->whereIn('status', ['draft', 'recording', 'paused'])->count(),
             'UWP not yet submitted'                  => \App\Models\UnitWorkPlan::where('performance_period_id', $pid)->whereIn('status', ['draft', 'returned'])->count(),
             'QAR not yet PMT-approved'               => QarHeader::where('performance_period_id', $pid)->whereIn('status', ['submitted'])->whereNull('pmt_status')->count(),

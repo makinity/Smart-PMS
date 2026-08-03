@@ -158,7 +158,7 @@ export default function OfficeIdp() {
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                     {[
                                         { label: 'Total',    value: plans.length,  color: 'var(--admin-text-primary)' },
-                                        { label: 'Approved', value: approvedCount, color: '#10b981' },
+                                        { label: 'Approved', value: plans.filter(p => ['dept_head_approved','submitted_to_pmt','submitted_to_ld'].includes(p.status)).length, color: '#10b981' },
                                         { label: 'Pending',  value: pendingCount,  color: '#f59e0b' },
                                         { label: 'Returned', value: returnedCount, color: '#f87171' },
                                     ].map(({ label, value, color }) => (
@@ -173,7 +173,8 @@ export default function OfficeIdp() {
                     </div>
                 )}
 
-                {/* Draft batch — approved IDPs ready to submit */}
+                {/* Draft batch — approved IDPs ready to submit — only show when actionable */}
+                {(draftPlans.length > 0 || (submittedPlans.length === 0 && pendingPlans.length === 0)) && (
                 <div style={{ ...card, padding: isMobile ? '1rem' : '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                         <div>
@@ -206,10 +207,14 @@ export default function OfficeIdp() {
                     {draftPlans.length === 0 ? (
                         <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem' }}>
                             <i className="bi bi-inbox" style={{ fontSize: '2rem', display: 'block', marginBottom: 8, opacity: 0.5 }} />
-                            No approved IDPs yet. Approve employee IDPs from the IDP Approval page.
+                            {submittedPlans.length > 0
+                                ? 'All approved IDPs have already been forwarded to PMT or L&D.'
+                                : 'No approved IDPs yet. Approve employee IDPs from the IDP Approval page.'
+                            }
                         </div>
                     ) : draftPlans.map(p => <EmployeeRow key={p.id} p={p} />)}
                 </div>
+                )}
 
                 {/* Pending — not yet approved */}
                 {pendingPlans.length > 0 && (

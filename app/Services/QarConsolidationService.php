@@ -17,25 +17,46 @@ class QarConsolidationService
 {
     /**
      * The three calendar months that make up quarter $q of a 6-month period.
-     * Q1 = Jan-Mar, Q2 = Apr-Jun.
+     * Q1 maps to the first 3 months of the period, Q2 to the last 3.
+     *
+     * For Jan-Jun: Q1 = Jan-Mar, Q2 = Apr-Jun
+     * For Jul-Dec: Q1 = Jul-Sep, Q2 = Oct-Dec
      *
      * @return Carbon[]
      */
     public function quarterMonths(PerformancePeriod $period, int $q): array
     {
-        $year = $period->start_date->year;
-        $base = ($q - 1) * 3 + 1;
+        $startMonth = $period->start_date->month;
+        $startYear  = $period->start_date->year;
+
+        // Offset within the period: Q1 starts at month 0, Q2 starts at month 3
+        $offset = ($q - 1) * 3;
+
+        // Calculate the actual calendar month, wrapping year if needed
+        $m1 = Carbon::create($startYear, $startMonth, 1)->addMonths($offset);
 
         return [
-            Carbon::create($year, $base, 1)->startOfMonth(),
-            Carbon::create($year, $base + 1, 1)->startOfMonth(),
-            Carbon::create($year, $base + 2, 1)->startOfMonth(),
+            $m1->copy()->startOfMonth(),
+            $m1->copy()->addMonth()->startOfMonth(),
+            $m1->copy()->addMonths(2)->startOfMonth(),
         ];
     }
 
+    /**
+     * Returns the canonical quarter key, e.g. "2026-Q1", "2026-Q3".
+     * Uses the real calendar quarter number of the period's first month.
+     *
+     * Jan-Mar → Q1, Apr-Jun → Q2, Jul-Sep → Q3, Oct-Dec → Q4
+     */
     public function quarterKey(PerformancePeriod $period, int $q): string
     {
-        return $period->start_date->year.'-Q'.$q;
+        $startMonth = $period->start_date->month;
+        // Calendar quarter of the first month of the period (1-4)
+        $periodCalendarQ = (int) ceil($startMonth / 3);
+        // Add the within-period offset (q=1 → +0, q=2 → +1)
+        $calendarQ = $periodCalendarQ + ($q - 1);
+
+        return $period->start_date->year . '-Q' . $calendarQ;
     }
 
     /**

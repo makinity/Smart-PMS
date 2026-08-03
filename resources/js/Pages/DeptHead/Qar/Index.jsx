@@ -131,7 +131,7 @@ function AnnexCards({ rows }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Index() {
-    const { period, allPeriods, q, quarterKey, quarterMonths, coveredMonths, annexRows, mpors, qarHeader, deptHead } = usePage().props;
+    const { period, allPeriods, q, quarterKey, quarterMonths, quarterTabLabels, coveredMonths, annexRows, mpors, qarHeader, deptHead } = usePage().props;
 
     const bp       = useBreakpoint();
     const isMobile = bp === 'mobile';
@@ -205,7 +205,9 @@ export default function Index() {
         });
     }
 
-    const quarterLabels = { 1: 'Q1 Jan–Mar', 2: 'Q2 Apr–Jun' };
+    // Quarter tab labels come from the backend, derived from period start_date
+    // e.g. Jan-Jun → {1:'Q1 Jan–Mar', 2:'Q2 Apr–Jun'}, Jul-Dec → {1:'Q3 Jul–Sep', 2:'Q4 Oct–Dec'}
+    const resolvedQuarterLabels = quarterTabLabels ?? { 1: 'Q1 Jan–Mar', 2: 'Q2 Apr–Jun' };
     const monthsCovered = coveredMonths?.length ?? 0;
 
     return (
@@ -265,7 +267,7 @@ export default function Index() {
                                     color: q===n ? 'var(--admin-accent)' : 'var(--admin-text-muted)',
                                     fontWeight: q===n ? 700 : 500, fontSize: '0.82rem', cursor: 'pointer',
                                 }}>
-                                    {quarterLabels[n]}
+                                    {resolvedQuarterLabels[n]}
                                 </button>
                             ))}
                         </div>
@@ -327,7 +329,7 @@ export default function Index() {
                     )}
                     {mpors.length === 0 ? (
                         <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--admin-text-muted)', fontSize: '0.85rem', border: '1px dashed var(--admin-border)', borderRadius: 'var(--admin-radius)' }}>
-                            No endorsed MPORs for {quarterLabels[q]}.
+                            No endorsed MPORs for {resolvedQuarterLabels[q]}.
                         </div>
                     ) : isMobile ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
@@ -403,7 +405,7 @@ export default function Index() {
                             Annex I — Quarterly Performance Summary
                         </p>
                         <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>
-                            QUARTERLY PHYSICAL REPORT OF OPERATIONS · {quarterLabels[q]}
+                            QUARTERLY PHYSICAL REPORT OF OPERATIONS · {resolvedQuarterLabels[q]}
                         </span>
                     </div>
                     {isMobile ? <AnnexCards rows={annexRows} /> : <AnnexTable rows={annexRows} />}

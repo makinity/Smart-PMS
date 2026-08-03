@@ -72,12 +72,28 @@ class QarController extends Controller
             : [];
         $coveredMonths = $mporList->pluck('month')->unique()->values();
 
+        // Build human-readable quarter tab labels dynamically from the period start_date
+        // e.g. Jan-Jun → ['Q1 Jan–Mar', 'Q2 Apr–Jun']
+        //      Jul-Dec → ['Q3 Jul–Sep', 'Q4 Oct–Dec']
+        $quarterTabLabels = [];
+        if ($period) {
+            foreach ([1, 2] as $qn) {
+                $months = $this->qar->quarterMonths($period, $qn);
+                $key    = $this->qar->quarterKey($period, $qn);
+                // Extract the Q-number from the key (e.g. "2026-Q3" → "Q3")
+                preg_match('/Q(\d+)/', $key, $m);
+                $qLabel = 'Q' . ($m[1] ?? $qn);
+                $quarterTabLabels[$qn] = $qLabel . ' ' . $months[0]->format('M') . '–' . $months[2]->format('M');
+            }
+        }
+
         return Inertia::render('DeptHead/Qar/Index', [
             'period' => $period ? ['id' => $period->id, 'name' => $period->name] : null,
             'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'q' => $q,
             'quarterKey' => $quarterKey,
             'quarterMonths' => $quarterMonths,
+            'quarterTabLabels' => $quarterTabLabels,
             'coveredMonths' => $coveredMonths,
             'annexRows' => $consolidated['rows'],
             'mpors' => $mporList,
