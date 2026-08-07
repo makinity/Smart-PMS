@@ -456,14 +456,14 @@ class SpmsH1CompleteSeeder extends Seeder
             $cboSupervisor = User::whereHas('employee', fn ($q) => $q->where('office_id', $cbo->id))->where('role', 'supervisor')->first();
             $cboEmployees  = User::whereHas('employee', fn ($q) => $q->where('office_id', $cbo->id)->where('is_active', true))->where('role', 'employee')->get();
 
-            // Progress CBO UWP to pmt_approved so it no longer shows as "draft"
+            // Progress CBO UWP to approved so it no longer shows as "draft"
             $cboUwp = UnitWorkPlan::where('office_id', $cbo->id)
                 ->where('performance_period_id', $period->id)
                 ->first();
 
             if ($cboUwp && in_array($cboUwp->status, ['draft', 'returned'])) {
                 $cboUwp->update([
-                    'status'         => UnitWorkPlan::STATUS_PMT_APPROVED,
+                    'status'         => 'approved',
                     'submitted_at'   => Carbon::parse('2026-01-06 08:00:00'),
                     'endorsed_at'    => Carbon::parse('2026-01-08 09:00:00'),
                     'approved_at'    => Carbon::parse('2026-01-10 10:00:00'),
@@ -471,7 +471,7 @@ class SpmsH1CompleteSeeder extends Seeder
                     'ratee_name'     => $cbo->name,
                     'period_covered' => 'January – June 2026',
                 ]);
-                $this->command->info('CBO UWP → pmt_approved.');
+                $this->command->info('CBO UWP → approved.');
             }
 
             // Create an approved OPCR for CBO

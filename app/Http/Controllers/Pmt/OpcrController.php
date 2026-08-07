@@ -30,7 +30,7 @@ class OpcrController extends Controller
                 'period' => $o->period?->name ?? '—',
                 'status' => $o->status,
                 'uwp_count' => $o->uwps->count(),
-                'approved_count' => $o->uwps->whereIn('status', ['approved', \App\Models\UnitWorkPlan::STATUS_PMT_APPROVED])->count(),
+                'approved_count' => $o->uwps->where('status', 'approved')->count(),
                 'updated_at' => $o->updated_at?->format('M d, Y'),
             ]);
 

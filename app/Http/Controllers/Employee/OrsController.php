@@ -35,7 +35,7 @@ class OrsController extends Controller
         } else {
             $committedIpcr = Ipcr::where('employee_id', $user->id)
                 ->where('performance_period_id', $period->id)
-                ->where('status', 'committed')
+                ->whereIn('status', ['committed', 'released_by_pmt'])
                 ->with(['items.indicator.uwpMfo'])
                 ->first();
 
@@ -80,11 +80,12 @@ class OrsController extends Controller
                 'label' => $s->name . ($s->employee?->office ? ' — ' . $s->employee->office->name : ''),
             ]);
 
-        // Calendar entries (all for this period, grouped by date)
+        // Calendar entries — load across ALL periods so navigating to past months
+        // shows historical entries. The frontend banners already block logging
+        // for locked months (MPOR submitted) and outside-period months.
         $entries = [];
         if ($committedIpcr) {
             $rawEntries = OrsEntry::where('employee_id', $user->id)
-                ->when($period, fn($q) => $q->where('performance_period_id', $period->id))
                 ->with(['ipcrItem.indicator', 'evidences', 'supervisor'])
                 ->orderBy('work_date')
                 ->get();
@@ -151,7 +152,7 @@ class OrsController extends Controller
 
         $ipcr = Ipcr::where('employee_id', $user->id)
             ->where('performance_period_id', $period->id)
-            ->where('status', 'committed')
+            ->whereIn('status', ['committed', 'released_by_pmt'])
             ->firstOrFail();
 
         $data = $request->validate([

@@ -149,7 +149,7 @@ export default function OfficeIdp() {
 
                             {/* Right: score + counts + submit btn */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                                <PeriodSelector period={period} allPeriods={allPeriods} route="/dept-head/idp/office" />
+                                <PeriodSelector period={period} allPeriods={allPeriods} route="/dept-head/idp-office" />
                                 {office.office_score != null && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <span style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, color: officeColor, lineHeight: 1 }}>{office.office_score.toFixed(2)}</span>

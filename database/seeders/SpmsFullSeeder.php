@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
  * negative test environment (no UWP, no MPORs, QAR blocked by rules).
  *
  * HRMO flow seeded:
- *  - UWP → pmt_approved + locked
+ *  - UWP → approved + locked
  *  - OPCR → approved, linked to UWP
  *  - Indicator assignments → all HRMO employees on all indicators
  *  - IPCRs → committed, one per HRMO employee
@@ -51,13 +51,13 @@ class SpmsFullSeeder extends Seeder
             ->where('role', 'employee')
             ->get();
 
-        // ── 1. Progress UWP to pmt_approved + locked ─────────────────────────
+        // ── 1. Progress UWP to approved + locked ─────────────────────────
         $uwp = UnitWorkPlan::where('office_id', $hrmo->id)
             ->where('performance_period_id', $period->id)
             ->firstOrFail();
 
         $uwp->update([
-            'status'       => UnitWorkPlan::STATUS_PMT_APPROVED,
+            'status'       => 'approved',
             'submitted_at' => Carbon::parse('2026-01-05 08:00:00'),
             'endorsed_at'  => Carbon::parse('2026-01-07 09:00:00'),
             'approved_at'  => Carbon::parse('2026-01-09 10:00:00'),
@@ -66,7 +66,7 @@ class SpmsFullSeeder extends Seeder
             'period_covered' => 'January – June 2026',
         ]);
 
-        $this->command->info('UWP progressed to pmt_approved + locked.');
+        $this->command->info('UWP progressed to approved + locked.');
 
         // ── 2. Create OPCR linked to UWP ─────────────────────────────────────
         $opcr = Opcr::firstOrCreate(

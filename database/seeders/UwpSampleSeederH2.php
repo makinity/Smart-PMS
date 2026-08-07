@@ -23,13 +23,19 @@ class UwpSampleSeederH2 extends Seeder
     public function run(): void
     {
         // ── Performance period ────────────────────────────────────────────────
+        // Deactivate all existing periods first — Jul-Dec 2026 is now the active one
+        PerformancePeriod::query()->update(['is_active' => false]);
+
         $period = PerformancePeriod::where('name', 'Jul-Dec 2026')->first()
             ?? PerformancePeriod::create([
                 'name'       => 'Jul-Dec 2026',
                 'start_date' => '2026-07-01',
                 'end_date'   => '2026-12-31',
-                'is_active'  => false,
+                'is_active'  => true,
             ]);
+
+        // Ensure it is active (handles re-seed case)
+        $period->update(['is_active' => true]);
 
         // ── Offices ───────────────────────────────────────────────────────────
         $hrmo = Office::firstOrCreate(

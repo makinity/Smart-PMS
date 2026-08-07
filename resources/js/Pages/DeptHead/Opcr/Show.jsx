@@ -49,8 +49,8 @@ export default function Show() {
 
     const activeFn       = fns?.find(f => f.id === activeFnId);
     const activeFnForMfo = fns?.find(f => f.mfos?.some(m => m.id === activeMfoId));
-    const allApproved    = uwps.length > 0 && uwps.every(u => u.status === 'approved' || u.status === 'pmt_approved');
-    const approvedCount  = uwps.filter(u => u.status === 'approved' || u.status === 'pmt_approved').length;
+    const allApproved    = uwps.length > 0 && uwps.every(u => u.status === 'approved');
+    const approvedCount  = uwps.filter(u => u.status === 'approved').length;
     const canSubmit      = status === 'draft' && allApproved;
 
     async function handleSubmit() {
@@ -199,8 +199,8 @@ export default function Show() {
                                             <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--admin-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.supervisor}</div>
                                             {u.mfo_labels && <div style={{ fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.mfo_labels}</div>}
                                         </div>
-                                        <span style={u.status === 'approved' ? s.approvedDot : s.pendingDot}>
-                                            {u.status === 'approved' ? '✓' : '✗'}
+                                        <span style={(u.status === 'approved' || u.status === 'pmt_approved') ? s.approvedDot : s.pendingDot}>
+                                            {(u.status === 'approved' || u.status === 'pmt_approved') ? '✓' : '✗'}
                                         </span>
                                     </button>
                                 ))}
