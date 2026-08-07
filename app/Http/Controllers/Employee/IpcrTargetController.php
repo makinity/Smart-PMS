@@ -148,9 +148,10 @@ class IpcrTargetController extends Controller
             'functions' => $functions,
             'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'period'    => $period ? [
-                'id'   => $period->id,
-                'name' => $period->name,
-                'year' => $period->year ?? null,
+                'id'        => $period->id,
+                'name'      => $period->name,
+                'is_active' => $period->is_active,
+                'year'      => $period->year ?? null,
             ] : null,
             'employee'  => [
                 'name'   => $employee->name,

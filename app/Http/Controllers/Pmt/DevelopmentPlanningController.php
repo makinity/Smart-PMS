@@ -93,7 +93,7 @@ class DevelopmentPlanningController extends Controller
             'counts' => $counts,
             'search' => $search,
             'rating' => $rating,
-            'period' => $period ? ['id' => $period->id, 'name' => $period->name] : null,
+            'period' => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
         ]);
     }
 

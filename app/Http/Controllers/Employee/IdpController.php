@@ -33,7 +33,7 @@ class IdpController extends Controller
                 'name' => $p->name,
                 'is_active' => $p->is_active,
             ]),
-            'period' => ['id' => $period->id, 'name' => $period->name],
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
             'employee' => [
                 'id'       => $user->id,
                 'name'     => $user->name,

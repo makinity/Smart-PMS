@@ -217,7 +217,7 @@ export default function Index() {
             <AppLayout title="IPCR Target">
                 <style>{css}</style>
                 {allPeriods && allPeriods.length > 0 && (
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
                         <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/ipcr-target" />
                     </div>
                 )}
@@ -240,7 +240,7 @@ export default function Index() {
     return (
         <AppLayout title="IPCR Target">
             <style>{css}</style>
-            <div style={{ ...s.topbar, marginBottom: '0.75rem', padding: '0.6rem 1rem' }}>
+            <div style={{ ...s.topbar, marginBottom: '0.75rem', padding: '0.6rem 1rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/ipcr-target" />
             </div>
 

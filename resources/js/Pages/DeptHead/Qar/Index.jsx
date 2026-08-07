@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
 import { avatarSrc as resolveAvatar, onAvatarError } from '@/Components/defaultAvatar';
@@ -159,13 +160,9 @@ export default function Index() {
         router.get('/dept-head/qar', params, { preserveState: false });
     }
 
-    function navPeriod(periodId) {
-        const params = { q: 1 };
-        // Only send period_id if it's not the active period
-        const selected = (allPeriods ?? []).find(p => p.id === Number(periodId));
-        if (selected && !selected.is_active) params.period_id = periodId;
-        router.get('/dept-head/qar', params, { preserveState: false });
-    }
+    // Quarter tab labels come from the backend, derived from period start_date
+    // e.g. Jan-Jun → {1:'Q1 Jan–Mar', 2:'Q2 Apr–Jun'}, Jul-Dec → {1:'Q3 Jul–Sep', 2:'Q4 Oct–Dec'}
+    const resolvedQuarterLabels = quarterTabLabels ?? { 1: 'Q1 Jan–Mar', 2: 'Q2 Apr–Jun' };
 
     async function handleSubmit() {
         if (!await confirm(`Submit QAR for ${quarterKey} to PMT? This will save all Annex I rows and notify PMT.`)) return;
@@ -205,9 +202,6 @@ export default function Index() {
         });
     }
 
-    // Quarter tab labels come from the backend, derived from period start_date
-    // e.g. Jan-Jun → {1:'Q1 Jan–Mar', 2:'Q2 Apr–Jun'}, Jul-Dec → {1:'Q3 Jul–Sep', 2:'Q4 Oct–Dec'}
-    const resolvedQuarterLabels = quarterTabLabels ?? { 1: 'Q1 Jan–Mar', 2: 'Q2 Apr–Jun' };
     const monthsCovered = coveredMonths?.length ?? 0;
 
     return (
@@ -255,19 +249,7 @@ export default function Index() {
                             </div>
 
                             {allPeriods && allPeriods.length > 1 && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <select
-                                        value={period?.id ?? ''}
-                                        onChange={e => navPeriod(e.target.value)}
-                                        style={{ padding: '0.38rem 0.65rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', outline: 'none' }}
-                                    >
-                                        {allPeriods.map(p => (
-                                            <option key={p.id} value={p.id}>
-                                                {p.name}{p.is_active ? ' (Current)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <PeriodSelector period={period} allPeriods={allPeriods} route="/dept-head/qar" />
                             )}
                         </div>
                     )}

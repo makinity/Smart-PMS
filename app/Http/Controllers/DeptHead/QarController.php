@@ -88,7 +88,7 @@ class QarController extends Controller
         }
 
         return Inertia::render('DeptHead/Qar/Index', [
-            'period' => $period ? ['id' => $period->id, 'name' => $period->name] : null,
+            'period' => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
             'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'q' => $q,
             'quarterKey' => $quarterKey,

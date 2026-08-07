@@ -60,7 +60,7 @@ class SmporIpcrAccomplishmentController extends Controller
         $submitBlockers = $this->resolveSubmitBlockers($user, $period);
 
         return Inertia::render('Employee/Accomplishment/Index', [
-            'period' => ['id' => $period->id, 'name' => $period->name, 'start_date' => $period->start_date->toDateString(), 'end_date' => $period->end_date->toDateString()],
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active, 'start_date' => $period->start_date->toDateString(), 'end_date' => $period->end_date->toDateString()],
             'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
             'submission' => $submission ? $this->formatSubmission($submission) : null,
             'smporMeta' => $smporMeta,
@@ -87,7 +87,7 @@ class SmporIpcrAccomplishmentController extends Controller
             ->first();
 
         return Inertia::render('Employee/Accomplishment/SmporPreview', [
-            'period' => ['id' => $period->id, 'name' => $period->name],
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
             'employee' => ['name' => $user->name, 'office' => $user->office?->name],
             'source' => $submission?->dataset_source ?? $mpors['source'],
             'table' => $this->buildSmporTable($mpors['ids'], $period, $ipcr),
@@ -136,7 +136,7 @@ class SmporIpcrAccomplishmentController extends Controller
         }
 
         return Inertia::render('Employee/Accomplishment/IpcrPreview', [
-            'period' => ['id' => $period->id, 'name' => $period->name],
+            'period' => ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active],
             'employee' => ['name' => $user->name, 'office' => $user->office?->name],
             'sections' => $sections,
             'meta' => array_merge($this->buildIpcrMeta($ipcr), ['type_scores' => $typeAratings]),

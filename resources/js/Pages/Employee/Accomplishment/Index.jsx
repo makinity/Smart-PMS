@@ -256,7 +256,7 @@ export default function Index() {
 
     return (
         <AppLayout title="Accomplishments">
-            <div style={{ ...card, padding: '0.75rem 1.25rem', marginBottom: '1rem' }}>
+            <div style={{ ...card, padding: '0.75rem 1.25rem', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <PeriodSelector period={period} allPeriods={allPeriods} route="/employee/accomplishment" />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
