@@ -74,12 +74,14 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::get('/database/backups/{filename}/download', [\App\Http\Controllers\Admin\DatabaseController::class, 'downloadBackup'])->name('database.backups.download')->where('filename', '.+');
     Route::delete('/database/backups/{filename}', [\App\Http\Controllers\Admin\DatabaseController::class, 'deleteBackup'])->name('database.backups.delete')->where('filename', '.+');
     Route::get('/database/table-info', [\App\Http\Controllers\Admin\DatabaseController::class, 'tableInfo'])->name('database.table-info');
-    Route::post('/database/export', [\App\Http\Controllers\Admin\DatabaseController::class, 'export'])->name('database.export');
-    Route::get('/hris', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.index');
-    Route::get('/hris-integration', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'index'])->name('hris.integration');
-    Route::post('/hris/sync', [\App\Http\Controllers\Admin\HrisIntegrationController::class, 'sync'])->name('hris.sync');
+    Route::get('/hris', [\App\Http\Controllers\Admin\HrmoHubController::class, 'index'])->name('hris.index');
+    Route::get('/hris-integration', [\App\Http\Controllers\Admin\HrmoHubController::class, 'index'])->name('hris.integration');
+    Route::post('/hris/sync', [\App\Http\Controllers\Admin\HrmoHubController::class, 'sync'])->name('hris.sync');
+    Route::post('/hrmo-hub/connect', [\App\Http\Controllers\Admin\HrmoHubController::class, 'connect'])->name('hrmo-hub.connect');
+    Route::post('/hrmo-hub/disconnect', [\App\Http\Controllers\Admin\HrmoHubController::class, 'disconnect'])->name('hrmo-hub.disconnect');
+    Route::post('/hrmo-hub/test', [\App\Http\Controllers\Admin\HrmoHubController::class, 'testConnection'])->name('hrmo-hub.test');
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/profile', fn () => \Inertia\Inertia::render('Admin/Profile'))->name('profile');
+    Route::get('/profile', fn () => InertiaInertia::render('Admin/Profile'))->name('profile');
 
     // Machine Learning Control Center
     Route::get('/ml', [\App\Http\Controllers\Admin\MachineLearningController::class, 'index'])->name('ml.index');

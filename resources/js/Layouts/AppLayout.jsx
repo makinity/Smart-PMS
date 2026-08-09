@@ -211,7 +211,7 @@ export default function AppLayout({ children, title, description }) {
                     min-height: 100vh;
                     background: var(--admin-bg-primary);
                 }
-                .admin-content { flex: 1; padding: 1rem 1.5rem; overflow: auto; }
+                .admin-content { padding: 1rem 1.5rem; overflow: auto; }
 
                 /* On mobile: sidebar is an overlay, main takes full width */
                 @media (max-width: 767px) {
