@@ -102,6 +102,7 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::get('/qar/{qar}', [\App\Http\Controllers\Pmt\QarController::class, 'show'])->name('qar.show');
     Route::post('/qar/{qar}/approve', [\App\Http\Controllers\Pmt\QarController::class, 'approve'])->name('qar.approve');
     Route::post('/qar/{qar}/return', [\App\Http\Controllers\Pmt\QarController::class, 'return'])->name('qar.return');
+    Route::post('/qar/{qar}/recalculate', [\App\Http\Controllers\Pmt\QarController::class, 'recalculate'])->name('qar.recalculate');
     Route::get('/uwp', fn () => \Inertia\Inertia::render('Pmt/UnitWorkPlan/Index'))->name('uwp.index');
     Route::get('/opcr-accomplishment', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'index'])->name('opcr-accomplishment.index');
     Route::get('/opcr-accomplishment/{opcraAccomplishment}', [\App\Http\Controllers\Pmt\OpcraAccomplishmentController::class, 'show'])->name('opcr-accomplishment.show');

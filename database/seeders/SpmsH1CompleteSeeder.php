@@ -148,12 +148,14 @@ class SpmsH1CompleteSeeder extends Seeder
                 'office_id'             => $hrmo->id,
                 'performance_period_id' => $period->id,
                 'quarter_key'           => $q2Key,
-                'status'                => 'submitted',
+                'status'                => 'pmt_approved',
                 'generated_at'          => Carbon::parse('2026-07-05 09:00:00'),
                 'generated_by'          => $deptHead->id,
                 'approved_at'           => Carbon::parse('2026-07-05 09:00:00'),
                 'approved_by'           => $deptHead->id,
-                'pmt_status'            => 'reviewed',
+                'pmt_status'            => 'validated',
+                'pmt_validated_at'      => Carbon::parse('2026-07-10 10:00:00'),
+                'pmt_validated_by'      => $pmt->id,
             ]);
 
             $q2Months = ['2026-04', '2026-05', '2026-06'];
@@ -216,9 +218,32 @@ class SpmsH1CompleteSeeder extends Seeder
                 ]);
             }
 
-            $this->command->info("QAR Q2 seeded (pmt_status=reviewed) with {$q2Mpors->count()} MPOR links and {$sort} rows.");
+            $this->command->info("QAR Q2 seeded (pmt_approved) with {$q2Mpors->count()} MPOR links and {$sort} rows.");
         } else {
-            $this->command->info('QAR Q2 already exists — skipped.');
+            // Ensure existing Q2 is also pmt_approved
+            $existingQ2->update([
+                'status'           => 'pmt_approved',
+                'pmt_status'       => 'validated',
+                'pmt_validated_at' => Carbon::parse('2026-07-10 10:00:00'),
+                'pmt_validated_by' => $pmt->id,
+            ]);
+            $this->command->info('QAR Q2 already exists — upgraded to pmt_approved.');
+        }
+
+        // ── Also ensure Q1 is pmt_approved ───────────────────────────────────
+        $q1Key = $period->start_date->year . '-Q1';
+        $qarQ1 = QarHeader::where('office_id', $hrmo->id)
+            ->where('performance_period_id', $period->id)
+            ->where('quarter_key', $q1Key)
+            ->first();
+        if ($qarQ1 && $qarQ1->pmt_status !== 'validated') {
+            $qarQ1->update([
+                'status'           => 'pmt_approved',
+                'pmt_status'       => 'validated',
+                'pmt_validated_at' => Carbon::parse('2026-04-15 10:00:00'),
+                'pmt_validated_by' => $pmt->id,
+            ]);
+            $this->command->info('QAR Q1 → pmt_approved.');
         }
 
         // ── 3. AccomplishmentSubmissions → released_by_pmt ───────────────────

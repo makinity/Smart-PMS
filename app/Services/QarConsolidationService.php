@@ -43,20 +43,15 @@ class QarConsolidationService
     }
 
     /**
-     * Returns the canonical quarter key, e.g. "2026-Q1", "2026-Q3".
-     * Uses the real calendar quarter number of the period's first month.
+     * Returns the period-relative quarter key, always Q1 or Q2.
+     * Q1 = first 3 months of the period, Q2 = last 3 months.
      *
-     * Jan-Mar → Q1, Apr-Jun → Q2, Jul-Sep → Q3, Oct-Dec → Q4
+     * Jan-Jun → Q1 = "2026-Q1", Q2 = "2026-Q2"
+     * Jul-Dec → Q1 = "2026-Q1", Q2 = "2026-Q2"  (period-relative, not calendar)
      */
     public function quarterKey(PerformancePeriod $period, int $q): string
     {
-        $startMonth = $period->start_date->month;
-        // Calendar quarter of the first month of the period (1-4)
-        $periodCalendarQ = (int) ceil($startMonth / 3);
-        // Add the within-period offset (q=1 → +0, q=2 → +1)
-        $calendarQ = $periodCalendarQ + ($q - 1);
-
-        return $period->start_date->year . '-Q' . $calendarQ;
+        return $period->start_date->year . '-Q' . $q;
     }
 
     /**

@@ -21,7 +21,7 @@ class MporController extends Controller
         $user   = Auth::user();
         $search = $request->get('search', '');
         $month  = $request->get('month', '');
-        $status = $request->get('status', '');
+        $status = $request->get('status', 'submitted');
 
         $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
         $periodId   = $request->get('period_id');

@@ -234,7 +234,11 @@ function ActionPanel({ qar }) {
         router.post(`/pmt/qar/${qar.id}/${action}`, data, {
             preserveScroll: true,
             onSuccess: () => {
-                toast(action === 'approve' ? 'QAR approved.' : 'QAR returned to Dept Head.', action === 'return' ? 'error' : 'submitted');
+                if (action === 'recalculate') {
+                    toast('Scores recalculated successfully.', 'submitted');
+                } else {
+                    toast(action === 'approve' ? 'QAR approved.' : 'QAR returned to Dept Head.', action === 'return' ? 'error' : 'submitted');
+                }
                 if (action === 'return') setShowReturnModal(false);
             },
             onError:  () => toast('Action failed.', 'error'),
@@ -245,9 +249,23 @@ function ActionPanel({ qar }) {
     if (qar.status === 'pmt_approved') {
         return (
             <div style={{ ...actionCard, borderLeft: '3px solid #22c55e' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <StatusBadge status="pmt_approved" />
-                    {qar.validated_at && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>Validated by {qar.validated_by} · {qar.validated_at}</span>}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <StatusBadge status="pmt_approved" />
+                        {qar.validated_at && <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>Validated by {qar.validated_by} · {qar.validated_at}</span>}
+                    </div>
+                    <button
+                        onClick={async () => { if (await confirm('Recalculate IPCR scores for all employees linked to this QAR?')) post('recalculate'); }}
+                        disabled={!!loading}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 8, border: '1px solid rgba(59,130,246,0.4)', background: 'rgba(59,130,246,0.08)', color: 'var(--admin-accent)', fontSize: '0.82rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        {loading === 'recalculate' ? 'Recalculating…' : 'Recalculate Scores'}
+                    </button>
                 </div>
             </div>
         );

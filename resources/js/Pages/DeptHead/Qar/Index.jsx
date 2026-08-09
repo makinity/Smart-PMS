@@ -20,6 +20,7 @@ function useBreakpoint() {
 function StatusBadge({ status }) {
     const map = {
         draft:               { label: 'Draft',         bg: 'rgba(234,179,8,0.15)',   color: '#ca8a04', border: 'rgba(234,179,8,0.3)' },
+        submitted:           { label: 'Submitted',     bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         dept_head_endorsed:  { label: 'Submitted',     bg: 'rgba(59,130,246,0.15)',  color: 'var(--admin-accent)', border: 'rgba(59,130,246,0.3)' },
         pmt_approved:        { label: 'PMT Approved',  bg: 'rgba(74,222,128,0.15)',  color: '#22c55e', border: 'rgba(74,222,128,0.3)' },
         returned:            { label: 'Returned',      bg: 'rgba(239,68,68,0.15)',   color: '#f87171', border: 'rgba(239,68,68,0.3)' },

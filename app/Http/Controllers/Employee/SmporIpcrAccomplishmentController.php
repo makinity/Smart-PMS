@@ -50,7 +50,7 @@ class SmporIpcrAccomplishmentController extends Controller
 
         $ipcr = Ipcr::where('employee_id', $user->id)
             ->where('performance_period_id', $period->id)
-            ->with('items.indicator.uwpMfo.uwpFunction')
+            ->with(['items.indicator.uwpMfo.uwpFunction', 'performancePeriod'])
             ->first();
 
         // IPCR meta (score + rating for dashboard card)
@@ -187,16 +187,16 @@ class SmporIpcrAccomplishmentController extends Controller
         $mporResult = $this->resolveMpors($user, $period, null);
         abort_if(empty($mporResult['ids']), 422, 'No eligible MPORs found for this period.');
 
-        // Rule: both Q1 and Q2 QARs must be pmt_approved before submitting accomplishment
+        // Rule: both QARs for this period must be pmt_approved before submitting accomplishment
         $approvedQars = QarHeader::where('office_id', $user->office_id)
             ->where('performance_period_id', $period->id)
             ->where('pmt_status', 'validated')
             ->pluck('quarter_key');
 
-        $year = $period->start_date->year;
+        [$q1Key, $q2Key] = $this->periodQarKeys($period);
         $missingQars = [];
-        if (! $approvedQars->contains("{$year}-Q1")) $missingQars[] = 'Q1';
-        if (! $approvedQars->contains("{$year}-Q2")) $missingQars[] = 'Q2';
+        if (! $approvedQars->contains($q1Key)) $missingQars[] = $q1Key;
+        if (! $approvedQars->contains($q2Key)) $missingQars[] = $q2Key;
         if (! empty($missingQars)) {
             return back()->withErrors(['message' => 'Cannot submit: QAR ' . implode(' and ', $missingQars) . ' must be PMT-approved first.']);
         }
@@ -336,15 +336,26 @@ class SmporIpcrAccomplishmentController extends Controller
             ->where('pmt_status', 'validated')
             ->pluck('quarter_key');
 
-        $year = $period->start_date->year;
+        [$q1Key, $q2Key] = $this->periodQarKeys($period);
         $missingQars = [];
-        if (! $approvedQarKeys->contains("{$year}-Q1")) $missingQars[] = 'Q1';
-        if (! $approvedQarKeys->contains("{$year}-Q2")) $missingQars[] = 'Q2';
+        if (! $approvedQarKeys->contains($q1Key)) $missingQars[] = $q1Key;
+        if (! $approvedQarKeys->contains($q2Key)) $missingQars[] = $q2Key;
         if (! empty($missingQars)) {
             $blockers[] = 'QAR ' . implode(' and ', $missingQars) . ' must be approved by PMT first.';
         }
 
         return $blockers;
+    }
+
+    /**
+     * Derive the two QAR quarter keys for a given performance period.
+     * Always period-relative: Q1 = first 3 months, Q2 = last 3 months.
+     * e.g. Jan-Jun → ['2026-Q1', '2026-Q2'], Jul-Dec → ['2026-Q1', '2026-Q2']
+     */
+    private function periodQarKeys($period): array
+    {
+        $year = $period->start_date->year;
+        return ["{$year}-Q1", "{$year}-Q2"];
     }
 
     private function buildIpcrMeta(Ipcr $ipcr): array
@@ -366,6 +377,14 @@ class SmporIpcrAccomplishmentController extends Controller
             ?? $ipcr->pmt_adjusted_rating
             ?? $ipcr->adjectival_rating
             ?? null;
+
+        // If the stored score is still 0, live-calculate it now so the card
+        // reflects the real data rather than showing "Poor" indefinitely.
+        if ($score <= 0 && !$submission) {
+            $ratingService = app(\App\Services\PerformanceRatingService::class);
+            $score = $ratingService->calculateAndSaveFinalScore($ipcr);
+            $rating = $score > 0 ? $ratingService->resolveAdjectivalRating($score) : $rating;
+        }
 
         return [
             'score' => round($score, 2),

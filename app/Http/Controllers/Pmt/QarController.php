@@ -124,13 +124,14 @@ class QarController extends Controller
             ->unique();
 
         foreach ($employeeIds as $employeeId) {
-            $ipcr = Ipcr::where('employee_id', $employeeId)
+            $ipcr = Ipcr::with('performancePeriod')
+                ->where('employee_id', $employeeId)
                 ->where('performance_period_id', $qar->performance_period_id)
                 ->first();
             if ($ipcr) {
                 $ratingService->calculateAndSaveFinalScore($ipcr);
 
-                $employee = User::find($employeeId);
+                $employee = User::with('employee')->find($employeeId);
                 if ($employee && $employee->is_active) {
                     $employee->notify(new WorkflowEventNotification(
                         type: 'success',
@@ -154,8 +155,34 @@ class QarController extends Controller
         return back()->with('success', 'QAR approved.');
     }
 
-    public function return(Request $request, QarHeader $qar)
+    public function recalculate(QarHeader $qar)
     {
+        abort_unless($qar->status === 'pmt_approved', 422, 'QAR must be approved before recalculating scores.');
+
+        $ratingService = app(PerformanceRatingService::class);
+        $qar->load('mporLinks.mpor');
+
+        $employeeIds = $qar->mporLinks
+            ->map(fn ($link) => $link->mpor?->employee_id)
+            ->filter()
+            ->unique();
+
+        $count = 0;
+        foreach ($employeeIds as $employeeId) {
+            $ipcr = Ipcr::with('performancePeriod')
+                ->where('employee_id', $employeeId)
+                ->where('performance_period_id', $qar->performance_period_id)
+                ->first();
+            if ($ipcr) {
+                $ratingService->calculateAndSaveFinalScore($ipcr);
+                $count++;
+            }
+        }
+
+        return back()->with('success', "Scores recalculated for {$count} employee(s).");
+    }
+
+    public function return(Request $request, QarHeader $qar)    {
         abort_unless(in_array($qar->status, ['submitted', 'pmt_approved']), 422, 'Cannot return this QAR.');
         $request->validate([
             'return_remarks' => ['nullable', 'string', 'max:2000'],

@@ -68,18 +68,24 @@ class PerformanceRatingService
 
         $year = $period->start_date->year;
 
-        // Q1: months 1-3, Q2: months 4-6 of the period
+        // Period-relative quarters: Q1 = first 3 months, Q2 = last 3 months.
+        // This is consistent regardless of whether the period is Jan-Jun or Jul-Dec.
         $q1Start = Carbon::create($year, $period->start_date->month, 1)->startOfDay();
         $q1End   = $q1Start->copy()->addMonths(2)->endOfMonth()->endOfDay();
         $q2Start = $q1End->copy()->addDay()->startOfDay();
         $q2End   = Carbon::parse($period->end_date)->endOfDay();
 
+        // Keys are always period-relative: "YYYY-Q1" and "YYYY-Q2"
         $q1Key = $year . '-Q1';
         $q2Key = $year . '-Q2';
 
-        // Only score quarters whose QAR has been PMT-approved
+        // Only score quarters whose QAR has been PMT-approved.
+        // office_id is not on the ipcrs table — resolve it from the Employee record.
+        $officeId = \App\Models\Employee::where('user_id', $ipcr->employee_id)
+            ->value('office_id');
+
         $approvedQarKeys = \App\Models\QarHeader::where('performance_period_id', $period->id)
-            ->where('office_id', $ipcr->office_id ?? \App\Models\User::find($ipcr->employee_id)?->office_id)
+            ->where('office_id', $officeId)
             ->where('pmt_status', 'validated')
             ->pluck('quarter_key')
             ->toArray();
@@ -90,7 +96,6 @@ class PerformanceRatingService
         $q1Score = $q1Approved ? $this->computeScoreForWindow($ipcr, $q1Start, $q1End) : 0.0;
         $q2Score = $q2Approved ? $this->computeScoreForWindow($ipcr, $q2Start, $q2End) : 0.0;
 
-        // If only one quarter has data, use that quarter's score
         if ($q1Score <= 0) return round($q2Score, 2);
         if ($q2Score <= 0) return round($q1Score, 2);
 

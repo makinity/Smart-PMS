@@ -95,9 +95,8 @@ export default function Index() {
         <AppLayout title="Performance Overview" description={period?.name}>
             <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
-                {/* Top bar: Export button */}
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/performance-overview" />
+                {/* Top bar: Export button + Period selector */}
+                <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:'0.5rem' }}>
                     <button
                         onClick={handleExport}
                         disabled={exporting}
@@ -120,6 +119,7 @@ export default function Index() {
                         <i className={exporting ? 'bi bi-hourglass-split' : 'bi bi-file-earmark-excel-fill'} style={{ fontSize: '0.85rem' }} />
                         {exporting ? 'Preparing…' : `Export Top Employees${topCount > 0 ? ` (${topCount})` : ''}`}
                     </button>
+                    <PeriodSelector period={period} allPeriods={allPeriods} route="/pmt/performance-overview" />
                 </div>
 
                 {/* Search + Filter container */}

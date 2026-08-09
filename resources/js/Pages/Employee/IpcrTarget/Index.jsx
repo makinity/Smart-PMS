@@ -11,7 +11,9 @@ function useBreakpoint() {
         window.addEventListener('resize', h);
         return () => window.removeEventListener('resize', h);
     }, []);
-    return w < 1024 ? 'compact' : 'desktop';
+    if (w >= 1024) return 'desktop';
+    if (w >= 768)  return 'tablet';
+    return 'mobile';
 }
 
 function useSidebarLeft() {
@@ -81,7 +83,7 @@ function QetOverlay({ qet, title, onClose, bp, sidebarLeft }) {
         </>
     );
 
-    if (bp === 'compact') return (
+    if (bp !== 'desktop') return (
         <>
             <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.45)' }} />
             <div style={{ position: 'fixed', bottom: 0, left: sidebarLeft, right: 0, zIndex: 1101,
@@ -253,21 +255,21 @@ export default function Index() {
                         <div style={{ ...s.statusPill, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }} className="ipcr-status-pill">
                             <span>{sc.icon}</span><span>{sc.label}</span>
                         </div>
-                        <div style={s.countPill}>{totalItems} indicator{totalItems !== 1 ? 's' : ''}</div>
+                        <div className="ipcr-count-pill" style={s.countPill}>{totalItems} indicator{totalItems !== 1 ? 's' : ''}</div>
                     </div>
                     <div style={s.office}>{employee?.office ?? '—'}</div>
                 </div>
 
                 {/* Right: actions */}
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+                <div className="ipcr-topbar-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
                     <a href="/stage-one/forms/ipcr-excel" style={{ ...s.exportBtn, border: '1px solid #16a34a', color: '#16a34a' }} title="Export Excel">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        {bp !== 'compact' && 'Download'}
+                        {bp === 'desktop' && 'Download'}
                     </a>
                     {canCommit && (
                         <button style={s.commitBtn} onClick={handleCommit} disabled={committing} title="Commit IPCR">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            {bp !== 'compact' && (committing ? 'Committing…' : 'Commit IPCR')}
+                            {bp === 'desktop' && (committing ? 'Committing…' : 'Commit IPCR')}
                         </button>
                     )}
                 </div>
@@ -443,8 +445,13 @@ const s = {
 
 // ── Responsive CSS ─────────────────────────────────────────────────────────────
 const css = `
-    @media (max-width: 640px) {
+    @media (max-width: 767px) {
         .ipcr-col-headers { display: none !important; }
         .ipcr-info-cards { flex-direction: column; }
+
+        /* Status badge pinned to the very right corner of the topbar */
+        .ipcr-status-pill { order: 3; margin-left: auto; }
+        .ipcr-count-pill  { order: 2; }
+        .ipcr-topbar-actions { width: 100%; justify-content: flex-end; }
     }
 `;

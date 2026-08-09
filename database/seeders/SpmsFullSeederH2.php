@@ -294,7 +294,7 @@ class SpmsFullSeederH2 extends Seeder
 
         // ── 7. QAR Q3 (Jul–Sep) — submitted to PMT ───────────────────────────
         // Q4 intentionally not seeded (December MPOR missing blocks it)
-        $q3Key = $period->start_date->year . '-Q3';
+        $q3Key = $period->start_date->year . '-Q1';
 
         // Clean up previous QAR data for HRMO in this period
         $existingQarIds = QarHeader::where('office_id', $hrmo->id)

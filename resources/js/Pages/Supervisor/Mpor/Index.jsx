@@ -149,7 +149,7 @@ export default function Index({ mpors, search: initSearch, month: initMonth, sta
     const bp = useBreakpoint();
     const [search, setSearch] = useState(initSearch ?? '');
     const [month, setMonth]   = useState(initMonth ?? '');
-    const [status, setStatus] = useState(initStatus ?? '');
+    const [status, setStatus] = useState(initStatus ?? 'submitted');
 
     // Debounced reload — preserve period_id so past-period view is not lost on filter change
     useEffect(() => {

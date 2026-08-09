@@ -48,6 +48,7 @@ class QarController extends Controller
         $quarterKey = $period ? $this->qar->quarterKey($period, $q) : null;
         $qarHeader = $quarterKey
             ? QarHeader::where('office_id', $user->office_id)
+                ->where('performance_period_id', $period->id)
                 ->where('quarter_key', $quarterKey)
                 ->first()
             : null;
@@ -66,24 +67,26 @@ class QarController extends Controller
             ],
         ])->values();
 
-        // Months covered
+        // Months covered — only count a month if ALL office employees have an approved MPOR
         $quarterMonths = $period
             ? array_map(fn ($m) => $m->format('Y-m'), $this->qar->quarterMonths($period, $q))
             : [];
-        $coveredMonths = $mporList->pluck('month')->unique()->values();
+        $allEmployeeIds = User::whereHas('employee', fn ($eq) => $eq->where('office_id', $user->office_id))
+            ->where('role', 'employee')
+            ->pluck('id');
+        $mporsByMonth = $consolidated['mpors']->groupBy('month');
+        $coveredMonths = collect($quarterMonths)->filter(function ($month) use ($mporsByMonth, $allEmployeeIds) {
+            $monthEmpIds = $mporsByMonth->get($month, collect())->pluck('employee_id')->unique();
+            return $monthEmpIds->count() === $allEmployeeIds->count();
+        })->values();
 
-        // Build human-readable quarter tab labels dynamically from the period start_date
-        // e.g. Jan-Jun → ['Q1 Jan–Mar', 'Q2 Apr–Jun']
-        //      Jul-Dec → ['Q3 Jul–Sep', 'Q4 Oct–Dec']
+        // Build human-readable quarter tab labels — always Q1/Q2 (period-relative)
+        // e.g. Jan-Jun → ['Q1 Jan–Mar', 'Q2 Apr–Jun'], Jul-Dec → ['Q1 Jul–Sep', 'Q2 Oct–Dec']
         $quarterTabLabels = [];
         if ($period) {
             foreach ([1, 2] as $qn) {
                 $months = $this->qar->quarterMonths($period, $qn);
-                $key    = $this->qar->quarterKey($period, $qn);
-                // Extract the Q-number from the key (e.g. "2026-Q3" → "Q3")
-                preg_match('/Q(\d+)/', $key, $m);
-                $qLabel = 'Q' . ($m[1] ?? $qn);
-                $quarterTabLabels[$qn] = $qLabel . ' ' . $months[0]->format('M') . '–' . $months[2]->format('M');
+                $quarterTabLabels[$qn] = 'Q' . $qn . ' ' . $months[0]->format('M') . '–' . $months[2]->format('M');
             }
         }
 
@@ -351,8 +354,9 @@ class QarController extends Controller
         if (! $period) {
             return 1;
         }
-        $month = now()->month;
-
-        return min(2, (int) ceil($month / 3));
+        // How many months into this period are we?
+        $monthsElapsed = (int) $period->start_date->diffInMonths(now());
+        // Q1 = months 0-2, Q2 = months 3-5
+        return $monthsElapsed >= 3 ? 2 : 1;
     }
 }
