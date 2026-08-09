@@ -64,30 +64,37 @@ class IdpController extends Controller
         ]);
     }
 
-    public function officeShow(int $officeId)
+    public function officeShow(Request $request, int $officeId)
     {
+        $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
+        $periodId = $request->get('period_id');
+        $period = $periodId
+            ? PerformancePeriod::find($periodId) ?? PerformancePeriod::current()
+            : PerformancePeriod::current();
+        $isPastPeriod = $period && !$period->is_active;
+
         $plans = DevelopmentPlan::where('office_id', $officeId)
             ->whereIn('status', [
                 DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
                 DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             ])
+            ->when($period, fn ($q) => $q->where('performance_period_id', $period->id))
             ->with(['employee.employee.office', 'performancePeriod:id,name'])
             ->orderByRaw("FIELD(status, 'submitted_to_pmt', 'submitted_to_ld')")
             ->orderByDesc('updated_at')
             ->get();
 
-        if ($plans->isEmpty()) {
+        if ($plans->isEmpty() && !$periodId) {
             abort(404);
         }
 
         $first = $plans->first();
-        $office = $first->office;
-
-        $periodId = $first->performance_period_id;
-        $opcr = OpcraAccomplishmentSubmission::where('office_id', $officeId)
+        $office = $first?->office ?? \App\Models\Office::find($officeId);
+        $periodId = $first?->performance_period_id ?? $period?->id;
+        $opcr = $periodId ? OpcraAccomplishmentSubmission::where('office_id', $officeId)
             ->where('performance_period_id', $periodId)
             ->whereNotNull('final_office_rating')
-            ->first();
+            ->first() : null;
 
         $mappedPlans = $plans->map(fn ($p) => [
             'id'              => $p->id,
@@ -106,11 +113,13 @@ class IdpController extends Controller
             'office' => [
                 'id'           => (int) $officeId,
                 'name'         => $office?->name ?? '—',
-                'period_name'  => $first->performancePeriod?->name ?? '—',
+                'period_name'  => $period?->name ?? $first?->performancePeriod?->name ?? '—',
                 'office_score' => $opcr ? round((float) $opcr->final_office_rating, 2) : null,
                 'office_rating'=> $opcr?->final_adjectival_rating ?? null,
             ],
-            'plans'  => $mappedPlans,
+            'plans'      => $mappedPlans,
+            'period'     => $period ? ['id' => $period->id, 'name' => $period->name, 'is_active' => $period->is_active] : null,
+            'allPeriods' => $allPeriods->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'is_active' => $p->is_active])->values(),
         ]);
     }
 

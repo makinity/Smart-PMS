@@ -21,7 +21,7 @@ class MporController extends Controller
         $user   = Auth::user();
         $search = $request->get('search', '');
         $month  = $request->get('month', '');
-        $status = $request->get('status', 'submitted');
+        $status = $request->get('status', '');
 
         $allPeriods = PerformancePeriod::orderByDesc('start_date')->get();
         $periodId   = $request->get('period_id');
@@ -32,6 +32,7 @@ class MporController extends Controller
         $query = Mpor::with(['employee'])
             ->where('office_id', $user->office_id)
             ->whereIn('status', ['submitted', 'approved', 'returned'])
+            ->orderByRaw("FIELD(status, 'submitted', 'returned', 'approved') ASC")
             ->orderBy('submitted_at', 'desc');
 
         if ($period) {

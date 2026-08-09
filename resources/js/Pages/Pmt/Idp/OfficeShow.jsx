@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
+import PeriodSelector from '@/Components/PeriodSelector';
 import { avatarSrc, onAvatarError } from '@/Components/defaultAvatar';
 import { useToast } from '@/Components/Snackbar';
 import { useConfirm } from '@/Components/ConfirmDialog';
@@ -26,11 +27,12 @@ function relTime(iso) {
 }
 
 export default function OfficeShow() {
-    const { office, plans = [] } = usePage().props;
+    const { office, plans = [], period, allPeriods } = usePage().props;
     const toast   = useToast();
     const confirm = useConfirm();
     const [search, setSearch]     = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const isPastPeriod = period && !period.is_active;
 
     const submittableIds = plans.filter(p => p.status === 'submitted_to_pmt').map(p => p.id);
 
@@ -61,11 +63,14 @@ export default function OfficeShow() {
 
                 {/* Office header */}
                 <div style={{ ...card, borderTop: `3px solid ${officeColor}`, padding: '1.25rem' }}>
-                    <button onClick={() => router.visit('/pmt/idp')}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0, marginBottom: '0.85rem' }}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                        Back to offices
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                        <button onClick={() => router.visit('/pmt/idp')}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-muted)', fontSize: '0.82rem', padding: 0 }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                            Back to offices
+                        </button>
+                        <PeriodSelector period={period} allPeriods={allPeriods} route={`/pmt/idp/office/${office.id}`} />
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
                         <div>
                             <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--admin-text-primary)' }}>{office.name}</div>
@@ -90,7 +95,7 @@ export default function OfficeShow() {
                                 {submittableIds.length} pending L&D submission · {plans.length} total
                             </div>
                         </div>
-                        {submittableIds.length > 0 && (
+                        {submittableIds.length > 0 && !isPastPeriod && (
                             <button onClick={handleSubmit} disabled={submitting} style={{
                                 marginLeft: 'auto',
                                 padding: '0.52rem 1.1rem', borderRadius: 8, fontWeight: 700, fontSize: '0.82rem',
