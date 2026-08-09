@@ -188,7 +188,7 @@ function Skeleton() {
 }
 
 export default function Index() {
-    const { offices, filters = {}, heads = [], stats = {}, flash = {}, errors = {} } = usePage().props;
+    const { offices, filters = {}, heads = [], headAssignments = {}, stats = {}, flash = {}, errors = {} } = usePage().props;
     const bp = useBreakpoint();
     const toast = useToast();
 
@@ -197,6 +197,7 @@ export default function Index() {
     const [navigating, setNavigating] = useState(false);
     const [editor, setEditor] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [headWarning, setHeadWarning] = useState(null);
     const firstRender = useRef(true);
     const debounceRef = useRef(null);
 
@@ -230,7 +231,21 @@ export default function Index() {
         if (office.hris_id) { toast('Name and code are managed by HRIS.', 'warning'); }
         setEditor({ id: office.id, name: office.name, code: office.code || '', head_id: office.head?.id || '', hris_id: office.hris_id });
     }
-    function changeEditor(field, val) { setEditor((c) => ({ ...c, [field]: val })); }
+    function changeEditor(field, val) {
+        if (field === 'head_id' && val && headAssignments[val]) {
+            // Show warning modal — this head is already assigned to another office
+            setHeadWarning({ headId: val, officeName: headAssignments[val] });
+            return;
+        }
+        setEditor((c) => ({ ...c, [field]: val }));
+    }
+
+    function confirmHeadAssignment() {
+        if (headWarning) {
+            setEditor((c) => ({ ...c, head_id: headWarning.headId }));
+            setHeadWarning(null);
+        }
+    }
 
     function submitEditor(e) {
         e.preventDefault();
@@ -381,6 +396,44 @@ export default function Index() {
                 onSubmit={submitEditor}
                 saving={saving}
             />
+
+            {/* Head Assignment Warning Modal */}
+            {headWarning && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', padding: '1rem' }}
+                    onClick={(e) => { if (e.target === e.currentTarget) setHeadWarning(null); }}>
+                    <div style={{ width: '100%', maxWidth: 420, borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                        {/* Header */}
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ca8a04', flexShrink: 0 }}>
+                                <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: '1.1rem' }} />
+                            </div>
+                            <div>
+                                <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#ca8a04', marginBottom: '0.2rem' }}>Validation Warning</p>
+                                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>Head Already Assigned</h3>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div style={{ padding: '1.25rem 1.5rem' }}>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--admin-text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
+                                This person is already assigned as the Department Head of <strong>{headWarning.officeName}</strong>.
+                            </p>
+                            <div style={{ padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', fontSize: '0.82rem', color: '#f87171', lineHeight: 1.5 }}>
+                                <i className="bi bi-shield-exclamation" style={{ marginRight: 6 }} />
+                                Each person can only be the Department Head of <strong>one office</strong>. Please select a different person or unassign them from {headWarning.officeName} first.
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <button onClick={() => setHeadWarning(null)} style={actionSecondary}>Cancel</button>
+                            <button onClick={() => setHeadWarning(null)} style={{ ...actionPrimary, background: '#ca8a04' }}>
+                                <i className="bi bi-check-lg" /> Understood
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

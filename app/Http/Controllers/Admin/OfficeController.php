@@ -67,10 +67,19 @@ class OfficeController extends Controller
                 ] : null,
             ]);
 
+        // Build head assignments map: head_id → office name
+        $headAssignments = Office::whereNotNull('head_id')
+            ->with('head:id,name')
+            ->get()
+            ->filter(fn ($o) => $o->head)
+            ->mapWithKeys(fn ($o) => [$o->head_id => $o->head->name])
+            ->toArray();
+
         return Inertia::render('Admin/Offices/Index', [
             'offices' => $offices,
             'filters' => $filters,
             'heads' => $this->headOptions(),
+            'headAssignments' => $headAssignments,
             'stats' => [
                 'total' => Office::count(),
                 'active' => Office::where('is_active', true)->count(),
@@ -204,6 +213,16 @@ class OfficeController extends Controller
             'head_id' => ['nullable', 'exists:users,id'],
         ]);
 
+        // Validate: only one department head per office
+        if (!empty($data['head_id'])) {
+            $existingOffice = Office::where('head_id', $data['head_id'])->first();
+            if ($existingOffice) {
+                return back()->withErrors([
+                    'head_id' => "{$existingOffice->name} already has this person as Department Head. Each person can only be head of one office.",
+                ])->withInput();
+            }
+        }
+
         Office::create([
             'name' => $data['name'],
             'code' => $data['code'] ?? null,
@@ -230,6 +249,16 @@ class OfficeController extends Controller
             'head_id' => ['nullable', 'exists:users,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+
+        // Validate: only one department head per office
+        if (!empty($data['head_id']) && $data['head_id'] != $office->head_id) {
+            $existingOffice = Office::where('head_id', $data['head_id'])->where('id', '!=', $office->id)->first();
+            if ($existingOffice) {
+                return back()->withErrors([
+                    'head_id' => "{$existingOffice->name} already has this person as Department Head. Each person can only be head of one office.",
+                ])->withInput();
+            }
+        }
 
         $office->fill([
             'name' => $data['name'],
