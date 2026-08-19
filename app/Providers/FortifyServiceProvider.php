@@ -26,19 +26,34 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn () => inertia('Auth/Login'));
 
         Fortify::authenticateUsing(function (Request $request) {
-            $name = Str::lower(trim((string) $request->input('name')));
+            $name       = Str::lower(trim((string) $request->input('name')));
+            $employeeId = trim((string) $request->input('employee_id'));
 
             $users = User::query()
                 ->whereRaw('LOWER(TRIM(name)) = ?', [$name])
                 ->get();
 
             if ($users->count() > 1) {
-                throw ValidationException::withMessages([
-                    'name' => 'Duplicate account records found. Please contact the administrator.',
-                ]);
-            }
+                // Duplicate names found — require Employee ID to disambiguate.
+                if ($employeeId === '') {
+                    throw ValidationException::withMessages([
+                        'employee_id' => 'needs_disambiguation',
+                    ]);
+                }
 
-            $user = $users->first();
+                // Filter down to the user whose employee record matches the given ID.
+                $user = $users->first(function (User $u) use ($employeeId) {
+                    return $u->employee && strtolower(trim($u->employee->employee_id ?? '')) === strtolower($employeeId);
+                });
+
+                if (! $user) {
+                    throw ValidationException::withMessages([
+                        'employee_id' => 'The Employee ID does not match any account with that name.',
+                    ]);
+                }
+            } else {
+                $user = $users->first();
+            }
 
             if (! $user || ! Hash::check((string) $request->input('password'), (string) $user->password)) {
                 return null;

@@ -90,6 +90,15 @@ export default function Login() {
     const [fetching, setFetching] = useState(false);
     const isLoading = processing || fetching;
 
+    // Show the Employee ID field whenever the server signals duplicate names,
+    // or when there's an actual employee_id mismatch error after submitting one.
+    // Once shown, keep it visible until the user changes their name or switches mode.
+    const [showEmpId, setShowEmpId] = useState(false);
+
+    useEffect(() => {
+        if (errors.employee_id) setShowEmpId(true);
+    }, [errors.employee_id]);
+
     function submit(e) {
         e.preventDefault();
 
@@ -136,6 +145,7 @@ export default function Login() {
 
     function switchMode(nextMode) {
         setMode(nextMode);
+        setShowEmpId(false);
         clearErrors();
         if (nextMode === 'login') reset('employee_id', 'email', 'token', 'password_confirmation', 'profile_photo');
         if (nextMode === 'activate-verify') reset('name', 'password', 'token', 'password_confirmation', 'profile_photo');
@@ -350,9 +360,48 @@ export default function Login() {
                             {errors.throttle && <ThrottleBanner key={errors.throttle} message={errors.throttle} />}
                             {mode === 'login' && <>
                                 <Field label="Name" icon={icons.user} error={errors.name}>
-                                    <input type="text" value={data.name} onChange={e => setData('name', e.target.value)}
+                                    <input type="text" value={data.name} onChange={e => {
+                                        setData('name', e.target.value);
+                                        // Hide EMP ID field and clear it when user types a new name
+                                        if (showEmpId) {
+                                            setShowEmpId(false);
+                                            setData('employee_id', '');
+                                            clearErrors('employee_id');
+                                        }
+                                    }}
                                         autoFocus autoComplete="username" placeholder="Your name" style={inputStyle(!!errors.name)} />
                                 </Field>
+
+                                {/* Employee ID — only shown when server signals duplicate names */}
+                                {showEmpId && (
+                                    <div>
+                                        <div style={{
+                                            display: 'flex', alignItems: 'flex-start', gap: '0.5rem',
+                                            padding: '0.6rem 0.8rem', marginBottom: '0.75rem',
+                                            background: 'rgba(234,179,8,0.08)',
+                                            border: '1px solid rgba(234,179,8,0.35)',
+                                            borderRadius: 'var(--admin-radius)',
+                                            fontSize: '0.8rem', color: '#ca8a04', lineHeight: 1.45,
+                                        }}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '0.1rem' }}>
+                                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                            </svg>
+                                            <span>Multiple accounts found with that name. Please enter your Employee ID to continue.</span>
+                                        </div>
+                                        <Field label="Employee ID" icon={icons.id} error={errors.employee_id !== 'needs_disambiguation' ? errors.employee_id : undefined}>
+                                            <input
+                                                type="text"
+                                                value={data.employee_id}
+                                                onChange={e => setData('employee_id', e.target.value)}
+                                                autoFocus
+                                                autoComplete="off"
+                                                placeholder="e.g. EMP-0006"
+                                                style={inputStyle(!!errors.employee_id && errors.employee_id !== 'needs_disambiguation')}
+                                            />
+                                        </Field>
+                                    </div>
+                                )}
+
                                 <Field label="Password" icon={icons.lock} error={errors.password}>
                                     <div style={{ position: 'relative' }}>
                                         <input type={showPassword ? 'text' : 'password'} value={data.password} onChange={e => setData('password', e.target.value)}

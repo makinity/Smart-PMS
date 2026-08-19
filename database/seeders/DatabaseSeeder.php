@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
+            DuplicateNameTestSeeder::class,
             UwpSampleSeeder::class,
             SpmsFullSeeder::class,
             SpmsH1CompleteSeeder::class,   // closes out Jan-Jun 2026 as full history
