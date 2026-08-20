@@ -9,7 +9,6 @@ use Database\Seeders\SpmsFullSeeder;
 use Database\Seeders\SpmsH1CompleteSeeder;
 use Database\Seeders\UwpSampleSeederH2;
 use Database\Seeders\SpmsFullSeederH2;
-use Illuminate\Support\Facades\Http;
 
 class DatabaseSeeder extends Seeder
 {

@@ -81,7 +81,7 @@ Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.
     Route::post('/hrmo-hub/disconnect', [\App\Http\Controllers\Admin\HrmoHubController::class, 'disconnect'])->name('hrmo-hub.disconnect');
     Route::post('/hrmo-hub/test', [\App\Http\Controllers\Admin\HrmoHubController::class, 'testConnection'])->name('hrmo-hub.test');
     Route::get('/reports', [\App\Http\Controllers\Admin\ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/profile', fn () => InertiaInertia::render('Admin/Profile'))->name('profile');
+    Route::get('/profile', fn () => \Inertia\Inertia::render('Admin/Profile'))->name('profile');
 
     // Machine Learning Control Center
     Route::get('/ml', [\App\Http\Controllers\Admin\MachineLearningController::class, 'index'])->name('ml.index');
