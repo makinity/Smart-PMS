@@ -41,7 +41,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
-            DuplicateNameTestSeeder::class,
             UwpSampleSeeder::class,
             SpmsFullSeeder::class,
             SpmsH1CompleteSeeder::class,   // closes out Jan-Jun 2026 as full history
@@ -50,6 +49,7 @@ class DatabaseSeeder extends Seeder
             SpmsH2CompleteSeeder::class,   // fills Dec ORS/MPOR + Q4 QAR (Mark Juntilla excluded)
             // OrsSampleSeeder::class, // replaced by SpmsFullSeeder
             // MlTrainingDataSeeder::class,
+            DuplicateNameTestSeeder::class, // must run LAST — avoids being picked up by CBO seeders
         ]);
 
         // After all seeders run, trigger ML model training
