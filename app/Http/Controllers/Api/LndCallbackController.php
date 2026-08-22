@@ -74,8 +74,12 @@ class LndCallbackController extends Controller
             'updated_by'              => null,
         ]);
 
-        // Unlock the employee's PMS account
-        $employee->update(['training_locked' => false]);
+        // Unlock the employee's PMS account.
+        // training_locked and lnd_reference_id live on the employees table, not users.
+        $employee->employee?->update([
+            'training_locked'  => false,
+            'lnd_reference_id' => null,
+        ]);
 
         // Notify the employee
         $employee->notify(new WorkflowEventNotification(

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\HrmoHubApiController;
 use App\Http\Controllers\Api\LndCallbackController;
 use App\Http\Middleware\VerifyLndCallbackToken;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,22 @@ Route::middleware(VerifyLndCallbackToken::class)
     ->group(function () {
         Route::post('/complete-training', [LndCallbackController::class, 'completeTraining'])
             ->name('lnd-callback.complete-training');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| HRMO Hub — Inbound Handshake Callbacks
+|--------------------------------------------------------------------------
+| Called by connected pillars (e.g. L&D) to accept or reject a connection
+| request that PMS initiated. Uses the same PMS_CALLBACK_TOKEN as L&D callbacks.
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(VerifyLndCallbackToken::class)
+    ->prefix('hub')
+    ->group(function () {
+        Route::post('/connection-accepted', [HrmoHubApiController::class, 'connectionAccepted'])
+            ->name('hub.connection-accepted');
     });
 
 /*

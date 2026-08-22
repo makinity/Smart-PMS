@@ -33,12 +33,15 @@ class HrmoHubConnection extends Model
     const PILLAR_RNR = 'rnr';
     const PILLAR_LD  = 'ld';
 
-    const STATUS_CONNECTED    = 'connected';
-    const STATUS_DISCONNECTED = 'disconnected';
-    const STATUS_BUILT_IN     = 'built_in';
+    const STATUS_CONNECTED          = 'connected';
+    const STATUS_DISCONNECTED       = 'disconnected';
+    const STATUS_BUILT_IN           = 'built_in';
+    const STATUS_PENDING_ACCEPTANCE = 'pending_acceptance';
+    const STATUS_REJECTED           = 'rejected';
 
     /**
      * Seed default pillars if they don't exist.
+     * Only creates missing rows — never overwrites status on existing ones.
      */
     public static function seedDefaults(): void
     {
@@ -50,7 +53,7 @@ class HrmoHubConnection extends Model
         ];
 
         foreach ($pillars as $pillar) {
-            static::updateOrCreate(
+            static::firstOrCreate(
                 ['pillar' => $pillar['pillar']],
                 ['name' => $pillar['name'], 'status' => $pillar['status']]
             );

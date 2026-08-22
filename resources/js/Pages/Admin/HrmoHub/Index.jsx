@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head } from '@inertiajs/react';
@@ -17,7 +17,9 @@ function SidePanel({ pillar, connection, onClose }) {
     const [testing, setTesting] = useState(false);
     const [message, setMessage] = useState(null);
     const isConnected = connection?.status === 'connected';
-    const isBuiltIn = connection?.status === 'built_in';
+    const isBuiltIn   = connection?.status === 'built_in';
+    const isPending   = connection?.status === 'pending_acceptance';
+    const isRejected  = connection?.status === 'rejected';
 
     function handleConnect(e) {
         e.preventDefault();
@@ -113,9 +115,30 @@ function SidePanel({ pillar, connection, onClose }) {
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        <div style={{ padding: '1rem', borderRadius: 12, background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.15)', marginBottom: '1.25rem' }}>
+                    ) : isPending ? (
+                        <div style={{ padding: '1rem', borderRadius: 12, background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', marginBottom: '1.25rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.85rem', color: '#ca8a04' }}>
+                                <i className="bi bi-hourglass-split" /> Pending Acceptance
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
+                                Connection request sent. Waiting for the {cfg.label} admin to accept in their Hub.
+                            </p>
+                            <p style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.35rem' }}>
+                                You can resend the request below if it was not received.
+                            </p>
+                        </div>
+                    ) : isRejected ? (
+                        <div style={{ padding: '1rem', borderRadius: 12, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: '1.25rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.85rem', color: '#f87171' }}>
+                                <i className="bi bi-x-circle-fill" /> Connection Rejected
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
+                                The {cfg.label} admin rejected the connection request. You can submit a new request below.
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1rem', borderRadius: 12, background: 'rgba(100,100,100,0.05)', border: '1px solid var(--admin-border)', marginBottom: '1.25rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.85rem', color: 'var(--admin-text-muted)' }}>
                                 <i className="bi bi-plug" /> Not Connected
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--admin-text-muted)', marginTop: '0.35rem' }}>
@@ -136,6 +159,36 @@ function SidePanel({ pillar, connection, onClose }) {
                     {/* Connection Form */}
                     {!isBuiltIn && (
                         <form onSubmit={pillar === 'rsp' ? handleSync : handleConnect}>
+
+                            {/* Current saved config — shown when base_url is already set */}
+                            {pillar === 'ld' && connection?.base_url && (
+                                <div style={{ padding: '0.85rem 1rem', borderRadius: 10, background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.12)', marginBottom: '1.25rem' }}>
+                                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--admin-text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '0.6rem' }}>
+                                        <i className="bi bi-hdd-network-fill" style={{ marginRight: '0.35rem' }} />
+                                        Current Configuration
+                                    </div>
+                                    <div style={{ marginBottom: '0.4rem' }}>
+                                        <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Base URL</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
+                                            <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--admin-text-primary)', wordBreak: 'break-all', flex: 1 }}>{connection.base_url}</span>
+                                            <button type="button" onClick={() => navigator.clipboard.writeText(connection.base_url)}
+                                                style={{ flexShrink: 0, width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid var(--admin-border)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-muted)', cursor: 'pointer', fontSize: '0.75rem' }}
+                                                title="Copy Base URL">
+                                                <i className="bi bi-clipboard" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style={{ marginTop: '0.4rem' }}>
+                                        <span style={{ fontSize: '0.68rem', color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>Token</span>
+                                        <div style={{ fontSize: '0.78rem', color: connection.has_token ? '#22c55e' : 'var(--admin-text-muted)', marginTop: '0.2rem' }}>
+                                            {connection.has_token
+                                                ? <><i className="bi bi-check-circle-fill" style={{ marginRight: '0.3rem' }} />Token saved — enter a new one below to update</>
+                                                : <><i className="bi bi-exclamation-circle" style={{ marginRight: '0.3rem' }} />No token saved yet</>}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div style={{ marginBottom: '1rem' }}>
                                 <label style={labelStyle}>Base URL</label>
                                 <input value={form.base_url} onChange={e => setForm(f => ({ ...f, base_url: e.target.value }))}
@@ -187,6 +240,17 @@ export default function Index() {
     const connectionMap = {};
     connections.forEach(c => { connectionMap[c.pillar] = c; });
 
+    // Auto-refresh every 5 seconds while any pillar is pending_acceptance
+    // so the page reflects when L&D accepts the connection request
+    const hasPending = connections.some(c => c.status === 'pending_acceptance');
+    React.useEffect(() => {
+        if (!hasPending) return;
+        const id = setInterval(() => {
+            router.reload({ only: ['connections'], preserveScroll: true });
+        }, 5000);
+        return () => clearInterval(id);
+    }, [hasPending]);
+
     return (
         <AppLayout title="HRMO Hub">
             <Head title="HRMO Hub" />
@@ -212,7 +276,9 @@ export default function Index() {
                     {Object.entries(PILLAR_CFG).map(([key, cfg], idx) => {
                         const conn = connectionMap[key];
                         const isConnected = conn?.status === 'connected';
-                        const isBuiltIn = conn?.status === 'built_in';
+                        const isBuiltIn   = conn?.status === 'built_in';
+                        const isPending   = conn?.status === 'pending_acceptance';
+                        const isRejected  = conn?.status === 'rejected';
                         const isLast = idx === Object.keys(PILLAR_CFG).length - 1;
 
                         return (
@@ -242,6 +308,10 @@ export default function Index() {
                                     <span style={badgeGreen}>Built-in</span>
                                 ) : isConnected ? (
                                     <span style={badgeBlue}>Connected</span>
+                                ) : isPending ? (
+                                    <span style={badgeYellow}>Pending</span>
+                                ) : isRejected ? (
+                                    <span style={badgeRed}>Rejected</span>
                                 ) : (
                                     <span style={badgeGray}>Not Connected</span>
                                 )}
@@ -272,9 +342,11 @@ const labelStyle = { display: 'block', fontSize: '0.72rem', fontWeight: 600, col
 const hintStyle = { fontSize: '0.7rem', color: 'var(--admin-text-muted)', marginTop: '0.25rem', display: 'block' };
 const inputStyle = { width: '100%', boxSizing: 'border-box', padding: '0.6rem 0.85rem', borderRadius: 10, border: '1px solid var(--admin-border-strong)', background: 'var(--admin-bg-secondary)', color: 'var(--admin-text-primary)', fontSize: '0.85rem', outline: 'none' };
 
-const badgeGreen = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.2)', whiteSpace: 'nowrap' };
-const badgeBlue = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(59,130,246,0.1)', color: 'var(--admin-accent)', border: '1px solid rgba(59,130,246,0.2)', whiteSpace: 'nowrap' };
-const badgeGray = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(100,100,100,0.08)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', whiteSpace: 'nowrap' };
+const badgeGreen  = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(34,197,94,0.1)',  color: '#22c55e',              border: '1px solid rgba(34,197,94,0.2)',  whiteSpace: 'nowrap' };
+const badgeBlue   = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(59,130,246,0.1)',  color: 'var(--admin-accent)',  border: '1px solid rgba(59,130,246,0.2)', whiteSpace: 'nowrap' };
+const badgeYellow = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(234,179,8,0.1)',   color: '#ca8a04',              border: '1px solid rgba(234,179,8,0.25)', whiteSpace: 'nowrap' };
+const badgeRed    = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(239,68,68,0.1)',   color: '#f87171',              border: '1px solid rgba(239,68,68,0.2)',  whiteSpace: 'nowrap' };
+const badgeGray   = { padding: '0.2rem 0.7rem', borderRadius: 99, fontSize: '0.67rem', fontWeight: 700, background: 'rgba(100,100,100,0.08)', color: 'var(--admin-text-muted)', border: '1px solid var(--admin-border)', whiteSpace: 'nowrap' };
 
 const btnPrimary = { padding: '0.55rem 1.25rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', fontSize: '0.8rem', fontWeight: 700, fontFamily: 'inherit' };
 const btnOutline = { padding: '0.55rem 1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' };

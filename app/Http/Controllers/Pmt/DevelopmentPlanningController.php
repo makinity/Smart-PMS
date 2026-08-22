@@ -275,16 +275,25 @@ class DevelopmentPlanningController extends Controller
             return back()->with('error', 'Could not submit to L&D: '.$e->getMessage());
         }
 
+        $lndReferenceId = $result['lnd_reference_id'] ?? null;
+
         $developmentPlan->update([
             'status' => DevelopmentPlan::STATUS_SUBMITTED_TO_LD,
             'submitted_to_ld_at' => now(),
             'lnd_sync_status' => ($result['status'] ?? 'sent') === 'acknowledged'
                 ? DevelopmentPlan::LND_SYNC_ACKNOWLEDGED
                 : DevelopmentPlan::LND_SYNC_SENT,
-            'lnd_reference_id' => $result['lnd_reference_id'] ?? null,
+            'lnd_reference_id' => $lndReferenceId,
             'lnd_synced_at' => now(),
             'lnd_last_error' => null,
             'updated_by' => auth()->id(),
+        ]);
+
+        // Lock the employee's PMS account — they must complete L&D training before logging back in.
+        // training_locked and lnd_reference_id live on the employees table, not users.
+        $developmentPlan->employee?->employee?->update([
+            'training_locked'  => true,
+            'lnd_reference_id' => $lndReferenceId,
         ]);
 
         if ($developmentPlan->employee) {

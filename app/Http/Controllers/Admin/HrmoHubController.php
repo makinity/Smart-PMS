@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\HrmoHubConnection;
 use App\Services\AdminUserManagementService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class HrmoHubController extends Controller
@@ -35,6 +37,11 @@ class HrmoHubController extends Controller
 
     /**
      * Save connection settings for a pillar.
+     *
+     * For the L&D pillar: fires an outbound connection request to L&D and sets
+     * status = pending_acceptance until L&D admin accepts via their Hub page.
+     *
+     * For all other pillars: saves directly as connected (no handshake needed).
      */
     public function connect(Request $request)
     {
@@ -45,6 +52,21 @@ class HrmoHubController extends Controller
         ]);
 
         $connection = HrmoHubConnection::where('pillar', $data['pillar'])->firstOrFail();
+
+        // L&D requires a mutual handshake — fire a connection request and wait for acceptance
+        if ($data['pillar'] === 'ld') {
+            $connection->update([
+                'base_url' => $data['base_url'],
+                'token'    => $data['token'],
+                'status'   => HrmoHubConnection::STATUS_PENDING_ACCEPTANCE,
+            ]);
+
+            $this->sendLdConnectionRequest($data['base_url'], $data['token']);
+
+            return back()->with('success', 'Connection request sent to L&D. Waiting for their admin to accept.');
+        }
+
+        // Other pillars: save as connected immediately
         $connection->update([
             'base_url' => $data['base_url'],
             'token'    => $data['token'],
@@ -64,6 +86,20 @@ class HrmoHubController extends Controller
         ]);
 
         $connection = HrmoHubConnection::where('pillar', $data['pillar'])->firstOrFail();
+
+        // For L&D: notify their Hub so they also mark themselves as disconnected
+        if ($data['pillar'] === 'ld' && $connection->base_url && $connection->token) {
+            try {
+                \Illuminate\Support\Facades\Http::withToken($connection->token)
+                    ->timeout(5)
+                    ->post(rtrim($connection->base_url, '/') . '/api/hub/disconnect', [
+                        'pillar' => 'pms',
+                    ]);
+            } catch (\Throwable) {
+                // best-effort, don't block the disconnect
+            }
+        }
+
         $connection->update([
             'base_url' => null,
             'token'    => null,
@@ -89,7 +125,7 @@ class HrmoHubController extends Controller
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::withToken($connection->token)
+            $response = Http::withToken($connection->token)
                 ->timeout(10)
                 ->get($connection->base_url);
 
@@ -124,5 +160,35 @@ class HrmoHubController extends Controller
         ]);
 
         return back()->with('summary', $summary);
+    }
+
+    // ── Private ──────────────────────────────────────────────────────────────
+
+    /**
+     * Fire the connection request payload to L&D's Hub API endpoint.
+     * Best-effort — logs on failure but does not abort the connect action.
+     */
+    private function sendLdConnectionRequest(string $ldBaseUrl, string $ldToken): void
+    {
+        try {
+            $response = Http::withToken($ldToken)
+                ->timeout(10)
+                ->post(rtrim($ldBaseUrl, '/') . '/api/hub/connection-request', [
+                    'pillar'         => 'pms',
+                    'base_url'       => config('app.url'),
+                    'callback_token' => config('services.pms.callback_token'),
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('HrmoHubController: L&D connection request returned non-2xx.', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('HrmoHubController: failed to send L&D connection request.', [
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 }
