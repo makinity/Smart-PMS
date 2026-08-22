@@ -34,7 +34,12 @@ class RedirectIfTrainingLocked
             ], 403);
         }
 
-        $lndBase = rtrim((string) config('services.lnd.base_url', ''), '/');
+        // Read L&D base URL from Hub connection (authoritative) or fall back to .env
+        $hubConnection = \App\Models\HrmoHubConnection::where('pillar', 'ld')
+            ->where('status', \App\Models\HrmoHubConnection::STATUS_CONNECTED)
+            ->first();
+
+        $lndBase = rtrim((string) ($hubConnection?->base_url ?: config('services.lnd.base_url', '')), '/');
 
         if (empty($lndBase)) {
             // L&D URL not configured — show a friendly page instead of redirecting nowhere

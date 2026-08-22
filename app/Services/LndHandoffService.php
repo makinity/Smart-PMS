@@ -12,16 +12,22 @@ class LndHandoffService
 {
     public function sendDevelopmentPlan(DevelopmentPlan $developmentPlan): array
     {
-        $baseUrl = trim((string) config('services.lnd.base_url', ''));
-        $token = trim((string) config('services.lnd.token', ''));
+        // Primary source: HRMO Hub connection record (set by admin via the Hub UI)
+        // Fallback: .env values (for local dev or if Hub not configured)
+        $hubConnection = \App\Models\HrmoHubConnection::where('pillar', 'ld')
+            ->where('status', \App\Models\HrmoHubConnection::STATUS_CONNECTED)
+            ->first();
+
+        $baseUrl = trim((string) ($hubConnection?->base_url ?: config('services.lnd.base_url', '')));
+        $token   = trim((string) ($hubConnection?->token   ?: config('services.lnd.token', '')));
         $timeout = (int) config('services.lnd.timeout', 20);
 
         if ($baseUrl === '') {
-            throw new RuntimeException('LND API base URL is not configured.');
+            throw new RuntimeException('LND API base URL is not configured. Connect L&D in the HRMO Hub or set LND_BASE_URL in .env.');
         }
 
         if ($token === '') {
-            throw new RuntimeException('LND API token is not configured.');
+            throw new RuntimeException('LND API token is not configured. Connect L&D in the HRMO Hub or set LND_API_TOKEN in .env.');
         }
 
         $endpoint = rtrim($baseUrl, '/') . '/api/lnd/development-plans';
