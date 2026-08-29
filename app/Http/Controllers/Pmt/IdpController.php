@@ -106,6 +106,8 @@ class IdpController extends Controller
             'source_rating'   => $p->source_rating,
             'period'          => $p->performancePeriod?->name ?? '—',
             'pmt_remarks'     => $p->pmt_remarks ?? '',
+            'lnd_sync_status' => $p->lnd_sync_status,
+            'lnd_last_error'  => $p->lnd_last_error ?? null,
             'updated_at'      => $p->updated_at?->toIso8601String(),
         ]);
 
@@ -139,6 +141,8 @@ class IdpController extends Controller
                 'idp_rows'            => $idp->idp_rows ?? [],
                 'period'              => $idp->performancePeriod?->name,
                 'lnd_sync_status'     => $idp->lnd_sync_status,
+                'lnd_last_error'      => $idp->lnd_last_error ?? null,
+                'lnd_reference_id'    => $idp->lnd_reference_id ?? null,
                 'submitted_to_ld_at'  => $idp->submitted_to_ld_at?->format('M d, Y'),
                 'updated_at'          => $idp->updated_at?->format('M d, Y g:i A'),
                 'office_id'           => $idp->office_id,
@@ -157,6 +161,59 @@ class IdpController extends Controller
         $data = $request->validate(['pmt_remarks' => ['nullable', 'string', 'max:2000']]);
         $idp->update(['pmt_remarks' => $data['pmt_remarks'], 'updated_by' => auth()->id()]);
         return back()->with('success', 'Remarks saved.');
+    }
+
+    /**
+     * Revert a "submitted_to_ld" plan back to "submitted_to_pmt".
+     *
+     * This is a safety escape-hatch for when:
+     *  - L&D rejected or lost the referral
+     *  - The wrong employee was submitted
+     *  - The sync failed and needs to be retried cleanly
+     *
+     * It clears all L&D tracking fields and unlocks the employee's PMS account
+     * so they can log in again.
+     */
+    public function revertLdSubmission(Request $request, DevelopmentPlan $idp)
+    {
+        if ($idp->status !== DevelopmentPlan::STATUS_SUBMITTED_TO_LD) {
+            return back()->with('error', 'This IDP is not in the Submitted to L&D state and cannot be reverted.');
+        }
+
+        // Roll back plan to previous step
+        $idp->update([
+            'status'             => DevelopmentPlan::STATUS_SUBMITTED_TO_PMT,
+            'submitted_to_ld_at' => null,
+            'lnd_sync_status'    => DevelopmentPlan::LND_SYNC_NOT_SENT,
+            'lnd_reference_id'   => null,
+            'lnd_synced_at'      => null,
+            'lnd_last_error'     => null,
+            'updated_by'         => auth()->id(),
+        ]);
+
+        // Unlock the employee so they can log back into PMS
+        $idp->employee?->employee?->update([
+            'training_locked'  => false,
+            'lnd_reference_id' => null,
+        ]);
+
+        // Notify the employee that they can log in again
+        if ($idp->employee) {
+            $idp->employee->notify(new \App\Notifications\WorkflowEventNotification(
+                type: 'warning',
+                event: 'development_plan.ld_submission_reverted',
+                message: 'Your L&D referral has been recalled by PMT. You can now log back into PMS. Please wait for further instructions.',
+                url: '/employee/idp',
+            ));
+        }
+
+        \Illuminate\Support\Facades\Log::info('[PMT] L&D submission reverted', [
+            'plan_id'     => $idp->id,
+            'employee_id' => $idp->employee_id,
+            'reverted_by' => auth()->id(),
+        ]);
+
+        return back()->with('success', 'L&D submission reverted. Employee account has been unlocked.');
     }
 
     public function bulkSubmitToLd(Request $request, LndHandoffService $lnd)

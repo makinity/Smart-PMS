@@ -170,33 +170,115 @@ function ValidationBlockModal({ blockers, onClose }) {
 function ConfirmSubmitModal({ onConfirm, onCancel, submitting }) {
     return (
         <>
-            <div onClick={onCancel} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)' }} />
-            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 1101,
-                background: 'var(--admin-card)', borderRadius: 'var(--admin-radius)', border: '1px solid var(--admin-border-strong)',
-                boxShadow: 'var(--admin-shadow)', width: '90%', maxWidth: 420 }}>
-                <div style={{ padding: '1.25rem 1.25rem 0.5rem' }}>
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(59,130,246,0.12)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.85rem' }}>
-                        <i className="bi bi-send-fill" style={{ color: 'var(--admin-accent)', fontSize: '1.1rem' }} />
+            {/* Backdrop */}
+            <div
+                onClick={onCancel}
+                style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
+            />
+
+            {/* Dialog */}
+            <div style={{
+                position: 'fixed', top: '50%', left: '50%',
+                transform: 'translate(-50%,-50%)',
+                zIndex: 1101,
+                background: 'var(--admin-card)',
+                borderRadius: 'var(--admin-radius)',
+                border: '1px solid var(--admin-border-strong)',
+                boxShadow: 'var(--admin-shadow)',
+                width: '90%', maxWidth: 420,
+                overflow: 'hidden',
+            }}>
+                {/* Top accent bar */}
+                <div style={{ height: 4, background: 'var(--admin-accent)' }} />
+
+                {/* Body */}
+                <div style={{ padding: '1.75rem 1.75rem 1.25rem', textAlign: 'center' }}>
+                    {/* Icon badge */}
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'rgba(59,130,246,0.12)',
+                        border: '1.5px solid rgba(59,130,246,0.25)',
+                        marginBottom: '1.1rem',
+                    }}>
+                        <i className="bi bi-send-fill" style={{ color: 'var(--admin-accent)', fontSize: '1.4rem' }} />
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--admin-text-primary)', marginBottom: 6 }}>
-                        Submit?
+
+                    {/* Title */}
+                    <div style={{
+                        fontWeight: 700, fontSize: '1.15rem',
+                        color: 'var(--admin-text-primary)',
+                        letterSpacing: '-0.01em',
+                        marginBottom: '0.55rem',
+                    }}>
+                        Submit Accomplishment?
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--admin-text-muted)', lineHeight: 1.55 }}>
-                        This will submit your <strong>SMPOR</strong> and <strong>IPCR</strong> to your supervisor for review. You will not be able to edit your submission after this.
-                    </div>
+
+                    {/* Description */}
+                    <p style={{
+                        fontSize: '0.875rem', color: 'var(--admin-text-muted)',
+                        lineHeight: 1.65, margin: 0,
+                    }}>
+                        This will submit your{' '}
+                        <strong style={{ color: 'var(--admin-text-secondary)' }}>SMPOR</strong> and{' '}
+                        <strong style={{ color: 'var(--admin-text-secondary)' }}>IPCR</strong> to your
+                        supervisor for review. You will <strong style={{ color: 'var(--admin-text-secondary)' }}>not</strong>{' '}
+                        be able to edit your submission after this.
+                    </p>
                 </div>
-                <div style={{ padding: '1rem 1.25rem', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                    <button onClick={onCancel} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-                        Cancel
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px solid var(--admin-border)', margin: '0 1.75rem' }} />
+
+                {/* Footer buttons */}
+                <div style={{
+                    padding: '1rem 1.75rem 1.5rem',
+                    display: 'flex', gap: '0.6rem',
+                    flexDirection: 'column',
+                }}>
+                    <button
+                        onClick={onConfirm}
+                        disabled={submitting}
+                        style={{
+                            width: '100%', padding: '0.65rem',
+                            borderRadius: 'var(--admin-radius)',
+                            border: 'none',
+                            background: 'var(--admin-accent)',
+                            color: '#fff',
+                            cursor: submitting ? 'not-allowed' : 'pointer',
+                            fontSize: '0.9rem', fontWeight: 700,
+                            opacity: submitting ? 0.7 : 1,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                            transition: 'opacity 0.15s',
+                        }}
+                    >
+                        {submitting
+                            ? <><i className="bi bi-arrow-repeat" style={{ animation: 'spin 0.8s linear infinite' }} /> Submitting…</>
+                            : <><i className="bi bi-send-fill" /> Confirm Submit</>
+                        }
                     </button>
-                    <button onClick={onConfirm} disabled={submitting}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: 'var(--admin-accent)', color: '#fff', cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: submitting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <i className="bi bi-send-fill" />
-                        {submitting ? 'Submitting…' : 'Confirm Submit'}
+                    <button
+                        onClick={onCancel}
+                        disabled={submitting}
+                        style={{
+                            width: '100%', padding: '0.65rem',
+                            borderRadius: 'var(--admin-radius)',
+                            border: '1px solid var(--admin-border-strong)',
+                            background: 'transparent',
+                            color: 'var(--admin-text-secondary)',
+                            cursor: submitting ? 'not-allowed' : 'pointer',
+                            fontSize: '0.88rem', fontWeight: 500,
+                            transition: 'opacity 0.15s',
+                        }}
+                    >
+                        Cancel
                     </button>
                 </div>
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+            `}</style>
         </>
     );
 }

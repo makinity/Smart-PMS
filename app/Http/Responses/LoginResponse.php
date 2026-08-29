@@ -43,8 +43,11 @@ class LoginResponse implements LoginResponseContract
                 return \Inertia\Inertia::location($redirectUrl);
             }
 
-            // L&D URL not configured — at least block access to the dashboard
-            abort(403, 'Your account is currently under Learning & Development training.');
+            // L&D URL not configured — redirect to the styled Inertia error page
+            // instead of a raw abort(403).
+            return \Inertia\Inertia::location(
+                route('pillar.disconnected', ['pillar' => 'ld'])
+            );
         }
 
         return redirect()->intended('/dashboard');

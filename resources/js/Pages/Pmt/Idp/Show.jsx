@@ -73,6 +73,8 @@ export default function Show() {
 
     const [remarks, setRemarks] = useState(plan.pmt_remarks ?? '');
     const [saving, setSaving]   = useState(false);
+    const [showRevert, setShowRevert] = useState(false);
+    const [reverting, setReverting]   = useState(false);
 
     const ratingColor = RATING_COLOR[plan.source_rating] ?? '#ef4444';
     const statusCfg   = STATUS_CFG[plan.status] ?? STATUS_CFG.pending_details;
@@ -84,6 +86,16 @@ export default function Show() {
             onSuccess: () => toast?.('Remarks saved.', 'success'),
             onError:   () => toast?.('Failed.', 'error'),
             onFinish:  () => setSaving(false),
+        });
+    };
+
+    const handleRevert = () => {
+        setReverting(true);
+        router.post(`/pmt/idp/${plan.id}/revert-ld`, {}, {
+            preserveScroll: true,
+            onSuccess: () => { setShowRevert(false); toast?.('L&D submission reverted. Employee account unlocked.', 'success'); },
+            onError:   (e) => { toast?.(e?.message ?? 'Revert failed.', 'error'); },
+            onFinish:  () => setReverting(false),
         });
     };
 
@@ -138,9 +150,73 @@ export default function Show() {
                         </div>
                     )}
                     {plan.status === 'submitted_to_ld' && (
-                        <div style={{ marginTop: '0.5rem', background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 8, padding: '0.5rem 0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <i className="bi bi-check-circle-fill" style={{ color: '#4ade80', flexShrink: 0 }} />
-                            <span style={{ fontSize: '0.82rem', color: '#4ade80' }}>Submitted to L&D{plan.submitted_to_ld_at ? ` on ${plan.submitted_to_ld_at}` : ''}.</span>
+                        <div style={{ marginTop: '0.5rem' }}>
+                            {/* ── L&D sync status banner ── */}
+                            {plan.lnd_sync_status === 'failed' ? (
+                                // ❌ Failed — show the actual error so PMT can act
+                                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '0.65rem 0.85rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: plan.lnd_last_error ? '0.4rem' : 0 }}>
+                                        <i className="bi bi-x-circle-fill" style={{ color: '#ef4444', flexShrink: 0 }} />
+                                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ef4444', flex: 1 }}>
+                                            L&amp;D Sync Failed
+                                        </span>
+                                        <button onClick={() => setShowRevert(true)}
+                                            style={{ flexShrink: 0, padding: '0.3rem 0.75rem', borderRadius: 6, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                                            <i className="bi bi-arrow-counterclockwise" style={{ marginRight: 4 }} />Revert
+                                        </button>
+                                    </div>
+                                    {plan.lnd_last_error && (
+                                        <div style={{ marginLeft: '1.5rem', fontSize: '0.78rem', color: 'var(--admin-text-secondary)', lineHeight: 1.55, wordBreak: 'break-word' }}>
+                                            {plan.lnd_last_error}
+                                        </div>
+                                    )}
+                                    <div style={{ marginLeft: '1.5rem', marginTop: '0.35rem', fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>
+                                        The plan was marked as Submitted to L&amp;D on PMS but the L&amp;D system did not receive it.
+                                        Check the HRMO Hub connection or contact your system administrator.
+                                    </div>
+                                </div>
+                            ) : plan.lnd_sync_status === 'acknowledged' ? (
+                                // ✅ Acknowledged by L&D
+                                <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: 8, padding: '0.5rem 0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                    <i className="bi bi-check-circle-fill" style={{ color: '#4ade80', flexShrink: 0, marginTop: 2 }} />
+                                    <div style={{ flex: 1 }}>
+                                        <span style={{ fontSize: '0.82rem', color: '#4ade80', fontWeight: 600 }}>
+                                            Submitted &amp; acknowledged by L&amp;D{plan.submitted_to_ld_at ? ` on ${plan.submitted_to_ld_at}` : ''}.
+                                        </span>
+                                        {plan.lnd_reference_id && (
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
+                                                Reference: <code style={{ fontSize: '0.7rem' }}>{plan.lnd_reference_id}</code>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button onClick={() => setShowRevert(true)}
+                                        style={{ flexShrink: 0, padding: '0.3rem 0.75rem', borderRadius: 6, border: '1px solid rgba(74,222,128,0.35)', background: 'rgba(74,222,128,0.08)', color: '#4ade80', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', marginTop: 1 }}>
+                                        <i className="bi bi-arrow-counterclockwise" style={{ marginRight: 4 }} />Revert
+                                    </button>
+                                </div>
+                            ) : (
+                                // 🟡 Sent but not yet acknowledged (or status unknown)
+                                <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 8, padding: '0.5rem 0.85rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                    <i className="bi bi-send-check" style={{ color: '#f59e0b', flexShrink: 0, marginTop: 2 }} />
+                                    <div style={{ flex: 1 }}>
+                                        <span style={{ fontSize: '0.82rem', color: '#f59e0b', fontWeight: 600 }}>
+                                            Submitted to L&amp;D{plan.submitted_to_ld_at ? ` on ${plan.submitted_to_ld_at}` : ''} — awaiting acknowledgement.
+                                        </span>
+                                        {plan.lnd_reference_id && (
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
+                                                Reference: <code style={{ fontSize: '0.7rem' }}>{plan.lnd_reference_id}</code>
+                                            </div>
+                                        )}
+                                        <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>
+                                            The L&amp;D system has not yet confirmed receipt. This may resolve automatically.
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setShowRevert(true)}
+                                        style={{ flexShrink: 0, padding: '0.3rem 0.75rem', borderRadius: 6, border: '1px solid rgba(245,158,11,0.35)', background: 'rgba(245,158,11,0.08)', color: '#f59e0b', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', marginTop: 1 }}>
+                                        <i className="bi bi-arrow-counterclockwise" style={{ marginRight: 4 }} />Revert
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -169,6 +245,119 @@ export default function Show() {
                     </div>
                 </div>
             </div>
+
+            {/* ── Revert L&D Submission Confirm Modal ── */}
+            {showRevert && (
+                <>
+                    {/* Backdrop */}
+                    <div onClick={() => !reverting && setShowRevert(false)}
+                        style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }} />
+
+                    {/* Dialog */}
+                    <div style={{
+                        position: 'fixed', top: '50%', left: '50%',
+                        transform: 'translate(-50%,-50%)',
+                        zIndex: 1101,
+                        background: 'var(--admin-card)',
+                        borderRadius: 'var(--admin-radius)',
+                        border: '1px solid var(--admin-border-strong)',
+                        boxShadow: 'var(--admin-shadow)',
+                        width: '90%', maxWidth: 440,
+                        overflow: 'hidden',
+                    }}>
+                        {/* Orange top accent bar — signals a destructive/warning action */}
+                        <div style={{ height: 4, background: '#f59e0b' }} />
+
+                        <div style={{ padding: '1.75rem 1.75rem 1.25rem', textAlign: 'center' }}>
+                            {/* Icon badge */}
+                            <div style={{
+                                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                width: 56, height: 56, borderRadius: '50%',
+                                background: 'rgba(245,158,11,0.12)',
+                                border: '1.5px solid rgba(245,158,11,0.3)',
+                                marginBottom: '1.1rem',
+                            }}>
+                                <i className="bi bi-arrow-counterclockwise" style={{ color: '#f59e0b', fontSize: '1.5rem' }} />
+                            </div>
+
+                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--admin-text-primary)', letterSpacing: '-0.01em', marginBottom: '0.55rem' }}>
+                                Revert L&amp;D Submission?
+                            </div>
+
+                            <p style={{ fontSize: '0.875rem', color: 'var(--admin-text-muted)', lineHeight: 1.65, margin: 0 }}>
+                                This will set{' '}
+                                <strong style={{ color: 'var(--admin-text-secondary)' }}>{employee.name}</strong>'s
+                                plan back to <strong style={{ color: 'var(--admin-text-secondary)' }}>Submitted to PMT</strong> and
+                                clear all L&amp;D sync data.
+                            </p>
+
+                            {/* Impact list */}
+                            <div style={{
+                                marginTop: '1rem', textAlign: 'left',
+                                background: 'rgba(245,158,11,0.06)',
+                                border: '1px solid rgba(245,158,11,0.2)',
+                                borderRadius: 8, padding: '0.75rem 1rem',
+                                display: 'flex', flexDirection: 'column', gap: '0.45rem',
+                            }}>
+                                {[
+                                    'Plan status → Submitted to PMT',
+                                    'L&D sync data cleared (reference ID, sync date, error)',
+                                    "Employee's PMS account unlocked — they can log back in",
+                                    'Employee will be notified of the recall',
+                                ].map((item, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                        <i className="bi bi-check2" style={{ color: '#f59e0b', fontSize: '0.8rem', marginTop: 2, flexShrink: 0 }} />
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--admin-text-secondary)', lineHeight: 1.5 }}>{item}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div style={{ borderTop: '1px solid var(--admin-border)', margin: '0 1.75rem' }} />
+
+                        {/* Footer */}
+                        <div style={{ padding: '1rem 1.75rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            <button
+                                onClick={handleRevert}
+                                disabled={reverting}
+                                style={{
+                                    width: '100%', padding: '0.65rem',
+                                    borderRadius: 'var(--admin-radius)',
+                                    border: 'none',
+                                    background: '#f59e0b',
+                                    color: '#fff',
+                                    cursor: reverting ? 'not-allowed' : 'pointer',
+                                    fontSize: '0.9rem', fontWeight: 700,
+                                    opacity: reverting ? 0.7 : 1,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                                    transition: 'opacity 0.15s',
+                                }}
+                            >
+                                {reverting
+                                    ? <><i className="bi bi-hourglass-split" /> Reverting…</>
+                                    : <><i className="bi bi-arrow-counterclockwise" /> Confirm Revert</>
+                                }
+                            </button>
+                            <button
+                                onClick={() => setShowRevert(false)}
+                                disabled={reverting}
+                                style={{
+                                    width: '100%', padding: '0.65rem',
+                                    borderRadius: 'var(--admin-radius)',
+                                    border: '1px solid var(--admin-border-strong)',
+                                    background: 'transparent',
+                                    color: 'var(--admin-text-secondary)',
+                                    cursor: reverting ? 'not-allowed' : 'pointer',
+                                    fontSize: '0.88rem', fontWeight: 500,
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
         </AppLayout>
     );
 }

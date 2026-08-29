@@ -16,6 +16,11 @@ Route::post('/broadcasting/auth', function (\Illuminate\Http\Request $request) {
 // Root redirect
 Route::get('/', fn () => redirect()->route('login'));
 
+// Pillar-disconnected error page (public — no auth required so it renders
+// even after a fresh login before the session is fully established)
+Route::get('/pillar-disconnected', \App\Http\Controllers\PillarDisconnectedController::class)
+    ->name('pillar.disconnected');
+
 // Role router
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -126,6 +131,7 @@ Route::prefix('pmt')->middleware(['auth', 'role:pmt'])->name('pmt.')->group(func
     Route::post('/idp/bulk-submit', [\App\Http\Controllers\Pmt\IdpController::class, 'bulkSubmitToLd'])->name('idp.bulk-submit');
     Route::get('/idp/{idp}', [\App\Http\Controllers\Pmt\IdpController::class, 'show'])->name('idp.show');
     Route::patch('/idp/{idp}/remarks', [\App\Http\Controllers\Pmt\IdpController::class, 'savePmtRemarks'])->name('idp.remarks');
+    Route::post('/idp/{idp}/revert-ld', [\App\Http\Controllers\Pmt\IdpController::class, 'revertLdSubmission'])->name('idp.revert-ld');
     // Performance Overview (merged Top Performers + Development Planning list)
     Route::get('/performance-overview', [\App\Http\Controllers\Pmt\PerformanceOverviewController::class, 'index'])->name('performance-overview.index');
     Route::get('/performance-overview/export-top-employees', [\App\Http\Controllers\Pmt\TopPerformingEmployeeExportController::class, 'export'])->name('performance-overview.export-top-employees');

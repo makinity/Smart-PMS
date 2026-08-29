@@ -30,8 +30,9 @@ export default function OfficeShow() {
     const { office, plans = [], period, allPeriods } = usePage().props;
     const toast   = useToast();
     const confirm = useConfirm();
-    const [search, setSearch]     = useState('');
-    const [submitting, setSubmitting] = useState(false);
+    const [search, setSearch]         = useState('');
+    const [submitting, setSubmitting]  = useState(false);
+    const [revertingId, setRevertingId] = useState(null);
     const isPastPeriod = period && !period.is_active;
 
     const submittableIds = plans.filter(p => p.status === 'submitted_to_pmt').map(p => p.id);
@@ -51,6 +52,21 @@ export default function OfficeShow() {
             onSuccess: () => toast?.('Submitted to L&D.', 'success'),
             onError:   () => toast?.('Some failed.', 'error'),
             onFinish:  () => setSubmitting(false),
+        });
+    };
+
+    const handleRevert = async (plan, e) => {
+        e.stopPropagation(); // don't navigate to show page
+        const ok = await confirm?.(
+            `Revert "${plan.employee_name}"'s L&D submission?\n\nThis will:\n• Roll the plan back to Submitted to PMT\n• Clear all L&D sync data\n• Unlock the employee's PMS account`
+        );
+        if (!ok) return;
+        setRevertingId(plan.id);
+        router.post(`/pmt/idp/${plan.id}/revert-ld`, {}, {
+            preserveScroll: true,
+            onSuccess: () => toast?.(`L&D submission reverted for ${plan.employee_name}. Account unlocked.`, 'success'),
+            onError:   (e) => toast?.(e?.message ?? 'Revert failed.', 'error'),
+            onFinish:  () => setRevertingId(null),
         });
     };
 

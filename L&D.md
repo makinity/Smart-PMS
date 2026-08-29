@@ -1,8 +1,68 @@
 # PMS → L&D Integration Contract
 
-> **Last updated:** August 22, 2026
+> **Last updated:** August 29, 2026
 > **Status:** Integration documented — code alignment needed (see Known Issues)
 > **Prepared by:** smart-pms coding agent
+
+---
+
+## ⚠️ Known Issue — Recurring Break on L&D Reconnect (Documented Aug 29, 2026)
+
+### What breaks and why
+
+Every time the L&D system restarts or reconnects to PMS via the HRMO Hub, **two things happen**:
+
+1. The Hub `hrmo_hub_connections` row for `ld` gets a new `base_url` (new ngrok URL) and a new token via the handshake.
+2. The `.env` value `LND_BASE_URL` is **not updated automatically**.
+
+`LndHandoffService` reads from `.env` first, Hub second (fallback). So after an L&D reconnect, the service keeps sending to the **old `.env` URL** — which either points to an old ngrok tunnel (dead) or `127.0.0.1:8000` (local, not reachable from PMS). L&D never receives the payload.
+
+### Symptoms
+- PMT submits IDP to L&D — PMS shows "Submitted to L&D" / `lnd_sync_status = sent` or even `acknowledged`
+- L&D database has no record of the employee
+- No error in PMS because the old URL either times out silently or returns a stale 200
+
+### Confirmed occurrence: Aug 29, 2026
+- L&D reconnected at 23:00 and again at 23:28 (two reconnects in one day — likely ngrok tunnel cycling)
+- `.env` `LND_BASE_URL` was still `http://127.0.0.1:8000`
+- Hub `base_url` was `https://subtotal-subdivide-chatter.ngrok-free.dev/`
+- All three IDPs (Carlos, Ramon, Liza) were submitted to the wrong URL
+- **Fix applied:** Updated `LND_BASE_URL` in `.env` to match current Hub `base_url`, cleared config cache, reverted all three plans to `submitted_to_pmt`
+
+### Permanent fix needed (not yet implemented)
+
+**Option A (recommended):** Remove `.env` as the source of truth for `LndHandoffService`. Always read exclusively from `hrmo_hub_connections` where `pillar = 'ld'` and `status = 'connected'`. The Hub is already the authoritative source — `.env` should only be a fallback for local dev with no Hub connection.
+
+```php
+// LndHandoffService::sendDevelopmentPlan() — change this:
+$baseUrl = trim((string) ($hubConnection?->base_url ?: config('services.lnd.base_url', '')));
+$token   = trim((string) ($hubConnection?->token   ?: config('services.lnd.token', '')));
+
+// To this (Hub is authoritative, .env is last resort):
+$baseUrl = trim((string) ($hubConnection?->base_url ?? config('services.lnd.base_url', '')));
+$token   = trim((string) ($hubConnection?->token   ?? config('services.lnd.token', '')));
+```
+Note: `?:` skips empty strings, `??` only skips null. Since `base_url` in Hub is never empty when connected, both work the same here. The real fix is ensuring the Hub row is always authoritative — which it already is as long as `.env` fallback is not set to a stale value.
+
+**Option B:** When L&D reconnects (Hub `connectionAccepted` fires), automatically sync `LND_BASE_URL` and `LND_API_TOKEN` in `.env`. Fragile — avoid.
+
+**Option C (workaround until A is done):** After every L&D reconnect, manually update `LND_BASE_URL` in `.env` to match the new Hub `base_url` and run `php artisan config:clear`.
+
+### Quick manual recovery steps (for future incidents)
+```bash
+# 1. Check what URL the Hub has vs what .env has
+php artisan tinker
+> \App\Models\HrmoHubConnection::where('pillar','ld')->first()->base_url
+> config('services.lnd.base_url')
+
+# 2. If they differ — update .env LND_BASE_URL to match Hub base_url
+# 3. php artisan config:clear
+# 4. Revert affected plans via the Revert button on /pmt/idp/{id}
+#    or run the revert script if the UI isn't loading
+# 5. Re-submit from /pmt/idp/office/{id}
+```
+
+---
 
 ---
 

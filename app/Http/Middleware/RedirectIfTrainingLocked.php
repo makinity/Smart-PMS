@@ -42,8 +42,15 @@ class RedirectIfTrainingLocked
         $lndBase = rtrim((string) ($hubConnection?->base_url ?: config('services.lnd.base_url', '')), '/');
 
         if (empty($lndBase)) {
-            // L&D URL not configured — show a friendly page instead of redirecting nowhere
-            abort(403, 'Your account is currently under Learning & Development training. Please contact your administrator for the training portal link.');
+            // L&D URL not configured — redirect to the styled Inertia error page
+            // instead of a raw abort(403).
+            $pillarDisconnectedUrl = route('pillar.disconnected', ['pillar' => 'ld']);
+
+            if ($request->header('X-Inertia')) {
+                return \Inertia\Inertia::location($pillarDisconnectedUrl);
+            }
+
+            return redirect()->to($pillarDisconnectedUrl);
         }
 
         // Build redirect URL with identity params
