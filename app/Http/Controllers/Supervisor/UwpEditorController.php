@@ -12,6 +12,7 @@ use App\Models\UwpIndicatorAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Models\AppSetting;
 
 class UwpEditorController extends Controller
 {
@@ -214,7 +215,8 @@ class UwpEditorController extends Controller
 
         // Try FastAPI first
         try {
-            $response = Http::timeout(1)->post(env('FASTAPI_URL') . '/suggest-employees', [
+            $fastapiUrl = AppSetting::get('fastapi_url', env('FASTAPI_URL', 'http://127.0.0.1:8000'));
+            $response = Http::timeout(5)->post($fastapiUrl . '/suggest-employees', [
                 'uwp_success_indicator_id' => $indicatorId,
                 'performance_period_id'    => $periodId,
             ]);
