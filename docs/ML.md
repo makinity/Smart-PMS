@@ -1,4 +1,4 @@
-# ML Integration — Smart PMS × FastAPI
+# ML Integration ΓÇö Smart PMS ├ù FastAPI
 **Random Forest KPI Feasibility Model**
 *Attach this file to the FastAPI project for full context.*
 
@@ -8,21 +8,21 @@
 
 | # | Objective | Status |
 |---|---|---|
-| 6.1 | Analyze historical performance data and task attributes | ✅ Table designed + seeded |
-| 6.2 | Validate and predict the feasibility of proposed KPI targets | ✅ RF model trained (Colab) |
-| 6.3 | Classify KPIs as Achievable, At Risk, or Unrealistic | ✅ `feasibility_label` output |
-| 6.4 | Provide probability percentages and risk levels per KPI | ✅ `feasibility_probability` + `risk_level` |
-| 6.5 | Recommend appropriate employee for a specific KPI | ✅ `fit_score` + `fit_label` per employee |
+| 6.1 | Analyze historical performance data and task attributes | Γ£à Table designed + seeded |
+| 6.2 | Validate and predict the feasibility of proposed KPI targets | Γ£à RF model trained (Colab) |
+| 6.3 | Classify KPIs as Achievable, At Risk, or Unrealistic | Γ£à `feasibility_label` output |
+| 6.4 | Provide probability percentages and risk levels per KPI | Γ£à `feasibility_probability` + `risk_level` |
+| 6.5 | Recommend appropriate employee for a specific KPI | Γ£à `fit_score` + `fit_label` per employee |
 
-**Panel term → System term mapping:**
+**Panel term ΓåÆ System term mapping:**
 
 | Panel/Docs Term | Smart PMS Term |
 |---|---|
 | KPI | Success Indicator (`uwp_success_indicators.indicator_text`) |
 | KPI Target | `target_quantity` + `target_timeline` on the indicator |
 | KPI Feasibility | Whether the target is realistic for a given employee (RF output) |
-| Achievable | `adjectival_rating` Outstanding / Very Satisfactory (score ≥ 4.0) |
-| At Risk | `adjectival_rating` Satisfactory (score 3.0–3.99) |
+| Achievable | `adjectival_rating` Outstanding / Very Satisfactory (score ΓëÑ 4.0) |
+| At Risk | `adjectival_rating` Satisfactory (score 3.0ΓÇô3.99) |
 | Unrealistic | `adjectival_rating` Unsatisfactory / Poor (score < 3.0) |
 | Recommend Employee | Rank employees by `fit_score` for assignment in UWP Editor |
 | Historical Performance | `employee_performance_snapshots` table |
@@ -33,84 +33,84 @@
 
 ```
 Smart PMS (Laravel + React)
-│
-├── Supervisor UWP Editor
-│     └── AssignModal
-│           ├── [Current] hardcoded suggestIndicators() simulation
-│           └── [Target]  GET /pmt/uwp/suggestions?indicator_id=X
-│                              ↓
-│                         Laravel controller
-│                              ↓ HTTP POST
-│                         FastAPI /suggest-employees
-│                              ↓
-│                         reads ml_kpi_predictions (MySQL)
-│                              ↑
-│                         FastAPI writes predictions after training
-│
-└── MySQL Database (shared)
-      ├── employee_performance_snapshots  ← FastAPI reads for training
-      └── ml_kpi_predictions              ← FastAPI writes predictions
+Γöé
+Γö£ΓöÇΓöÇ Supervisor UWP Editor
+Γöé     ΓööΓöÇΓöÇ AssignModal
+Γöé           Γö£ΓöÇΓöÇ [Current] hardcoded suggestIndicators() simulation
+Γöé           ΓööΓöÇΓöÇ [Target]  GET /pmt/uwp/suggestions?indicator_id=X
+Γöé                              Γåô
+Γöé                         Laravel controller
+Γöé                              Γåô HTTP POST
+Γöé                         FastAPI /suggest-employees
+Γöé                              Γåô
+Γöé                         reads ml_kpi_predictions (MySQL)
+Γöé                              Γåæ
+Γöé                         FastAPI writes predictions after training
+Γöé
+ΓööΓöÇΓöÇ MySQL Database (shared)
+      Γö£ΓöÇΓöÇ employee_performance_snapshots  ΓåÉ FastAPI reads for training
+      ΓööΓöÇΓöÇ ml_kpi_predictions              ΓåÉ FastAPI writes predictions
 ```
 
 **FastAPI has read/write access to two tables only:**
-- `employee_performance_snapshots` — read-only (training data)
-- `ml_kpi_predictions` — write (store prediction output)
+- `employee_performance_snapshots` ΓÇö read-only (training data)
+- `ml_kpi_predictions` ΓÇö write (store prediction output)
 
 ---
 
 ## Database Tables
 
-### Table 1 — `employee_performance_snapshots`
-**Purpose:** Denormalized ML training data. One row = one employee × one indicator × one performance cycle.
+### Table 1 ΓÇö `employee_performance_snapshots`
+**Purpose:** Denormalized ML training data. One row = one employee ├ù one indicator ├ù one performance cycle.
 Auto-populated by `IpcrObserver` when PMT releases an IPCR. Also seeded synthetically.
 
 | Column | Type | Source | ML Role |
 |---|---|---|---|
-| `employee_id` | FK → users | `ipcrs.employee_id` | Identifier |
-| `performance_period_id` | FK → performance_periods (nullable) | `ipcrs.performance_period_id` | Identifier |
-| `ipcr_id` | FK → ipcrs (nullable) | `ipcrs.id` | Identifier |
-| `uwp_success_indicator_id` | FK → uwp_success_indicators (nullable) | `ipcr_items.indicator_id` | Feature |
-| `position` | string | `users.position` | Feature — seniority |
-| `office_name` | string | `offices.name` | Feature — context |
-| `indicator_text` | text | `ipcr_items.indicator_text` | Feature — NLP similarity |
-| `function_type` | string | `uwp_functions.function_type` | Feature — `core`/`support` |
-| `mfo_title` | string | `uwp_mfos.title` | Feature — work category |
-| `target_quantity` | integer | `uwp_success_indicators.target_quantity` | Feature — demand |
-| `target_timeline_days` | integer | parsed from `target_timeline` | Feature — urgency |
-| `office_size` | integer | COUNT users in office | Feature — workload context |
-| `employee_count_assigned` | integer | COUNT assignments on indicator | Feature — shared load |
-| `current_workload_count` | integer | COUNT indicators assigned this period | Feature — employee load |
-| `previous_final_score` | decimal | last period's `final_score` | Feature — trend |
-| `previous_adjectival_rating` | string | last period's rating | Feature — trend |
-| `was_flagged_for_calibration` | boolean | `accomplishment_submissions.dept_head_flagged_for_calibration` | Feature — quality signal |
+| `employee_id` | FK ΓåÆ users | `ipcrs.employee_id` | Identifier |
+| `performance_period_id` | FK ΓåÆ performance_periods (nullable) | `ipcrs.performance_period_id` | Identifier |
+| `ipcr_id` | FK ΓåÆ ipcrs (nullable) | `ipcrs.id` | Identifier |
+| `uwp_success_indicator_id` | FK ΓåÆ uwp_success_indicators (nullable) | `ipcr_items.indicator_id` | Feature |
+| `position` | string | `users.position` | Feature ΓÇö seniority |
+| `office_name` | string | `offices.name` | Feature ΓÇö context |
+| `indicator_text` | text | `ipcr_items.indicator_text` | Feature ΓÇö NLP similarity |
+| `function_type` | string | `uwp_functions.function_type` | Feature ΓÇö `core`/`support` |
+| `mfo_title` | string | `uwp_mfos.title` | Feature ΓÇö work category |
+| `target_quantity` | integer | `uwp_success_indicators.target_quantity` | Feature ΓÇö demand |
+| `target_timeline_days` | integer | parsed from `target_timeline` | Feature ΓÇö urgency |
+| `office_size` | integer | COUNT users in office | Feature ΓÇö workload context |
+| `employee_count_assigned` | integer | COUNT assignments on indicator | Feature ΓÇö shared load |
+| `current_workload_count` | integer | COUNT indicators assigned this period | Feature ΓÇö employee load |
+| `previous_final_score` | decimal | last period's `final_score` | Feature ΓÇö trend |
+| `previous_adjectival_rating` | string | last period's rating | Feature ΓÇö trend |
+| `was_flagged_for_calibration` | boolean | `accomplishment_submissions.dept_head_flagged_for_calibration` | Feature ΓÇö quality signal |
 | `final_score` | decimal | `ipcrs.pmt_adjusted_score` ?? `final_score` | **Label input** |
 | `adjectival_rating` | string | PMT-adjusted rating | Label input |
 | `feasibility_label` | string | derived from `final_score` | **ML Target Label** |
 
 **Feasibility label derivation:**
 ```
-final_score >= 4.0  →  achievable
-final_score >= 3.0  →  at_risk
-final_score <  3.0  →  unrealistic
+final_score >= 4.0  ΓåÆ  achievable
+final_score >= 3.0  ΓåÆ  at_risk
+final_score <  3.0  ΓåÆ  unrealistic
 ```
 
 **When is it populated?**
 - **Real data:** `IpcrObserver::updated()` fires when `ipcrs.status = 'released_by_pmt'`
-- **Synthetic seed:** `php artisan db:seed --class=MlTrainingDataSeeder` (315 rows, 5 passes × 9 employees × 7 indicators)
+- **Synthetic seed:** `php artisan db:seed --class=MlTrainingDataSeeder` (315 rows, 5 passes ├ù 9 employees ├ù 7 indicators)
 
 ---
 
-### Table 2 — `ml_kpi_predictions`
-**Purpose:** Stores FastAPI prediction output. Laravel reads this table to serve the AssignModal — no live API call needed per request.
+### Table 2 ΓÇö `ml_kpi_predictions`
+**Purpose:** Stores FastAPI prediction output. Laravel reads this table to serve the AssignModal ΓÇö no live API call needed per request.
 
 | Column | Type | Description |
 |---|---|---|
-| `uwp_success_indicator_id` | FK → uwp_success_indicators | Which KPI was assessed |
-| `performance_period_id` | FK → performance_periods | Which period |
+| `uwp_success_indicator_id` | FK ΓåÆ uwp_success_indicators | Which KPI was assessed |
+| `performance_period_id` | FK ΓåÆ performance_periods | Which period |
 | `feasibility_label` | string | `achievable` / `at_risk` / `unrealistic` (Obj. 6.3) |
 | `feasibility_probability` | decimal(5,4) | e.g. `0.8700` = 87% confidence (Obj. 6.4) |
 | `risk_level` | string | `Low` / `Medium` / `High` (Obj. 6.4) |
-| `recommendations` | JSON | Ranked employee list (Obj. 6.5) — see structure below |
+| `recommendations` | JSON | Ranked employee list (Obj. 6.5) ΓÇö see structure below |
 | `model_version` | string | e.g. `1.0.0` |
 | `generated_at` | timestamp | When FastAPI ran the prediction |
 
@@ -138,7 +138,7 @@ final_score <  3.0  →  unrealistic
 ]
 ```
 
-**Unique constraint:** one prediction per `(uwp_success_indicator_id, performance_period_id)` — FastAPI overwrites on retrain.
+**Unique constraint:** one prediction per `(uwp_success_indicator_id, performance_period_id)` ΓÇö FastAPI overwrites on retrain.
 
 ---
 
@@ -146,27 +146,27 @@ final_score <  3.0  →  unrealistic
 
 ```
 1. REAL DATA PATH
-   Supervisor creates UWP → assigns indicators to employees
-        ↓
-   Employee submits IPCR → Dept Head reviews → PMT scores & releases
-        ↓
-   IpcrObserver fires → writes to employee_performance_snapshots
-        ↓
-   FastAPI reads snapshots → trains Random Forest → writes ml_kpi_predictions
+   Supervisor creates UWP ΓåÆ assigns indicators to employees
+        Γåô
+   Employee submits IPCR ΓåÆ Dept Head reviews ΓåÆ PMT scores & releases
+        Γåô
+   IpcrObserver fires ΓåÆ writes to employee_performance_snapshots
+        Γåô
+   FastAPI reads snapshots ΓåÆ trains Random Forest ΓåÆ writes ml_kpi_predictions
 
 2. SYNTHETIC DATA PATH (for development/testing)
    php artisan db:seed --class=MlTrainingDataSeeder
-        ↓
+        Γåô
    315 rows in employee_performance_snapshots
-        ↓
-   FastAPI reads → trains → writes ml_kpi_predictions
+        Γåô
+   FastAPI reads ΓåÆ trains ΓåÆ writes ml_kpi_predictions
 
 3. PREDICTION SERVING PATH
    Supervisor opens AssignModal for a success indicator
-        ↓
+        Γåô
    Laravel: SELECT * FROM ml_kpi_predictions WHERE uwp_success_indicator_id = ?
-        ↓
-   Returns recommendations JSON → AssignModal renders fit scores, risk, warning
+        Γåô
+   Returns recommendations JSON ΓåÆ AssignModal renders fit scores, risk, warning
 ```
 
 ---
@@ -188,7 +188,7 @@ The Random Forest compares an employee's **past performance on similar work** ag
 
 ---
 
-## Google Colab Output → FastAPI Input
+## Google Colab Output ΓåÆ FastAPI Input
 
 The CSV `ml_kpi_predictions_generated.csv` from Colab has this structure:
 
@@ -200,7 +200,7 @@ fit_score | fit_label | warning
 
 **FastAPI import script** reads this CSV and populates `ml_kpi_predictions`:
 ```python
-# Group by indicator → build recommendations JSON per indicator
+# Group by indicator ΓåÆ build recommendations JSON per indicator
 grouped = df.groupby("uwp_success_indicator_id").apply(lambda g:
     g.sort_values("fit_score", ascending=False)[
         ["employee_id","fit_score","fit_label",
@@ -235,7 +235,7 @@ for indicator_id, recs in grouped.items():
 |---|---|---|
 | `/train` | POST | Re-train RF on latest `employee_performance_snapshots`, write to `ml_kpi_predictions` |
 | `/suggest-employees` | POST | Return ranked employee recommendations for a given indicator (reads `ml_kpi_predictions`) |
-| `/predict` | POST | On-demand prediction for a single employee × indicator pair |
+| `/predict` | POST | On-demand prediction for a single employee ├ù indicator pair |
 | `/health` | GET | Check DB connection + model status |
 
 ### `/suggest-employees` input (sent by Laravel):
@@ -320,14 +320,14 @@ public function suggestions(Request $request)
 
 | Component | Status |
 |---|---|
-| `employee_performance_snapshots` table | ✅ Migrated + 315 seeded rows |
-| `ml_kpi_predictions` table | ✅ Migrated, empty (FastAPI writes here) |
-| `IpcrObserver` auto-population | ✅ Fires on PMT IPCR release |
-| Google Colab RF training | ✅ Trains + exports `ml_kpi_predictions_generated.csv` |
-| FastAPI `/train` + DB write | 🔲 To build |
-| FastAPI `/suggest-employees` | 🔲 To build |
-| Laravel proxy endpoint | 🔲 To build |
-| AssignModal real API integration | 🔲 Replace `suggestIndicators()` simulation |
+| `employee_performance_snapshots` table | Γ£à Migrated + 315 seeded rows |
+| `ml_kpi_predictions` table | Γ£à Migrated, empty (FastAPI writes here) |
+| `IpcrObserver` auto-population | Γ£à Fires on PMT IPCR release |
+| Google Colab RF training | Γ£à Trains + exports `ml_kpi_predictions_generated.csv` |
+| FastAPI `/train` + DB write | ≡ƒö▓ To build |
+| FastAPI `/suggest-employees` | ≡ƒö▓ To build |
+| Laravel proxy endpoint | ≡ƒö▓ To build |
+| AssignModal real API integration | ≡ƒö▓ Replace `suggestIndicators()` simulation |
 
 ---
 

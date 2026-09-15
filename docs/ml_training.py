@@ -16,7 +16,7 @@ from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, UploadFile, File, HTTPException
 from sqlalchemy import create_engine, text
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# ΓöÇΓöÇ Config ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 DB_URL      = os.getenv("DATABASE_URL", "mysql+pymysql://root:root@127.0.0.1:3306/pms")
 MODEL_PATH  = os.path.join(os.path.dirname(__file__), "models", "random_forest.pkl")
 TARGET_COL  = "feasibility_label"
@@ -27,7 +27,7 @@ router = APIRouter(prefix="/ml", tags=["Machine Learning"])
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 def _log(source_type: str, status: str, row_count: int = None,
          target_column: str = None, error_message: str = None):
@@ -72,7 +72,7 @@ def _train(df: pd.DataFrame, source_type: str):
         _log(source_type, "failed", target_column=TARGET_COL, error_message=str(exc))
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# ΓöÇΓöÇ Routes ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 @router.post("/train-sql")
 async def train_sql(background_tasks: BackgroundTasks):

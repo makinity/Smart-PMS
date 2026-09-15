@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
  * DuplicateNameTestSeeder
  *
  * Creates a second "Carlos Mendoza" user in the CBO office to test the
- * duplicate-name → Employee ID disambiguation flow on the login screen.
+ * duplicate-name ΓåÆ Employee ID disambiguation flow on the login screen.
  *
  * Run with:
  *   php artisan db:seed --class=DuplicateNameTestSeeder
@@ -22,8 +22,8 @@ use Illuminate\Support\Facades\Hash;
  * (or just re-run the main seeder to reset)
  *
  * Test credentials:
- *   Original Carlos → name: "Carlos Mendoza"  emp_id: EMP-0006  password: password
- *   Duplicate Carlos → name: "Carlos Mendoza"  emp_id: EMP-TEST-DUPE  password: password
+ *   Original Carlos ΓåÆ name: "Carlos Mendoza"  emp_id: EMP-0006  password: password
+ *   Duplicate Carlos ΓåÆ name: "Carlos Mendoza"  emp_id: EMP-TEST-DUPE  password: password
  */
 class DuplicateNameTestSeeder extends Seeder
 {
@@ -58,7 +58,7 @@ class DuplicateNameTestSeeder extends Seeder
         );
 
         $this->command->info('Duplicate Carlos Mendoza (carlos.dupe@pms.test / EMP-TEST-DUPE) created.');
-        $this->command->info('Login test: name="Carlos Mendoza", password="password" → should prompt for Employee ID.');
+        $this->command->info('Login test: name="Carlos Mendoza", password="password" ΓåÆ should prompt for Employee ID.');
         $this->command->info('  Original:  EMP-0006');
         $this->command->info('  Duplicate: EMP-TEST-DUPE');
     }

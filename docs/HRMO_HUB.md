@@ -1,8 +1,8 @@
-# HRMO Hub — Connection Handshake Design
+# HRMO Hub ΓÇö Connection Handshake Design
 
 > **Last updated:** August 22, 2026
 > **Status:** PMS side built. L&D side needs to be built. Handshake protocol documented here.
-> **Scope:** PMS ↔ L&D connection via mutual token exchange
+> **Scope:** PMS Γåö L&D connection via mutual token exchange
 
 ---
 
@@ -10,7 +10,7 @@
 
 The HRMO Hub in PMS (`/administrator/hris`) is the admin UI for managing connections to other HRIS pillars (RSP, RNR, L&D). The `ld` pillar row already exists in `hrmo_hub_connections`.
 
-**Current limitation:** The Hub right now is a one-sided UI — PMS admin enters a URL + token and saves it. There is no handshake. The L&D system has no Hub equivalent and has no way to accept or reject a connection request.
+**Current limitation:** The Hub right now is a one-sided UI ΓÇö PMS admin enters a URL + token and saves it. There is no handshake. The L&D system has no Hub equivalent and has no way to accept or reject a connection request.
 
 **Goal:** Build a proper mutual connection flow where:
 1. PMS admin initiates a connection request to L&D
@@ -22,21 +22,21 @@ The HRMO Hub in PMS (`/administrator/hris`) is the admin UI for managing connect
 ## Current PMS Hub State
 
 ### What exists
-- `hrmo_hub_connections` table — one row per pillar (`rsp`, `pms`, `rnr`, `ld`)
-- `HrmoHubController` — `connect()`, `disconnect()`, `testConnection()`, `sync()`
-- `HrmoHubConnection` model — stores `pillar`, `base_url`, `token`, `status`, `last_sync_at`, `last_sync_result`, `config`
-- Frontend: `Admin/HrmoHub/Index.jsx` — slide-out panel per pillar, connect form, test button
+- `hrmo_hub_connections` table ΓÇö one row per pillar (`rsp`, `pms`, `rnr`, `ld`)
+- `HrmoHubController` ΓÇö `connect()`, `disconnect()`, `testConnection()`, `sync()`
+- `HrmoHubConnection` model ΓÇö stores `pillar`, `base_url`, `token`, `status`, `last_sync_at`, `last_sync_result`, `config`
+- Frontend: `Admin/HrmoHub/Index.jsx` ΓÇö slide-out panel per pillar, connect form, test button
 
 ### How `connect()` works today (PMS side)
-Admin enters `base_url` + `token` → POST `/administrator/hrmo-hub/connect` → saves to `hrmo_hub_connections`, sets `status = 'connected'`. No outbound call to L&D. No L&D confirmation.
+Admin enters `base_url` + `token` ΓåÆ POST `/administrator/hrmo-hub/connect` ΓåÆ saves to `hrmo_hub_connections`, sets `status = 'connected'`. No outbound call to L&D. No L&D confirmation.
 
 ### What `testConnection()` does today
-Makes a GET request to `{base_url}` with the token as Bearer. If HTTP 200 → pass. This is the only actual network call the Hub makes toward L&D.
+Makes a GET request to `{base_url}` with the token as Bearer. If HTTP 200 ΓåÆ pass. This is the only actual network call the Hub makes toward L&D.
 
 ### How `LndHandoffService` uses the config
 **Important:** `LndHandoffService` does NOT read from `hrmo_hub_connections`. It reads from:
-- `config('services.lnd.base_url')` → `LND_BASE_URL` in `.env`
-- `config('services.lnd.token')` → `LND_API_TOKEN` in `.env`
+- `config('services.lnd.base_url')` ΓåÆ `LND_BASE_URL` in `.env`
+- `config('services.lnd.token')` ΓåÆ `LND_API_TOKEN` in `.env`
 
 The Hub table is currently display-only for the L&D pillar. The actual API calls use `.env` values directly.
 
@@ -48,22 +48,22 @@ The Hub table is currently display-only for the L&D pillar. The actual API calls
 
 ```
 PMS Admin fills in L&D base_url + token in Hub
-        │
-        ▼
+        Γöé
+        Γû╝
 PMS sends a connection request to L&D:
   POST {lnd_base_url}/api/hub/connection-request
   Body: { pillar: "pms", base_url: "https://pms.test", callback_token: "..." }
-        │
-        ▼
+        Γöé
+        Γû╝
 L&D stores it as a pending connection request
-L&D admin sees it in their Hub page → clicks Accept
-        │
-        ▼
+L&D admin sees it in their Hub page ΓåÆ clicks Accept
+        Γöé
+        Γû╝
 L&D calls back to PMS:
   POST {pms_base_url}/api/hub/connection-accepted
   Body: { pillar: "ld", status: "accepted" }
-        │
-        ▼
+        Γöé
+        Γû╝
 PMS marks hrmo_hub_connections ld row as status = 'connected'
 Both sides are now connected
 ```
@@ -74,7 +74,7 @@ Both sides are now connected
 |---|---|
 | `disconnected` | No connection configured |
 | `pending_acceptance` | PMS sent request, waiting for L&D admin to accept |
-| `connected` | Both sides confirmed — handshake complete |
+| `connected` | Both sides confirmed ΓÇö handshake complete |
 | `rejected` | L&D admin rejected the connection request |
 | `built_in` | PMS pillar itself (never changes) |
 
@@ -82,9 +82,9 @@ Both sides are now connected
 
 ## Part 1: What PMS Needs to Add
 
-### 1a. Migration — add `pending_acceptance` and `rejected` to status values (no migration needed, it's a string column)
+### 1a. Migration ΓÇö add `pending_acceptance` and `rejected` to status values (no migration needed, it's a string column)
 
-### 1b. New API route — accept callback from L&D
+### 1b. New API route ΓÇö accept callback from L&D
 
 ```php
 // routes/api.php
@@ -96,7 +96,7 @@ Route::middleware(VerifyLndCallbackToken::class)
     });
 ```
 
-### 1c. New controller — `HrmoHubApiController`
+### 1c. New controller ΓÇö `HrmoHubApiController`
 
 ```php
 // app/Http/Controllers/Api/HrmoHubApiController.php
@@ -158,7 +158,7 @@ public function connect(Request $request)
                     'callback_token' => $pmsCallbackToken,
                 ]);
         } catch (\Throwable $e) {
-            // Store error but don't abort — pending status is already saved
+            // Store error but don't abort ΓÇö pending status is already saved
         }
 
         return back()->with('success', 'Connection request sent to L&D. Waiting for their admin to accept.');
@@ -175,11 +175,11 @@ const STATUS_PENDING      = 'pending_acceptance';
 const STATUS_REJECTED     = 'rejected';
 ```
 
-### 1f. Update the Hub frontend — show `pending_acceptance` and `rejected` states
+### 1f. Update the Hub frontend ΓÇö show `pending_acceptance` and `rejected` states
 
 In `Index.jsx`, add to the `SidePanel` and badge logic:
-- `pending_acceptance` → yellow "Pending Acceptance" badge
-- `rejected` → red "Rejected" badge
+- `pending_acceptance` ΓåÆ yellow "Pending Acceptance" badge
+- `rejected` ΓåÆ red "Rejected" badge
 
 ---
 
@@ -189,10 +189,10 @@ In `Index.jsx`, add to the `SidePanel` and badge logic:
 > Summary below for cross-reference.
 
 ### L&D needs:
-1. `pms_hub_connection` table (or `hrmo_hub_connections` — same concept) — stores PMS connection state
-2. `POST /api/hub/connection-request` — receives PMS's connection request, stores it as `pending`
-3. Admin Hub page — shows pending connection from PMS, Accept/Reject buttons
-4. Accept action → calls back `POST {pms_base_url}/api/hub/connection-accepted`
+1. `pms_hub_connection` table (or `hrmo_hub_connections` ΓÇö same concept) ΓÇö stores PMS connection state
+2. `POST /api/hub/connection-request` ΓÇö receives PMS's connection request, stores it as `pending`
+3. Admin Hub page ΓÇö shows pending connection from PMS, Accept/Reject buttons
+4. Accept action ΓåÆ calls back `POST {pms_base_url}/api/hub/connection-accepted`
 5. `VerifyLndApiToken` already exists and can guard the `/api/hub/connection-request` route
 
 ---
@@ -227,7 +227,7 @@ LND_API_TOKEN={token}             # sent as Bearer when calling L&D
 PMS_CALLBACK_TOKEN={token}        # sent inside the connection-request payload
 ```
 
-### config/services.php (PMS) — relevant keys
+### config/services.php (PMS) ΓÇö relevant keys
 ```php
 'lnd' => ['base_url' => ..., 'token' => ...],
 'pms' => ['callback_token' => ...],
@@ -239,7 +239,7 @@ PMS_CALLBACK_TOKEN={token}        # sent inside the connection-request payload
 
 ### PMS side
 - [ ] Add `STATUS_PENDING = 'pending_acceptance'` and `STATUS_REJECTED = 'rejected'` to `HrmoHubConnection`
-- [ ] Update `HrmoHubController::connect()` — fire outbound request to L&D when pillar = `ld`, set status to `pending_acceptance`
+- [ ] Update `HrmoHubController::connect()` ΓÇö fire outbound request to L&D when pillar = `ld`, set status to `pending_acceptance`
 - [ ] Create `app/Http/Controllers/Api/HrmoHubApiController.php` with `connectionAccepted()` method
 - [ ] Add route `POST /api/hub/connection-accepted` guarded by `VerifyLndCallbackToken`
 - [ ] Update `Index.jsx` SidePanel to show `pending_acceptance` (yellow) and `rejected` (red) states

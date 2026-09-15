@@ -11,7 +11,7 @@ return new class extends Migration
     {
         // SQLite doesn't support ALTER COLUMN, so we just ensure the new statuses
         // are valid by updating the status check constraint via a data-only migration.
-        // The status column is a plain string — no enum — so no schema change needed.
+        // The status column is a plain string ΓÇö no enum ΓÇö so no schema change needed.
         // This migration is a no-op for schema but documents the new status values.
 
         // Rename existing 'approved' records to 'dept_head_approved' for the new flow.

@@ -38,14 +38,14 @@ class OrsSampleSeeder extends Seeder
         $month  = now()->format('Y-m');
         $entries = [];
 
-        // Core: 2 items × 4 weeks = 8 entries
+        // Core: 2 items ├ù 4 weeks = 8 entries
         foreach (array_slice($coreItems, 0, 2) as $item) {
             foreach ([3, 8, 15, 22] as $day) {
                 $entries[] = $this->entry($employeeId, $supervisorId, $periodId, $ipcrId, $item->ipcr_item_id, "{$month}-{$day}");
             }
         }
 
-        // Support: 2 items × 3 weeks = 6 entries
+        // Support: 2 items ├ù 3 weeks = 6 entries
         foreach (array_slice($supportItems, 0, 2) as $item) {
             foreach ([5, 12, 19] as $day) {
                 $entries[] = $this->entry($employeeId, $supervisorId, $periodId, $ipcrId, $item->ipcr_item_id, "{$month}-{$day}");

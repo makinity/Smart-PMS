@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('ml_kpi_predictions', function (Blueprint $table) {
             $table->id();
 
-            // ── What KPI was assessed ─────────────────────────────────────────
+            // ΓöÇΓöÇ What KPI was assessed ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->foreignId('uwp_success_indicator_id')
                   ->constrained('uwp_success_indicators')
                   ->cascadeOnDelete();
@@ -19,7 +19,7 @@ return new class extends Migration
                   ->constrained()
                   ->cascadeOnDelete();
 
-            // ── KPI Feasibility output (Objective 6.2, 6.3, 6.4) ─────────────
+            // ΓöÇΓöÇ KPI Feasibility output (Objective 6.2, 6.3, 6.4) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->string('feasibility_label');
             // "achievable" | "at_risk" | "unrealistic"
 
@@ -29,11 +29,11 @@ return new class extends Migration
             $table->string('risk_level');
             // "Low" | "Medium" | "High"
 
-            // ── Employee recommendations (Objective 6.5) ──────────────────────
+            // ΓöÇΓöÇ Employee recommendations (Objective 6.5) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             // Ranked list: [{employee_id, fit_score, fit_label, predicted_rating}]
             $table->json('recommendations');
 
-            // ── Model metadata ────────────────────────────────────────────────
+            // ΓöÇΓöÇ Model metadata ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->string('model_version')->default('1.0.0');
             $table->timestamp('generated_at')->useCurrent();
 

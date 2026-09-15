@@ -32,7 +32,7 @@ class UwpSampleSeeder extends Seeder
         ]);
 
         // Each indicator has qet[dimension][rating] = standard_text
-        // Dimensions: quality, efficiency, timeliness — Ratings: 5=Outstanding, 4=VS, 3=S, 2=US, 1=Poor
+        // Dimensions: quality, efficiency, timeliness ΓÇö Ratings: 5=Outstanding, 4=VS, 3=S, 2=US, 1=Poor
         $data = [
             [
                 'name' => 'A. CORE FUNCTIONS', 'function_type' => 'core', 'weight_percent' => 70,
@@ -62,7 +62,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => 'Plantilla prepared on the 23rd day or less after instruction',
                                         4 => 'Plantilla prepared on the 24th day after instruction',
                                         3 => 'Plantilla prepared on the 26th day after instruction',
-                                        2 => 'Plantilla prepared on the 27th–30th day after instruction',
+                                        2 => 'Plantilla prepared on the 27thΓÇô30th day after instruction',
                                         1 => 'Plantilla prepared beyond the 30th day or not prepared at all',
                                     ],
                                 ],
@@ -89,7 +89,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => 'Plantilla reviewed on the 3rd day or less after preparation',
                                         4 => 'Plantilla reviewed on the 4th day after preparation',
                                         3 => 'Plantilla reviewed on the 5th day after preparation',
-                                        2 => 'Plantilla reviewed on the 6th–7th day after preparation',
+                                        2 => 'Plantilla reviewed on the 6thΓÇô7th day after preparation',
                                         1 => 'Plantilla reviewed beyond the 7th day or not reviewed',
                                     ],
                                 ],
@@ -100,8 +100,8 @@ class UwpSampleSeeder extends Seeder
                                 'qet' => [
                                     'q' => [
                                         5 => '100% of the plantilla scanned, banked & bound with no errors',
-                                        4 => '90–99% of the plantilla scanned, banked & bound with 1-2 minor errors',
-                                        3 => '80–89% of the plantilla scanned, banked & bound with 3-4 minor errors',
+                                        4 => '90ΓÇô99% of the plantilla scanned, banked & bound with 1-2 minor errors',
+                                        3 => '80ΓÇô89% of the plantilla scanned, banked & bound with 3-4 minor errors',
                                         2 => 'Less than 80% scanned or major errors in scanning/binding',
                                         1 => 'Plantilla not scanned, banked, or bound; task not completed',
                                     ],
@@ -116,7 +116,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => 'Task completed within 50 minutes upon receipt',
                                         4 => 'Task completed within 55 minutes upon receipt',
                                         3 => 'Task completed within 60 minutes upon receipt',
-                                        2 => 'Task completed within 61–75 minutes upon receipt',
+                                        2 => 'Task completed within 61ΓÇô75 minutes upon receipt',
                                         1 => 'Task completed beyond 75 minutes or not completed',
                                     ],
                                 ],
@@ -141,9 +141,9 @@ class UwpSampleSeeder extends Seeder
                                     ],
                                     't' => [
                                         5 => 'Report prepared within 7 working days after rating period',
-                                        4 => 'Report prepared within 8–9 working days after rating period',
+                                        4 => 'Report prepared within 8ΓÇô9 working days after rating period',
                                         3 => 'Report prepared within 10 working days after rating period',
-                                        2 => 'Report prepared within 11–13 working days after rating period',
+                                        2 => 'Report prepared within 11ΓÇô13 working days after rating period',
                                         1 => 'Report prepared beyond 13 working days or not prepared',
                                     ],
                                 ],
@@ -234,7 +234,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => '100% of reports submitted 1 day or more before deadline',
                                         4 => '100% of reports submitted on the day of deadline',
                                         3 => '100% of reports submitted within 1 day after deadline',
-                                        2 => 'Reports submitted 2–3 days after deadline',
+                                        2 => 'Reports submitted 2ΓÇô3 days after deadline',
                                         1 => 'Reports submitted beyond 3 days after deadline or not submitted',
                                     ],
                                 ],
@@ -271,7 +271,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => 'Plan submitted within 25 working days',
                                         4 => 'Plan submitted within 27 working days',
                                         3 => 'Plan submitted within 30 working days',
-                                        2 => 'Plan submitted within 31–35 working days',
+                                        2 => 'Plan submitted within 31ΓÇô35 working days',
                                         1 => 'Plan submitted beyond 35 working days or not submitted',
                                     ],
                                 ],
@@ -325,7 +325,7 @@ class UwpSampleSeeder extends Seeder
                                         5 => 'Plan endorsed within 15 working days',
                                         4 => 'Plan endorsed within 17 working days',
                                         3 => 'Plan endorsed within 20 working days',
-                                        2 => 'Plan endorsed within 21–25 working days',
+                                        2 => 'Plan endorsed within 21ΓÇô25 working days',
                                         1 => 'Plan endorsed beyond 25 working days or not endorsed',
                                     ],
                                 ],
@@ -363,7 +363,7 @@ class UwpSampleSeeder extends Seeder
                         'sort_order'      => $iSort + 1,
                     ]);
 
-                    // QET Standards — 3 dimensions × 5 ratings each
+                    // QET Standards ΓÇö 3 dimensions ├ù 5 ratings each
                     foreach ($siData['qet'] as $dimension => $ratings) {
                         foreach ($ratings as $rating => $text) {
                             UwpQetStandard::create([
@@ -374,7 +374,7 @@ class UwpSampleSeeder extends Seeder
                             ]);
                         }
                     }
-                    // Assignments intentionally left blank — assign manually via UI
+                    // Assignments intentionally left blank ΓÇö assign manually via UI
                 }
             }
         }
@@ -382,7 +382,7 @@ class UwpSampleSeeder extends Seeder
         $total = UwpSuccessIndicator::whereHas('uwpMfo.uwpFunction', fn($q) => $q->where('unit_work_plan_id', $uwp->id))->count();
         $this->command->info("UWP seeded: ID {$uwp->id} | {$office->name} | {$total} indicators with full QET standards");
 
-        // ── CBO UWP — draft, same structure, no assignments (test original flow) ──
+        // ΓöÇΓöÇ CBO UWP ΓÇö draft, same structure, no assignments (test original flow) ΓöÇΓöÇ
         $cbo = Office::firstOrCreate(['code' => 'CBO'], ['name' => 'City Budget Office']);
         $cboSupervisor = User::where('role', 'supervisor')->whereHas('employee', fn ($q) => $q->where('office_id', $cbo->id))->first();
 

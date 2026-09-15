@@ -10,7 +10,7 @@ public/sounds/notifications/new-notification.wav
 
 - Format: `.wav` (recommended) or `.mp3`
 - Filename: `new-notification.wav`
-- Keep it short — 0.5 to 2 seconds is ideal.
+- Keep it short ΓÇö 0.5 to 2 seconds is ideal.
 
 ## How it works
 

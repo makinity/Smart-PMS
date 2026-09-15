@@ -43,6 +43,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        // Intentionally empty — these tables are not needed
+        // Intentionally empty ΓÇö these tables are not needed
     }
 };

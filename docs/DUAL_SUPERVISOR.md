@@ -1,4 +1,4 @@
-# Dual Supervisor Per Office — Design Specification
+# Dual Supervisor Per Office ΓÇö Design Specification
 
 > **Status:** Approved for implementation
 > **Date:** July 14, 2026
@@ -24,30 +24,30 @@ An office can have **two supervisors** sharing the same `office_id`. No new role
 
 | Action | Primary (Creator) | Secondary (Other Supervisor in Office) |
 |---|---|---|
-| Create UWP | ✅ Yes | ❌ No — can only access after primary creates it |
-| Create / Edit / Delete Functions | ✅ Yes | ❌ No |
-| Add / Edit / Delete MFOs | ✅ Yes | ✅ Yes |
-| Add / Edit / Delete Success Indicators | ✅ Yes | ✅ Yes |
-| Set QET Standards | ✅ Yes | ✅ Yes |
-| Assign Employees | ✅ Yes | ✅ Yes |
-| Submit UWP to Dept Head | ✅ Yes (creator only) | ❌ No |
-| Save as Draft | ✅ Yes | ✅ Yes |
+| Create UWP | Γ£à Yes | Γ¥î No ΓÇö can only access after primary creates it |
+| Create / Edit / Delete Functions | Γ£à Yes | Γ¥î No |
+| Add / Edit / Delete MFOs | Γ£à Yes | Γ£à Yes |
+| Add / Edit / Delete Success Indicators | Γ£à Yes | Γ£à Yes |
+| Set QET Standards | Γ£à Yes | Γ£à Yes |
+| Assign Employees | Γ£à Yes | Γ£à Yes |
+| Submit UWP to Dept Head | Γ£à Yes (creator only) | Γ¥î No |
+| Save as Draft | Γ£à Yes | Γ£à Yes |
 
 ### How the System Determines Primary vs Secondary
 
 ```
 Is Auth::id() === $uwp->created_by ?
-  YES → Primary Supervisor → full access including Functions
-  NO  → Check if same office_id → Secondary Supervisor → blocked from Functions & Submit
+  YES ΓåÆ Primary Supervisor ΓåÆ full access including Functions
+  NO  ΓåÆ Check if same office_id ΓåÆ Secondary Supervisor ΓåÆ blocked from Functions & Submit
 ```
 
-### Code Impact — `UwpEditorController`
+### Code Impact ΓÇö `UwpEditorController`
 
 Gates to add on:
-- `storeFunction()` — must be `created_by`
-- `updateFunction()` — must be `created_by`
-- `destroyFunction()` — must be `created_by`
-- `submit()` — must be `created_by`
+- `storeFunction()` ΓÇö must be `created_by`
+- `updateFunction()` ΓÇö must be `created_by`
+- `destroyFunction()` ΓÇö must be `created_by`
+- `submit()` ΓÇö must be `created_by`
 
 MFO, Indicator, QET, Assign endpoints remain open to **any supervisor of the same office**.
 
@@ -60,10 +60,10 @@ Both supervisors see the **same list** of UWPs for their office (scoped by `offi
 ## 2. Team Tasks
 
 ### Current Behavior
-Scoped by `ors_entries.supervisor_id` — each supervisor only sees tasks submitted to them.
+Scoped by `ors_entries.supervisor_id` ΓÇö each supervisor only sees tasks submitted to them.
 
 ### New Behavior
-Scoped by `office_id` via the employee's office — **both supervisors see all tasks** for the office.
+Scoped by `office_id` via the employee's office ΓÇö **both supervisors see all tasks** for the office.
 
 ```php
 // Before
@@ -80,7 +80,7 @@ Both supervisors co-manage the same office team. Visibility should be shared.
 
 ## 3. ORS Rating (Output Recording Sheet)
 
-### Behavior — UNCHANGED
+### Behavior ΓÇö UNCHANGED
 
 ORS rating stays **per assigned supervisor**. When an employee submits an ORS entry, the `supervisor_id` stored on that entry is the only supervisor who can rate it.
 
@@ -96,7 +96,7 @@ The employee independently chooses which supervisor rates their ORS output. This
 
 ## 4. MPOR Approval (Monthly Progress and Output Report)
 
-### Behavior — NO CHANGE NEEDED
+### Behavior ΓÇö NO CHANGE NEEDED
 
 MPOR is already scoped by `office_id`. Both supervisors already see and can act on all MPORs in their office. This is the desired behavior.
 
@@ -110,10 +110,10 @@ Mpor::where('office_id', $user->office_id)
 ## 5. Accomplishment Submission (Endorsement)
 
 ### Current Behavior
-Scoped by `accomplishment_submissions.supervisor_id` — only the assigned supervisor can see and endorse.
+Scoped by `accomplishment_submissions.supervisor_id` ΓÇö only the assigned supervisor can see and endorse.
 
 ### New Behavior
-Scoped by `office_id` — **both supervisors can see and act on all accomplishment submissions** for their office.
+Scoped by `office_id` ΓÇö **both supervisors can see and act on all accomplishment submissions** for their office.
 
 ```php
 // Before
@@ -140,17 +140,17 @@ foreach ($supervisors as $sup) {
 Whoever acts first is recorded as the endorsing supervisor. The `supervisor_id` and `supervisor_action_at` fields are updated to reflect **who actually acted**, not who was originally assigned.
 
 ### Conflict Prevention
-Once status moves to `supervisor_endorsed`, the existing `abort_if` check blocks any further action from either supervisor — no double-endorsement possible.
+Once status moves to `supervisor_endorsed`, the existing `abort_if` check blocks any further action from either supervisor ΓÇö no double-endorsement possible.
 
 ---
 
-## 6. IDP (Individual Development Plan — Recommendation)
+## 6. IDP (Individual Development Plan ΓÇö Recommendation)
 
 ### Current Behavior
-Scoped by `development_plans.supervisor_id` — only the assigned supervisor can see and recommend.
+Scoped by `development_plans.supervisor_id` ΓÇö only the assigned supervisor can see and recommend.
 
 ### New Behavior
-Scoped by `office_id` — **both supervisors can see and act on all IDPs** for their office.
+Scoped by `office_id` ΓÇö **both supervisors can see and act on all IDPs** for their office.
 
 ```php
 // Before
@@ -164,16 +164,16 @@ DevelopmentPlan::where('office_id', $supervisor->office_id)
 When an employee submits their IDP, **both supervisors are notified**.
 
 ### Credit / Audit Rule
-Same as Accomplishment — whoever acts first gets recorded as `supervisor_id` with `supervisor_action_at` timestamp.
+Same as Accomplishment ΓÇö whoever acts first gets recorded as `supervisor_id` with `supervisor_action_at` timestamp.
 
 ### Conflict Prevention
-Same as Accomplishment — status gate prevents double-action.
+Same as Accomplishment ΓÇö status gate prevents double-action.
 
 ---
 
 ## 7. Dashboard
 
-The supervisor dashboard currently shows counts scoped to the supervisor's own records. With the dual-supervisor setup, dashboard counts should reflect the **full office** — not just records tied to the logged-in supervisor.
+The supervisor dashboard currently shows counts scoped to the supervisor's own records. With the dual-supervisor setup, dashboard counts should reflect the **full office** ΓÇö not just records tied to the logged-in supervisor.
 
 Review and update any `supervisor_id` scoping in `DashboardController` to use `office_id` where applicable.
 
@@ -183,15 +183,15 @@ Review and update any `supervisor_id` scoping in `DashboardController` to use `o
 
 | Module | Change Type | Scope Change |
 |---|---|---|
-| UWP — Functions | Gate (creator only) | None |
-| UWP — Submit | Gate (creator only) | None |
-| UWP — MFO/Indicator/QET/Assign | No change | Already office-scoped |
-| Team Tasks | Query change | `supervisor_id` → `office_id` |
+| UWP ΓÇö Functions | Gate (creator only) | None |
+| UWP ΓÇö Submit | Gate (creator only) | None |
+| UWP ΓÇö MFO/Indicator/QET/Assign | No change | Already office-scoped |
+| Team Tasks | Query change | `supervisor_id` ΓåÆ `office_id` |
 | ORS Rating | No change | Stays `supervisor_id` |
 | MPOR | No change | Already `office_id` |
-| Accomplishment | Query + notification change | `supervisor_id` → `office_id` |
-| IDP | Query + notification change | `supervisor_id` → `office_id` |
-| Dashboard | Review counts | `supervisor_id` → `office_id` where applicable |
+| Accomplishment | Query + notification change | `supervisor_id` ΓåÆ `office_id` |
+| IDP | Query + notification change | `supervisor_id` ΓåÆ `office_id` |
+| Dashboard | Review counts | `supervisor_id` ΓåÆ `office_id` where applicable |
 
 ---
 
@@ -209,12 +209,12 @@ Review and update any `supervisor_id` scoping in `DashboardController` to use `o
 
 ## What Does NOT Change
 
-- Database schema — no migrations needed
-- User roles — no new roles
-- Employee workflows — unaffected
-- Dept Head workflows — unaffected
-- ORS entry flow — unaffected
-- MPOR flow — unaffected
+- Database schema ΓÇö no migrations needed
+- User roles ΓÇö no new roles
+- Employee workflows ΓÇö unaffected
+- Dept Head workflows ΓÇö unaffected
+- ORS entry flow ΓÇö unaffected
+- MPOR flow ΓÇö unaffected
 
 ---
 

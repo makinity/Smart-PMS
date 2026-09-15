@@ -1,6 +1,6 @@
-# FastAPI ML Service — Laravel Integration Handoff
+# FastAPI ML Service ΓÇö Laravel Integration Handoff
 
-**Status: ✅ FastAPI is built, tested, and working.**
+**Status: Γ£à FastAPI is built, tested, and working.**
 This document is for the Laravel developer to integrate Smart PMS with the ML microservice.
 
 ---
@@ -75,9 +75,9 @@ Returns ranked employee recommendations for a given success indicator.
 | Field | Type | Values |
 |---|---|---|
 | `feasibility_label` | string | `achievable` / `at_risk` / `unrealistic` |
-| `feasibility_probability` | float | `0.0` – `1.0` |
+| `feasibility_probability` | float | `0.0` ΓÇô `1.0` |
 | `risk_level` | string | `Low` / `Medium` / `High` |
-| `fit_score` | float | `0` – `100` |
+| `fit_score` | float | `0` ΓÇô `100` |
 | `fit_label` | string | `Strong fit` / `Moderate fit` / `Weak fit` |
 | `warning` | boolean | `true` if employee prediction is `unrealistic` |
 
@@ -129,18 +129,18 @@ public function suggestions(Request $request)
 Route::get('/supervisor/uwp/suggestions', [UwpController::class, 'suggestions']);
 ```
 
-### 4. AssignModal (React) — replace `suggestIndicators()` simulation
+### 4. AssignModal (React) ΓÇö replace `suggestIndicators()` simulation
 ```js
 const res = await axios.get('/supervisor/uwp/suggestions', {
     params: { indicator_id: indicatorId, period_id: periodId }
 });
-// res.data.recommendations → array of { employee_id, fit_score, fit_label, risk_level, warning }
-// res.data.feasibility_label, res.data.feasibility_probability, res.data.risk_level → indicator-level
+// res.data.recommendations ΓåÆ array of { employee_id, fit_score, fit_label, risk_level, warning }
+// res.data.feasibility_label, res.data.feasibility_probability, res.data.risk_level ΓåÆ indicator-level
 ```
 
 ---
 
-## Development Bridge — ngrok
+## Development Bridge ΓÇö ngrok
 
 Since FastAPI runs locally on a separate machine/port during development, use **ngrok** to expose it:
 
@@ -150,7 +150,7 @@ ngrok http 8000
 ```
 
 ngrok gives you a public URL like `https://abc123.ngrok-free.app`.
-Set that as `FASTAPI_URL` in Laravel's `.env` — no firewall changes needed.
+Set that as `FASTAPI_URL` in Laravel's `.env` ΓÇö no firewall changes needed.
 
 > **Important:** ngrok URL changes every restart (free tier). For stable dev, pin it with a static domain or use a paid ngrok plan.
 
@@ -158,19 +158,19 @@ Set that as `FASTAPI_URL` in Laravel's `.env` — no firewall changes needed.
 
 ## Database Tables (FastAPI writes, Laravel reads)
 
-### `ml_kpi_predictions` — written by FastAPI, read by Laravel
+### `ml_kpi_predictions` ΓÇö written by FastAPI, read by Laravel
 | Column | Written by FastAPI |
 |---|---|
-| `uwp_success_indicator_id` | ✅ |
-| `performance_period_id` | ✅ |
-| `feasibility_label` | ✅ |
-| `feasibility_probability` | ✅ |
-| `risk_level` | ✅ |
-| `recommendations` | ✅ JSON array (ranked by fit_score desc, one entry per employee) |
-| `model_version` | ✅ `"1.0.0"` |
-| `generated_at` | ✅ timestamp |
+| `uwp_success_indicator_id` | Γ£à |
+| `performance_period_id` | Γ£à |
+| `feasibility_label` | Γ£à |
+| `feasibility_probability` | Γ£à |
+| `risk_level` | Γ£à |
+| `recommendations` | Γ£à JSON array (ranked by fit_score desc, one entry per employee) |
+| `model_version` | Γ£à `"1.0.0"` |
+| `generated_at` | Γ£à timestamp |
 
-### `employee_performance_snapshots` — read-only by FastAPI
+### `employee_performance_snapshots` ΓÇö read-only by FastAPI
 Populated by `IpcrObserver` on PMT IPCR release, and by `MlTrainingDataSeeder` (315 rows seeded).
 
 ---
@@ -193,17 +193,17 @@ Http::post(env('FASTAPI_URL') . '/train');
 ## FastAPI Project Location
 ```
 C:\Python\ML\RandomForest\
-├── app/
-│   ├── main.py                  ← entry point
-│   ├── db.py                    ← MySQL connection (SQLAlchemy)
-│   ├── config/settings.py       ← reads .env
-│   ├── store/model_registry.py  ← joblib model load/save
-│   ├── schemas/uwp.py           ← request/response types
-│   ├── train/train_model.py     ← RF training + UPSERT logic
-│   ├── infer/predict.py         ← /suggest-employees logic
-│   └── api/routes.py            ← endpoint wiring
-├── .env                         ← DB credentials (fill in for your DB)
-└── requirements.txt
+Γö£ΓöÇΓöÇ app/
+Γöé   Γö£ΓöÇΓöÇ main.py                  ΓåÉ entry point
+Γöé   Γö£ΓöÇΓöÇ db.py                    ΓåÉ MySQL connection (SQLAlchemy)
+Γöé   Γö£ΓöÇΓöÇ config/settings.py       ΓåÉ reads .env
+Γöé   Γö£ΓöÇΓöÇ store/model_registry.py  ΓåÉ joblib model load/save
+Γöé   Γö£ΓöÇΓöÇ schemas/uwp.py           ΓåÉ request/response types
+Γöé   Γö£ΓöÇΓöÇ train/train_model.py     ΓåÉ RF training + UPSERT logic
+Γöé   Γö£ΓöÇΓöÇ infer/predict.py         ΓåÉ /suggest-employees logic
+Γöé   ΓööΓöÇΓöÇ api/routes.py            ΓåÉ endpoint wiring
+Γö£ΓöÇΓöÇ .env                         ΓåÉ DB credentials (fill in for your DB)
+ΓööΓöÇΓöÇ requirements.txt
 ```
 
 Start the service:

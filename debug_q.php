@@ -16,8 +16,8 @@ $q1End   = $q1Start->copy()->addMonths(2)->endOfMonth()->endOfDay();
 $q2Start = $q1End->copy()->addDay()->startOfDay();
 $q2End   = Carbon\Carbon::parse($period->end_date)->endOfDay();
 
-echo "Q1 window: {$q1Start->toDateString()} → {$q1End->toDateString()}\n";
-echo "Q2 window: {$q2Start->toDateString()} → {$q2End->toDateString()}\n\n";
+echo "Q1 window: {$q1Start->toDateString()} ΓåÆ {$q1End->toDateString()}\n";
+echo "Q2 window: {$q2Start->toDateString()} ΓåÆ {$q2End->toDateString()}\n\n";
 
 [$q1Ratings] = $service->buildRatedIpcrPerformanceMaps($ipcr, $q1Start, $q1End);
 [$q2Ratings] = $service->buildRatedIpcrPerformanceMaps($ipcr, $q2Start, $q2End);

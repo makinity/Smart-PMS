@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Offices ───────────────────────────────────────────────────────────
+        // ΓöÇΓöÇ Offices ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $officeData = [
             ['name' => 'Human Resource Management Office', 'code' => 'HRMO'],
             ['name' => 'City Budget Office',               'code' => 'CBO'],
@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
         $hrmo = Office::where('code', 'HRMO')->first();
         $cbo  = Office::where('code', 'CBO')->first();
 
-        // ── User + Employee definitions ───────────────────────────────────────
+        // ΓöÇΓöÇ User + Employee definitions ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $users = [
             // No office
             ['role' => 'admin',      'name' => 'Admin User',       'first_name' => 'Admin',    'last_name' => 'User',       'middle_name' => null, 'email' => 'admin@pms.test',          'office' => null,  'position' => 'System Administrator',  'photo' => '1.jpg'],
@@ -48,7 +48,7 @@ class UserSeeder extends Seeder
         foreach ($users as $i => $data) {
             $inactive = $data['inactive'] ?? false;
 
-            // ── 1. Create / update the User (auth fields only) ────────────────
+            // ΓöÇΓöÇ 1. Create / update the User (auth fields only) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $user = User::updateOrCreate(
                 ['email' => $data['email']],
                 [
@@ -60,7 +60,7 @@ class UserSeeder extends Seeder
 
             $user->syncRoles($data['role']);
 
-            // ── 2. Create / update the Employee (HR fields) ───────────────────
+            // ΓöÇΓöÇ 2. Create / update the Employee (HR fields) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             Employee::updateOrCreate(
                 ['user_id' => $user->id],
                 [
@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             );
         }
 
-        // ── Set office heads ─────────────────────────────────────────────────
+        // ΓöÇΓöÇ Set office heads ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $hrmo->update(['head_id' => User::where('email', 'depthead@pms.test')->value('id')]);
         $cbo->update(['head_id'  => User::where('email', 'depthead2@pms.test')->value('id')]);
     }

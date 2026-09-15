@@ -30,26 +30,26 @@
 
 ## 1. Tech Stack
 
-This template is **framework-agnostic** —” the design system can be adapted to any stack. The reference implementation uses:
+This template is **framework-agnostic** ΓÇöΓÇ¥ the design system can be adapted to any stack. The reference implementation uses:
 
 | Layer | Reference (Smart PMS) | Adaptable To |
 |---|---|---|
 | Backend | Laravel 11 | Any backend (Node/Express, Django, Rails, etc.) |
 | Frontend bridge | Inertia.js v2 | Next.js, Nuxt, SvelteKit, plain SPA |
 | Frontend framework | React 18 (JSX) | Vue 3, Svelte, Angular, vanilla JS |
-| CSS approach | **Inline styles only** —” no Tailwind, no CSS modules | Tailwind, CSS-in-JS, SCSS (translate tokens) |
+| CSS approach | **Inline styles only** ΓÇöΓÇ¥ no Tailwind, no CSS modules | Tailwind, CSS-in-JS, SCSS (translate tokens) |
 | Icons | Bootstrap Icons (`bi-*`) via CDN | Any icon set (Lucide, Heroicons, Phosphor) |
 | HTTP client | Axios + Inertia `useForm` | fetch, SWR, React Query |
 | Font | Inter (Google Fonts / system stack) | Any sans-serif |
 | Charts | Chart.js 4 | Recharts, ApexCharts, ECharts |
 
-> **Core CSS rule:** All styling uses inline `style={{}}` props. The only class-based exceptions are Bootstrap Icon classes (`bi bi-*`) and a handful of layout CSS classes injected via `<style>` tags inside components. Never add external UI component libraries (MUI, Ant Design, Chakra, etc.) —” build everything from scratch using the design tokens below.
+> **Core CSS rule:** All styling uses inline `style={{}}` props. The only class-based exceptions are Bootstrap Icon classes (`bi bi-*`) and a handful of layout CSS classes injected via `<style>` tags inside components. Never add external UI component libraries (MUI, Ant Design, Chakra, etc.) ΓÇöΓÇ¥ build everything from scratch using the design tokens below.
 
 ---
 
 ## 2. Logo & Branding
 
-Every project using this template has its own logo. The logo appears in **4 places** — replace it in all of them when starting a new project.
+Every project using this template has its own logo. The logo appears in **4 places** ΓÇö replace it in all of them when starting a new project.
 
 ### Logo File
 
@@ -64,10 +64,10 @@ Recommended format: PNG with transparent background, square aspect ratio.
 
 | Location | File | Size | Usage |
 |---|---|---|---|
-| Login page auth card | `Pages/Auth/Login.jsx` | 36×36px | Above app name in the card header |
-| Login page mobile header | `Pages/Auth/Login.jsx` | 32×32px | Shows on mobile where left panel is hidden |
-| Post-login loading screen | `Components/LoginLoadingScreen.jsx` | 64×64px | Center of the loading overlay card |
-| Logout loading overlay | `Components/Topbar.jsx` | 64×64px | Center of the signing-out overlay card |
+| Login page auth card | `Pages/Auth/Login.jsx` | 36├ù36px | Above app name in the card header |
+| Login page mobile header | `Pages/Auth/Login.jsx` | 32├ù32px | Shows on mobile where left panel is hidden |
+| Post-login loading screen | `Components/LoginLoadingScreen.jsx` | 64├ù64px | Center of the loading overlay card |
+| Logout loading overlay | `Components/Topbar.jsx` | 64├ù64px | Center of the signing-out overlay card |
 
 ### Logo Style
 
@@ -81,7 +81,7 @@ Recommended format: PNG with transparent background, square aspect ratio.
     style={{ width: 64, height: 64, objectFit: 'contain', borderRadius: 14 }} />
 ```
 
-- `borderRadius: 14px` on the 64×64 version gives it a rounded app-icon look
+- `borderRadius: 14px` on the 64├ù64 version gives it a rounded app-icon look
 - `objectFit: 'contain'` preserves aspect ratio inside the fixed dimensions
 - Always update the `alt` attribute to the project's app name
 
@@ -129,27 +129,27 @@ useEffect(() => {
             width: '100%', height: '100%',
             objectFit: 'cover',
             opacity: i === activeSlide ? 1 : 0,
-            transition: 'opacity 0.8s ease',  // ← the exact fade transition
+            transition: 'opacity 0.8s ease',  // ΓåÉ the exact fade transition
         }}
     />
 ))}
 ```
 
 **Key details:**
-- Transition: `opacity 0.8s ease` — slow, smooth crossfade
+- Transition: `opacity 0.8s ease` ΓÇö slow, smooth crossfade
 - All images are rendered in the DOM simultaneously, only the active one has `opacity: 1`
-- No slide/scroll animation — pure opacity crossfade only
+- No slide/scroll animation ΓÇö pure opacity crossfade only
 - Slideshow only runs on desktop (left panel is hidden on mobile/tablet)
 - `prefers-reduced-motion: reduce` disables the interval entirely
 
 ### App Name
 
 The app name appears as text next to or below the logo in the same locations. Always replace `"Smart PMS"` with your project's name in:
-- `LoginLoadingScreen.jsx` — the `<div>` title below the logo
-- `Login.jsx` — the bold app name in the auth card
-- `Topbar.jsx` — the logout overlay title
-- `Sidebar.jsx` — the brand section app name
-- `503.blade.php` — the page title and footer
+- `LoginLoadingScreen.jsx` ΓÇö the `<div>` title below the logo
+- `Login.jsx` ΓÇö the bold app name in the auth card
+- `Topbar.jsx` ΓÇö the logout overlay title
+- `Sidebar.jsx` ΓÇö the brand section app name
+- `503.blade.php` ΓÇö the page title and footer
 
 ---
 
@@ -160,7 +160,7 @@ The system supports **dark mode** (default on first load if no preference saved)
 ### CSS Custom Properties
 
 ```css
-/* â”€â”€ Dark mode (default) â”€â”€ */
+/* ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Dark mode (default) ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ */
 :root[data-theme="dark"], :root {
     --admin-bg-primary:    #0a0f1a;
     --admin-bg-secondary:  #0f1724;
@@ -177,7 +177,7 @@ The system supports **dark mode** (default on first load if no preference saved)
     --admin-shadow:        0 18px 40px rgba(0,0,0,0.28);
 }
 
-/* â”€â”€ Light mode â”€â”€ */
+/* ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Light mode ├óΓÇ¥Γé¼├óΓÇ¥Γé¼ */
 :root[data-theme="light"] {
     --admin-bg-primary:    #f9f9fb;
     --admin-bg-secondary:  #f2f2f5;
@@ -195,7 +195,7 @@ The system supports **dark mode** (default on first load if no preference saved)
 
 ### Body Background
 
-The page background is a flat solid color — no gradient, no radial glow. This keeps the background neutral and consistent from top to bottom:
+The page background is a flat solid color ΓÇö no gradient, no radial glow. This keeps the background neutral and consistent from top to bottom:
 
 ```css
 body {
@@ -267,17 +267,17 @@ Load Inter via Google Fonts in your root HTML:
 | Role | Size | Weight | Color token |
 |---|---|---|---|
 | Page title (topbar) | `0.8rem` | 700 | `--admin-text-primary` |
-| Section heading | `1rem—“1.1rem` | 700 | `--admin-text-primary` |
-| Card title | `0.9rem—“0.95rem` | 700 | `--admin-text-primary` |
-| Body / table cell | `0.85rem` | 400—“500 | `--admin-text-secondary` |
+| Section heading | `1remΓÇöΓÇ£1.1rem` | 700 | `--admin-text-primary` |
+| Card title | `0.9remΓÇöΓÇ£0.95rem` | 700 | `--admin-text-primary` |
+| Body / table cell | `0.85rem` | 400ΓÇöΓÇ£500 | `--admin-text-secondary` |
 | Label / caption | `0.78rem` | 500 | `--admin-text-secondary` |
-| Muted / meta | `0.72rem` | 400—“500 | `--admin-text-muted` |
+| Muted / meta | `0.72rem` | 400ΓÇöΓÇ£500 | `--admin-text-muted` |
 | Badge / tag | `0.72rem` | 600 | varies |
 | App name (sidebar) | `1rem` | 700 | `--admin-text-primary` |
 | Sub-role (sidebar) | `0.72rem` | 400 | `--admin-text-muted` |
 
 **Letter spacing:** `-0.02em` to `-0.03em` on headings/titles for a modern tight feel.
-**Line height:** `1.3—“1.6` for body text.
+**Line height:** `1.3ΓÇöΓÇ£1.6` for body text.
 
 ---
 
@@ -286,28 +286,28 @@ Load Inter via Google Fonts in your root HTML:
 ### Overview
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  SIDEBAR (fixed, 280px expanded / 68px collapsed)           â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
-â”‚  â”‚  Brand icon + App name + Role label + Toggle btn     â”‚   â”‚
-â”‚  â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  â”‚   â”‚
-â”‚  â”‚  Nav link (icon + label + optional badge)            â”‚   â”‚
-â”‚  â”‚  Nav link (active state)                             â”‚   â”‚
-â”‚  â”‚  Nav link                                            â”‚   â”‚
-â”‚  â”‚  ...                                                 â”‚   â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
-â”‚                                                             â”‚
-â”‚  MAIN AREA (margin-left: sidebar width, flex column)        â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
-â”‚  â”‚  TOPBAR (sticky, 44px min-height)                    â”‚   â”‚
-â”‚  â”‚  [Hamburger] [Breadcrumb]       [Notifications] [User]â”‚  â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
-â”‚  â”‚  PAGE CONTENT (.admin-content, padding 1rem 1.5rem)  â”‚   â”‚
-â”‚  â”‚                                                       â”‚   â”‚
-â”‚  â”‚  <Page skeleton OR actual page children>             â”‚   â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ  SIDEBAR (fixed, 280px expanded / 68px collapsed)           ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  Brand icon + App name + Role label + Toggle btn     ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼  ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  Nav link (icon + label + optional badge)            ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  Nav link (active state)                             ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  Nav link                                            ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  ...                                                 ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ                                                             ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  MAIN AREA (margin-left: sidebar width, flex column)        ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  TOPBAR (sticky, 44px min-height)                    ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  [Hamburger] [Breadcrumb]       [Notifications] [User]├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  PAGE CONTENT (.admin-content, padding 1rem 1.5rem)  ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ                                                       ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇÜ  <Page skeleton OR actual page children>             ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
 ```
 
 ### AppLayout Core CSS
@@ -376,31 +376,31 @@ When sidebar is open on mobile, render a backdrop behind it:
 The login page splits into two panels side by side on desktop:
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  LEFT PANEL (hidden on mobile)     â”‚  RIGHT PANEL (form)    â”‚
-â”‚  - App branding / logo             â”‚  - Auth card           â”‚
-â”‚  - Image slideshow                 â”‚  - Dynamic form fields â”‚
-â”‚  - Decorative dots animation       â”‚  - Mode switcher links â”‚
-â”‚  - Gradient background             â”‚  - Theme toggle btn    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ  LEFT PANEL (hidden on mobile)     ├óΓÇ¥ΓÇÜ  RIGHT PANEL (form)    ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  - App branding / logo             ├óΓÇ¥ΓÇÜ  - Auth card           ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  - Image slideshow                 ├óΓÇ¥ΓÇÜ  - Dynamic form fields ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  - Decorative dots animation       ├óΓÇ¥ΓÇÜ  - Mode switcher links ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  - Gradient background             ├óΓÇ¥ΓÇÜ  - Theme toggle btn    ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
 ```
 
 On **tablet and mobile**: only the right panel (form) is shown, full width.
 
-### Left Panel —” Slideshow
+### Left Panel ΓÇöΓÇ¥ Slideshow
 
-- Stores slide images in `public/slides/` —” filenames: `1.png`, `2.png`, `3.png`, etc.
+- Stores slide images in `public/slides/` ΓÇöΓÇ¥ filenames: `1.png`, `2.png`, `3.png`, etc.
 - Auto-advances every **6 seconds** using `setInterval`
-- Respects `prefers-reduced-motion` —” skip interval if user has motion reduction enabled
+- Respects `prefers-reduced-motion` ΓÇöΓÇ¥ skip interval if user has motion reduction enabled
 - Active slide fades in with `opacity: 1`, inactive at `opacity: 0`, both with `transition: opacity 0.8s ease`
 - Stacked absolutely inside a relative container; only the active index is visible
 
 ```js
 const slides = ['/slides/1.png', '/slides/2.png', '/slides/3.png'];
-// Add more slides here for future projects —” just drop PNGs/JPGs into public/slides/
+// Add more slides here for future projects ΓÇöΓÇ¥ just drop PNGs/JPGs into public/slides/
 ```
 
-### Left Panel —” Interactive Dot Grid Animation
+### Left Panel ΓÇöΓÇ¥ Interactive Dot Grid Animation
 
 - Rendered on a `<canvas>` element that fills the left panel
 - Only active on desktop (skipped if `window.innerWidth < 1024`)
@@ -410,7 +410,7 @@ const slides = ['/slides/1.png', '/slides/2.png', '/slides/3.png'];
 - Dot color: `rgba(255,255,255,0.18)` in dark mode, `rgba(0,0,0,0.12)` in light mode
 - Canvas pointer events disabled (`pointerEvents: 'none'`)
 
-### Right Panel —” Auth Card
+### Right Panel ΓÇöΓÇ¥ Auth Card
 
 - Centered vertically and horizontally
 - `background: var(--admin-card)`, `border: 1px solid var(--admin-border)`, `borderRadius: var(--admin-radius-lg)`
@@ -419,7 +419,7 @@ const slides = ['/slides/1.png', '/slides/2.png', '/slides/3.png'];
 
 ### Dynamic Auth Forms
 
-> The form fields and modes are **project-specific** —” replace labels, fields, and endpoints per project.
+> The form fields and modes are **project-specific** ΓÇöΓÇ¥ replace labels, fields, and endpoints per project.
 
 The reference implementation has these modes (adapt freely):
 
@@ -493,30 +493,30 @@ A small sun/moon icon button in the top-right corner of the page. Clicking toggl
 - State persisted in `localStorage` under `'sb-collapsed'` (`'1'` = collapsed)
 - On mobile, sidebar is always full-width (280px) regardless of `collapsed` state
 - Sidebar transition: `width 0.2s ease`, `padding 0.2s ease`
-- Mobile open/close: `transform: translateX(-100%)` â†’ `translateX(0)` via `transition: transform 0.22s ease`
+- Mobile open/close: `transform: translateX(-100%)` ├óΓÇáΓÇÖ `translateX(0)` via `transition: transform 0.22s ease`
 
 ### Structure
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  [Role icon]  App Name           â”‚ â† sb-brand
-â”‚               Role label         â”‚
-â”‚               [Collapse btn]     â”‚
-â”‚ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ â”‚
-â”‚  [Icon]  Dashboard        [â—3]  â”‚ â† sb-link (with badge)
-â”‚  [Icon]  Page A                  â”‚
-â”‚  [Icon]  Page B (active)         â”‚ â† sb-link-active
-â”‚  [Icon]  Page C                  â”‚
-â”‚  ...                             â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ  [Role icon]  App Name           ├óΓÇ¥ΓÇÜ ├óΓÇá┬É sb-brand
+├óΓÇ¥ΓÇÜ               Role label         ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ               [Collapse btn]     ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  [Icon]  Dashboard        [├óΓÇö┬Å3]  ├óΓÇ¥ΓÇÜ ├óΓÇá┬É sb-link (with badge)
+├óΓÇ¥ΓÇÜ  [Icon]  Page A                  ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  [Icon]  Page B (active)         ├óΓÇ¥ΓÇÜ ├óΓÇá┬É sb-link-active
+├óΓÇ¥ΓÇÜ  [Icon]  Page C                  ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ...                             ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
 ```
 
 ### Role-Based Navigation
 
-Navigation links are **role-driven** —” define a `roleLinks` map and render the correct set based on the authenticated user's role. Each project will have different roles and pages; use placeholders as starting point:
+Navigation links are **role-driven** ΓÇöΓÇ¥ define a `roleLinks` map and render the correct set based on the authenticated user's role. Each project will have different roles and pages; use placeholders as starting point:
 
 ```js
-// TEMPLATE —” replace with your project's actual roles and pages
+// TEMPLATE ΓÇöΓÇ¥ replace with your project's actual roles and pages
 const roleLinks = {
     admin: [
         { href: '/admin',          label: 'Dashboard', icon: 'bi-grid-1x2-fill' },
@@ -543,7 +543,7 @@ const roleHeaders = {
 Each nav link can show a badge with an unread count:
 - **Collapsed mode:** small dot badge overlaid on the icon (`position: absolute`, `top: -4px`, `right: -4px`)
 - **Expanded mode:** pill badge at the far right of the link row
-- Badge style: `background: #f43f5e`, `color: #fff`, `borderRadius: 99`, `fontSize: 0.55—“0.6rem`
+- Badge style: `background: #f43f5e`, `color: #fff`, `borderRadius: 99`, `fontSize: 0.55ΓÇöΓÇ£0.6rem`
 - Show `9+` when count exceeds 9
 
 ### Active Link Detection
@@ -614,10 +614,10 @@ const active = isRoot
 ### Structure
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  [â˜° Hamburger (mobile)]  [Home > Section > Current Page]          â”‚
-â”‚                                           [ðŸ”” Notif] [Avatar Pill] â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ  [├ó╦£┬░ Hamburger (mobile)]  [Home > Section > Current Page]          ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ                                           [├░┼╕ΓÇ¥ΓÇ¥ Notif] [Avatar Pill] ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
 ```
 
 ### Topbar CSS
@@ -640,29 +640,29 @@ const active = isRoot
 ### Breadcrumb
 
 Rendered inside the topbar, left side. Built from two props passed by every page:
-- `title` — the current page name (always shown)
-- `description` — parent segments like `"Section / Subsection"` (optional)
+- `title` ΓÇö the current page name (always shown)
+- `description` ΓÇö parent segments like `"Section / Subsection"` (optional)
 
 **Structure:**
 ```
 Home  >  Section  >  Subsection  >  Current Page
-[🏠 Home]  [›]  [muted]  [›]  [muted]  [›]  [bold primary]
+[≡ƒÅá Home]  [ΓÇ║]  [muted]  [ΓÇ║]  [muted]  [ΓÇ║]  [bold primary]
 ```
 
 **Segment parsing:**
 ```js
-// description = "Analytics / Performance" or "Analytics · Performance" or "Analytics > Performance"
+// description = "Analytics / Performance" or "Analytics ┬╖ Performance" or "Analytics > Performance"
 const segments = description
-    ? description.split(/[\/\·>]+/).map(s => s.trim()).filter(Boolean)
+    ? description.split(/[\/\┬╖>]+/).map(s => s.trim()).filter(Boolean)
     : [];
 // segments = ['Analytics', 'Performance']
-// title = 'Overview'  →  renders: Home > Analytics > Performance > Overview
+// title = 'Overview'  ΓåÆ  renders: Home > Analytics > Performance > Overview
 ```
 
 **JSX structure:**
 ```jsx
 <nav className="tb-breadcrumb" aria-label="breadcrumb">
-    {/* Home — always first */}
+    {/* Home ΓÇö always first */}
     <Link href="/" className="tb-bc-item tb-bc-link tb-bc-home">
         <i className="bi bi-house-door" style={{ fontSize: '0.72rem' }} />
         <span>Home</span>
@@ -676,7 +676,7 @@ const segments = description
         </span>
     ))}
 
-    {/* Current page — always last, bold */}
+    {/* Current page ΓÇö always last, bold */}
     <span className="tb-bc-item">
         <i className="bi bi-chevron-right tb-bc-sep" />
         <span className="tb-bc-current">{title}</span>
@@ -700,7 +700,7 @@ const segments = description
     gap: 3px;
 }
 .tb-bc-sep {
-    font-size: 0.58rem;           /* smaller than text — subtle chevron */
+    font-size: 0.58rem;           /* smaller than text ΓÇö subtle chevron */
     color: var(--admin-text-muted);
     margin: 0 3px;
 }
@@ -759,30 +759,30 @@ const segments = description
 ### User Avatar Pill
 
 ```
-[Avatar img]  [Name]        [â–¾]
+[Avatar img]  [Name]        [├óΓÇô┬╛]
               [Role label]
 ```
 
 - Rounded pill shape: `borderRadius: 50px`
 - `background: var(--admin-card)`, `border: 1px solid var(--admin-border)`
-- Avatar: 28Ã—28px, `borderRadius: 50%`, `border: 2px solid rgba(59,130,246,0.45)`
+- Avatar: 28├âΓÇö28px, `borderRadius: 50%`, `border: 2px solid rgba(59,130,246,0.45)`
 - Clicking opens dropdown
 
 ### User Dropdown
 
 Contains:
-1. **Dark/Light mode toggle** —” animated toggle switch (36Ã—20px pill, sliding circle)
+1. **Dark/Light mode toggle** ΓÇöΓÇ¥ animated toggle switch (36├âΓÇö20px pill, sliding circle)
    - Dark mode: blue background, moon SVG icon
    - Light mode: gray background, sun SVG icon
 2. **Divider line**
-3. **Logout button** —” red text/hover state
+3. **Logout button** ΓÇöΓÇ¥ red text/hover state
 
 ### Logout Loading State
 
 When logout is clicked:
-1. Set `loggingOut = true` —” show full-screen overlay
+1. Set `loggingOut = true` ΓÇöΓÇ¥ show full-screen overlay
 2. After 1 second, navigate to `/logout`
-3. Overlay shows: logo, app name, "Signing out—¦" text, animated progress bar
+3. Overlay shows: logo, app name, "Signing outΓÇö┬ª" text, animated progress bar
 
 ### Notification Bell
 
@@ -793,7 +793,7 @@ When logout is clicked:
 ### Mobile Topbar
 
 - Hamburger (`bi-list`) appears, triggers `mobileOpen` in AppLayout
-- User info (name/role) hidden in pill —” only avatar visible
+- User info (name/role) hidden in pill ΓÇöΓÇ¥ only avatar visible
 - Breadcrumb shows only current page title
 
 ---
@@ -822,7 +822,7 @@ border: '1px solid var(--admin-border-strong)'
 
 ### 8.2 Stat / Metric Card
 
-Used on dashboards in a grid. On mobile: 2-column grid. On desktop: 3—“4 column grid.
+Used on dashboards in a grid. On mobile: 2-column grid. On desktop: 3ΓÇöΓÇ£4 column grid.
 
 ```js
 // 4-stat grid layout
@@ -864,16 +864,16 @@ toast('Please review before submitting', 'warning');
 **Toast types and colors:**
 | Type | Background | Border | Icon |
 |---|---|---|---|
-| `success` | `rgba(22,163,74,0.95)` | `#16a34a` | âœ“ |
-| `error` | `rgba(220,38,38,0.95)` | `#dc2626` | âœ• |
-| `warning` | `rgba(202,138,4,0.95)` | `#ca8a04` | âš  |
-| `info` | `rgba(37,99,235,0.95)` | `#2563eb` | â„¹ |
-| `approved` | `rgba(5,150,105,0.95)` | `#059669` | âœ“ |
-| `rejected` | `rgba(239,68,68,0.95)` | `#ef4444` | âœ• |
-| `submitted` | `rgba(37,99,235,0.95)` | `#2563eb` | â†‘ |
+| `success` | `rgba(22,163,74,0.95)` | `#16a34a` | ├ó┼ôΓÇ£ |
+| `error` | `rgba(220,38,38,0.95)` | `#dc2626` | ├ó┼ôΓÇó |
+| `warning` | `rgba(202,138,4,0.95)` | `#ca8a04` | ├ó┼í┬á |
+| `info` | `rgba(37,99,235,0.95)` | `#2563eb` | ├óΓÇ₧┬╣ |
+| `approved` | `rgba(5,150,105,0.95)` | `#059669` | ├ó┼ôΓÇ£ |
+| `rejected` | `rgba(239,68,68,0.95)` | `#ef4444` | ├ó┼ôΓÇó |
+| `submitted` | `rgba(37,99,235,0.95)` | `#2563eb` | ├óΓÇáΓÇÿ |
 
 - Toast position: `top: 1.5rem, right: 1.5rem`, `position: fixed`, `z-index: 9999`
-- Entrance: `opacity 0 â†’ 1`, `translateY(-12px) â†’ 0`, `transition: 0.2s`
+- Entrance: `opacity 0 ├óΓÇáΓÇÖ 1`, `translateY(-12px) ├óΓÇáΓÇÖ 0`, `transition: 0.2s`
 - Auto-dismiss after 3500ms (configurable)
 - Click to dismiss
 
@@ -901,7 +901,7 @@ await confirm('Submit this form?', async () => {
 - Dialog: `var(--admin-card)` bg, `border-radius: 14px`, `maxWidth: 400px`
 - Cancel button: transparent background, bordered
 - Confirm button: `background: #ef4444` (red for destructive actions)
-- Loading state: spinner SVG + "Processing—¦" text
+- Loading state: spinner SVG + "ProcessingΓÇö┬ª" text
 
 ### 8.5 Status Badge
 
@@ -1129,7 +1129,7 @@ All modals use a fixed fullscreen overlay + centered (or mobile bottom-sheet) di
             <button onClick={onClose} style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--admin-text-muted)', fontSize: '1rem',
-            }}>âœ•</button>
+            }}>├ó┼ôΓÇó</button>
         </div>
         {/* Body */}
         <div style={{ padding: '1rem 1.25rem' }}>
@@ -1183,7 +1183,7 @@ Designed for displaying validation errors or warning messages with an optional l
 
 - Header: yellow warning icon (`#f59e0b`) in a rounded badge + title
 - Body: description text + scrollable item list (each item has avatar, name, sub-label, reason)
-- Each item can have a "Notify" button that posts to an API and changes to "âœ“ Notified"
+- Each item can have a "Notify" button that posts to an API and changes to "├ó┼ôΓÇ£ Notified"
 - Footer: "Understood" close button
 
 ```js
@@ -1305,7 +1305,7 @@ useEffect(() => {
 
 ### 10.3 Login Screen Dot Repulsion
 
-See Section 5 (Login Page) —” `ParticleCanvas` component. The dots use linear interpolation (`LERP = 0.08`) for smooth motion on every `requestAnimationFrame`.
+See Section 5 (Login Page) ΓÇöΓÇ¥ `ParticleCanvas` component. The dots use linear interpolation (`LERP = 0.08`) for smooth motion on every `requestAnimationFrame`.
 
 ### 10.4 Login Slide Transition
 
@@ -1329,7 +1329,7 @@ See Section 5 (Login Page) —” `ParticleCanvas` component. The dots use linea
 ### 10.5 Page Navigation Skeleton
 
 AppLayout listens to Inertia's `router.on('start')` / `router.on('finish')` events:
-- On navigation start (GET only): set `navTarget` â†’ renders `<PageSkeleton url={navTarget} />`
+- On navigation start (GET only): set `navTarget` ├óΓÇáΓÇÖ renders `<PageSkeleton url={navTarget} />`
 - On navigation finish: clear `navTarget` after `Math.max(0, 220 - elapsed)` ms (minimum 220ms skeleton)
 - Non-GET requests (POST, PATCH, DELETE) do not trigger page skeletons
 
@@ -1346,58 +1346,58 @@ All interactive elements use `transition: background 0.15s, color 0.15s` or `tra
 | Name | Width | Devices |
 |---|---|---|
 | `mobile` | < 768px | Phones (portrait & landscape) |
-| `tablet` | 768—“1023px | iPad Mini, iPad, Android tablets |
-| `desktop` | â‰¥ 1024px | Laptops, desktops, iPad Pro |
+| `tablet` | 768ΓÇöΓÇ£1023px | iPad Mini, iPad, Android tablets |
+| `desktop` | ├óΓÇ░┬Ñ 1024px | Laptops, desktops, iPad Pro |
 
 ### Core Rules
 
-1. **Desktop is the source of truth** —” never break the desktop layout; only layer on tablet/mobile styles
-2. **Inline styles only** —” no Tailwind utility classes; conditional `style={{}}` objects based on `bp`
-3. **CSS variables always** —” use `var(--admin-*)` tokens; never hardcode theme colors inline
-4. **Sidebar offset** —” fixed/absolute elements (modals, bottom sheets) must account for sidebar width on tablet+:
+1. **Desktop is the source of truth** ΓÇöΓÇ¥ never break the desktop layout; only layer on tablet/mobile styles
+2. **Inline styles only** ΓÇöΓÇ¥ no Tailwind utility classes; conditional `style={{}}` objects based on `bp`
+3. **CSS variables always** ΓÇöΓÇ¥ use `var(--admin-*)` tokens; never hardcode theme colors inline
+4. **Sidebar offset** ΓÇöΓÇ¥ fixed/absolute elements (modals, bottom sheets) must account for sidebar width on tablet+:
    ```js
    const sidebarLeft = window.innerWidth >= 768
        ? parseInt(getComputedStyle(document.querySelector('.app-main')).marginLeft) || 0
        : 0;
    ```
-5. **No horizontal scroll** —” every layout must be usable without horizontal scrolling
-6. **Touch targets â‰¥ 44px** —” buttons and tappable rows on mobile must have sufficient padding
+5. **No horizontal scroll** ΓÇöΓÇ¥ every layout must be usable without horizontal scrolling
+6. **Touch targets ├óΓÇ░┬Ñ 44px** ΓÇöΓÇ¥ buttons and tappable rows on mobile must have sufficient padding
 
 ### Layout Patterns
 
-#### Pattern A —” Two-Column Split (List + Detail)
+#### Pattern A ΓÇöΓÇ¥ Two-Column Split (List + Detail)
 | Breakpoint | Layout |
 |---|---|
 | Desktop | Fixed left panel (380px) + right detail panel, both visible |
-| Tablet/Mobile | Full-width list; tap a row â†’ **bottom sheet** slides up (82vh) |
+| Tablet/Mobile | Full-width list; tap a row ├óΓÇáΓÇÖ **bottom sheet** slides up (82vh) |
 
 Bottom sheet: `position: fixed`, `bottom: 0`, `left: {sidebarLeft}`, `right: 0`, `border-radius: 20px 20px 0 0`, `animation: slideUp 0.25s ease`
 
-#### Pattern B —” Full-Width Grid/Calendar
+#### Pattern B ΓÇöΓÇ¥ Full-Width Grid/Calendar
 | Breakpoint | Layout |
 |---|---|
 | Desktop | Full multi-column grid with text content per cell |
 | Tablet | Same grid, abbreviated labels, **dot indicators** instead of text |
 | Mobile | Replace grid with **horizontal day strip** + vertical list; FAB for primary action |
 
-#### Pattern C —” Index List Page
+#### Pattern C ΓÇöΓÇ¥ Index List Page
 | Breakpoint | Layout |
 |---|---|
-| Desktop | Full table —” all columns, toolbar in one row |
+| Desktop | Full table ΓÇöΓÇ¥ all columns, toolbar in one row |
 | Tablet | Table drops secondary columns; toolbar may wrap |
 | Mobile | **Card list** (replace table); search full-width; filter pills scroll horizontally |
 
 Mobile card structure:
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ [Avatar]  Title (bold)             â”‚
-â”‚           Subtitle (muted)         â”‚
-â”‚                                    â”‚
-â”‚ [Status]  [Date]  [Action icons]   â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ [Avatar]  Title (bold)             ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ           Subtitle (muted)         ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ                                    ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ [Status]  [Date]  [Action icons]   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
 ```
 
-#### Pattern D —” Show/Detail Page
+#### Pattern D ΓÇöΓÇ¥ Show/Detail Page
 | Breakpoint | Layout |
 |---|---|
 | Desktop | `max-width: 900px`, centered; action buttons sticky top or bottom |
@@ -1415,7 +1415,7 @@ Sticky bottom bar:
 }
 ```
 
-#### Pattern E —” Editor / Multi-Section Form
+#### Pattern E ΓÇöΓÇ¥ Editor / Multi-Section Form
 | Breakpoint | Layout |
 |---|---|
 | Desktop | Multi-column sections, collapsible panels |
@@ -1436,7 +1436,7 @@ Sticky bottom bar:
 gridTemplateColumns: bp === 'mobile' ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)'
 ```
 
-### Table â†’ Cards on Mobile
+### Table ├óΓÇáΓÇÖ Cards on Mobile
 ```js
 // Hide columns conditionally
 {bp === 'desktop' && <td>{row.secondaryColumn}</td>}
@@ -1460,7 +1460,7 @@ const modalInner = bp === 'mobile'
 
 ## 13. Icons
 
-**Library:** Bootstrap Icons (`bi-*`) —” loaded via CDN or npm package.
+**Library:** Bootstrap Icons (`bi-*`) ΓÇöΓÇ¥ loaded via CDN or npm package.
 
 ```html
 <!-- CDN (add to root HTML) -->
@@ -1550,18 +1550,18 @@ Displayed immediately after a successful login before the first page renders. Tr
 1. Full-screen overlay renders on top of everything (`z-index: 9999`)
 2. Card pops in with `plsPop` animation (scale + translateY)
 3. Progress bar animates with `plsSlide` (infinite sliding gradient)
-4. After **1400ms**: begin fade-out (`opacity â†’ 0`, `transition: 0.5s`)
+4. After **1400ms**: begin fade-out (`opacity ├óΓÇáΓÇÖ 0`, `transition: 0.5s`)
 5. After **1900ms**: remove from DOM entirely
 
 **Structure:**
 ```
 Full-screen overlay (var(--pls-bg))
-â””â”€â”€ Card (var(--pls-card), border-radius: 20px, pop-in animation)
-    â”œâ”€â”€ Logo image (64Ã—64px, border-radius: 14px)
-    â”œâ”€â”€ App name (1.4rem, weight 800)
-    â”œâ”€â”€ Subtitle "Loading your portal—¦" (0.82rem, muted)
-    â””â”€â”€ Progress track (180Ã—4px, rounded)
-        â””â”€â”€ Bar (45% width, gradient #3b82f6 â†’ #6366f1, plsSlide animation)
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Card (var(--pls-card), border-radius: 20px, pop-in animation)
+    ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Logo image (64├âΓÇö64px, border-radius: 14px)
+    ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ App name (1.4rem, weight 800)
+    ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Subtitle "Loading your portalΓÇö┬ª" (0.82rem, muted)
+    ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Progress track (180├âΓÇö4px, rounded)
+        ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Bar (45% width, gradient #3b82f6 ├óΓÇáΓÇÖ #6366f1, plsSlide animation)
 ```
 
 **CSS variables for loading screen (theme-aware):**
@@ -1589,7 +1589,7 @@ Full-screen overlay (var(--pls-bg))
 ### Logout Loading State
 
 Same card design, inline within the Topbar component. Triggered when user clicks Logout:
-1. Show full-screen overlay (same card style, "Signing out—¦" subtitle)
+1. Show full-screen overlay (same card style, "Signing outΓÇö┬ª" subtitle)
 2. After 1 second, navigate to `/logout`
 3. Logo: `/images/pms-logo.png` (or your project's logo)
 
@@ -1728,59 +1728,59 @@ This structure is for a **React + Inertia.js** project. Adapt paths for your fra
 
 ```
 resources/js/
-â”œâ”€â”€ app.jsx                     # Entry point —” mounts React, Inertia setup
-â”œâ”€â”€ bootstrap.js                # Axios defaults, Echo setup
-â”‚
-â”œâ”€â”€ Layouts/
-â”‚   â”œâ”€â”€ AppLayout.jsx           # Authenticated layout (sidebar + topbar + content)
-â”‚   â””â”€â”€ GuestLayout.jsx         # Unauthenticated layout (login page wrapper)
-â”‚
-â”œâ”€â”€ Components/
-â”‚   â”œâ”€â”€ Sidebar.jsx             # Collapsible role-based sidebar
-â”‚   â”œâ”€â”€ Topbar.jsx              # Sticky top navbar with breadcrumb + user pill
-â”‚   â”œâ”€â”€ Snackbar.jsx            # Toast notification system (ToastProvider + useToast)
-â”‚   â”œâ”€â”€ ConfirmDialog.jsx       # Imperative confirm dialog (ConfirmProvider + useConfirm)
-â”‚   â”œâ”€â”€ LoginLoadingScreen.jsx  # Post-login animated loading overlay
-â”‚   â”œâ”€â”€ PageSkeletons.jsx       # Route-matched page loading skeletons
-â”‚   â”œâ”€â”€ Skeleton.jsx            # Inline shimmer skeleton component
-â”‚   â”œâ”€â”€ ValidationModal.jsx     # Warning/validation modal with item list + notify
-â”‚   â”œâ”€â”€ NotificationPanel.jsx   # Slide-in notification panel (bell icon)
-â”‚   â”œâ”€â”€ ReturnRemarksBanner.jsx # Yellow banner for returned-with-remarks state
-â”‚   â”œâ”€â”€ defaultAvatar.js        # Avatar src helper + onError fallback
-â”‚   â”œâ”€â”€ useBreakpoint.js        # Responsive breakpoint hook
-â”‚   â”œâ”€â”€ useNotificationListener.js  # WebSocket notification listener hook
-â”‚   â””â”€â”€ Profile/
-â”‚       â””â”€â”€ ProfileSettings.jsx # Profile settings form (avatar, name, password)
-â”‚
-â”œâ”€â”€ Pages/
-â”‚   â”œâ”€â”€ Auth/
-â”‚   â”‚   â”œâ”€â”€ Login.jsx           # Login + activate + forgot password page
-â”‚   â”‚   â””â”€â”€ Activate.jsx        # Account activation redirect handler
-â”‚   â”‚
-â”‚   â”œâ”€â”€ [RoleA]/                # One folder per user role
-â”‚   â”‚   â”œâ”€â”€ Dashboard.jsx
-â”‚   â”‚   â”œâ”€â”€ Profile.jsx
-â”‚   â”‚   â”œâ”€â”€ [FeatureA]/
-â”‚   â”‚   â”‚   â”œâ”€â”€ Index.jsx       # List page
-â”‚   â”‚   â”‚   â””â”€â”€ Show.jsx        # Detail page
-â”‚   â”‚   â””â”€â”€ [FeatureB]/
-â”‚   â”‚       â””â”€â”€ Index.jsx
-â”‚   â”‚
-â”‚   â”œâ”€â”€ [RoleB]/
-â”‚   â”‚   â””â”€â”€ ...
-â”‚   â”‚
-â”‚   â””â”€â”€ Error.jsx               # Custom error page (404, 500, 503)
-â”‚
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ app.jsx                     # Entry point ΓÇöΓÇ¥ mounts React, Inertia setup
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ bootstrap.js                # Axios defaults, Echo setup
+├óΓÇ¥ΓÇÜ
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Layouts/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ AppLayout.jsx           # Authenticated layout (sidebar + topbar + content)
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ GuestLayout.jsx         # Unauthenticated layout (login page wrapper)
+├óΓÇ¥ΓÇÜ
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Components/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Sidebar.jsx             # Collapsible role-based sidebar
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Topbar.jsx              # Sticky top navbar with breadcrumb + user pill
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Snackbar.jsx            # Toast notification system (ToastProvider + useToast)
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ConfirmDialog.jsx       # Imperative confirm dialog (ConfirmProvider + useConfirm)
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ LoginLoadingScreen.jsx  # Post-login animated loading overlay
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ PageSkeletons.jsx       # Route-matched page loading skeletons
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Skeleton.jsx            # Inline shimmer skeleton component
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ValidationModal.jsx     # Warning/validation modal with item list + notify
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ NotificationPanel.jsx   # Slide-in notification panel (bell icon)
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ReturnRemarksBanner.jsx # Yellow banner for returned-with-remarks state
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ defaultAvatar.js        # Avatar src helper + onError fallback
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ useBreakpoint.js        # Responsive breakpoint hook
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ useNotificationListener.js  # WebSocket notification listener hook
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Profile/
+├óΓÇ¥ΓÇÜ       ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ProfileSettings.jsx # Profile settings form (avatar, name, password)
+├óΓÇ¥ΓÇÜ
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Pages/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Auth/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Login.jsx           # Login + activate + forgot password page
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Activate.jsx        # Account activation redirect handler
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ [RoleA]/                # One folder per user role
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Dashboard.jsx
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Profile.jsx
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ [FeatureA]/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Index.jsx       # List page
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Show.jsx        # Detail page
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ [FeatureB]/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ       ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Index.jsx
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ [RoleB]/
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ ...
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ   ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ Error.jsx               # Custom error page (404, 500, 503)
+├óΓÇ¥ΓÇÜ
 public/
-├── slides/                     # Login page slideshow images
-│   ├── 1.png                   # Drop PNG/JPG files here: 1.png, 2.png, 3.png ...
-│   ├── 2.png                   # Crossfade only (opacity 0.8s ease), auto-advance every 6s
-│   └── README.md               # Placeholder: 'Drop slide images here as 1.png, 2.png, 3.png'
-â”œâ”€â”€ images/
-│   └── [your-logo].png         # App logo — replace with your project logo (used in loading screens)
-â””â”€â”€ sounds/
-    â””â”€â”€ notifications/
-        â””â”€â”€ new-notification.wav  # Notification sound (optional)
+Γö£ΓöÇΓöÇ slides/                     # Login page slideshow images
+Γöé   Γö£ΓöÇΓöÇ 1.png                   # Drop PNG/JPG files here: 1.png, 2.png, 3.png ...
+Γöé   Γö£ΓöÇΓöÇ 2.png                   # Crossfade only (opacity 0.8s ease), auto-advance every 6s
+Γöé   ΓööΓöÇΓöÇ README.md               # Placeholder: 'Drop slide images here as 1.png, 2.png, 3.png'
+├óΓÇ¥┼ô├óΓÇ¥Γé¼├óΓÇ¥Γé¼ images/
+Γöé   ΓööΓöÇΓöÇ [your-logo].png         # App logo ΓÇö replace with your project logo (used in loading screens)
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ sounds/
+    ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ notifications/
+        ├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼ new-notification.wav  # Notification sound (optional)
 ```
 
 ### Naming Conventions
@@ -1842,7 +1842,7 @@ export default function PlaceholderPage() {
 
 ## 17. Fallback / Error Pages
 
-Two types of error pages exist —” one for Inertia-handled errors and one for server-level errors that never reach the JS app.
+Two types of error pages exist ΓÇöΓÇ¥ one for Inertia-handled errors and one for server-level errors that never reach the JS app.
 
 ---
 
@@ -1896,19 +1896,19 @@ const ERRORS = {
 
 **Card structure:**
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚  [Icon badge —” colored circle]  â”‚
-â”‚  Error {status}  (uppercase tag)â”‚
-â”‚  Title (1.5rem, weight 700)     â”‚
-â”‚  Message (0.9rem, muted)        â”‚
-â”‚  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€  â”‚
-â”‚  [Primary action button]        â”‚  â† "Go to Home" or "Refresh Page" (419)
-â”‚  [Ghost "Go Back" button]       â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-Â© {year} App Name
+├óΓÇ¥┼Æ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥┬É
+├óΓÇ¥ΓÇÜ  [Icon badge ΓÇöΓÇ¥ colored circle]  ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  Error {status}  (uppercase tag)├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  Title (1.5rem, weight 700)     ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  Message (0.9rem, muted)        ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  ├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼  ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇÜ  [Primary action button]        ├óΓÇ¥ΓÇÜ  ├óΓÇá┬É "Go to Home" or "Refresh Page" (419)
+├óΓÇ¥ΓÇÜ  [Ghost "Go Back" button]       ├óΓÇ¥ΓÇÜ
+├óΓÇ¥ΓÇ¥├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥Γé¼├óΓÇ¥╦£
+├é┬⌐ {year} App Name
 ```
 
-**Icon badge:** `72Ã—72px` circle, `background: err.bg`, `border: 1.5px solid {color}33`
+**Icon badge:** `72├âΓÇö72px` circle, `background: err.bg`, `border: 1.5px solid {color}33`
 
 **Primary button:** full-width, `background: err.color`, white text, `border-radius: var(--admin-radius)`
 
@@ -1918,13 +1918,13 @@ const ERRORS = {
 
 **Fallback:** any unknown status code falls back to the 500 config.
 
-**Dark/light toggle:** same animated pill toggle as the topbar dropdown —” reads/writes `localStorage` `'theme'` and updates `data-theme` on `<html>`.
+**Dark/light toggle:** same animated pill toggle as the topbar dropdown ΓÇöΓÇ¥ reads/writes `localStorage` `'theme'` and updates `data-theme` on `<html>`.
 
 ---
 
 ### 17.2 Server-Level Maintenance Page (`resources/views/errors/503.blade.php`)
 
-This is a **pure HTML/CSS Blade file** —” no JavaScript framework, no Inertia, no React. It renders when the app is in maintenance mode before the JS app can boot.
+This is a **pure HTML/CSS Blade file** ΓÇöΓÇ¥ no JavaScript framework, no Inertia, no React. It renders when the app is in maintenance mode before the JS app can boot.
 
 **Design:** Matches the dark theme of the app exactly using hardcoded values (since CSS variables aren't available without the app running).
 
@@ -1937,12 +1937,12 @@ Card:
   border-radius: 12px
   max-width: 440px, centered
 
-Icon badge: 72Ã—72px circle, blue shield SVG icon (#3b82f6)
-Label: "503 —” Maintenance" (uppercase, blue, 0.72rem)
+Icon badge: 72├âΓÇö72px circle, blue shield SVG icon (#3b82f6)
+Label: "503 ΓÇöΓÇ¥ Maintenance" (uppercase, blue, 0.72rem)
 Title: "We'll be right back" (1.5rem, weight 700)
 Message: maintenance description (muted, 0.9rem)
 Divider: 1px solid rgba(140,171,214,0.12)
-Footer: Â© {year} App Name
+Footer: ├é┬⌐ {year} App Name
 ```
 
 **Hardcoded dark-only values to use** (since no theme toggle is available here):
@@ -1956,7 +1956,7 @@ Footer: Â© {year} App Name
 | Accent | `#3b82f6` |
 | Shadow | `0 18px 40px rgba(0,0,0,0.28)` |
 
-**Font:** `'Inter', system-ui, sans-serif` (no Google Fonts CDN needed —” system fallback is fine for a maintenance page)
+**Font:** `'Inter', system-ui, sans-serif` (no Google Fonts CDN needed ΓÇöΓÇ¥ system fallback is fine for a maintenance page)
 
 
 ---
@@ -2043,7 +2043,7 @@ File: Pages/Auth/Login.jsx
      Slides folder: create public/slides/ and add placeholder README.md inside:
        "Drop slide images here as 1.png, 2.png, 3.png etc."
      Slides array: ['/slides/1.png', '/slides/2.png', '/slides/3.png']
-     Transition: opacity crossfade ONLY — opacity 0.8s ease, NO scroll/slide animation
+     Transition: opacity crossfade ONLY ΓÇö opacity 0.8s ease, NO scroll/slide animation
      All images stacked absolutely (position: absolute, inset: 0), active = opacity 1, rest = opacity 0
      Auto-advance: setInterval 6000ms, respects prefers-reduced-motion (skip if reduced)
      Dot grid: repel on hover, desktop only (>= 1024px), canvas pointer-events none

@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\DB;
  *
  * What SpmsFullSeeder intentionally left incomplete:
  *   - Carlos Mendoza has no June ORS entries and no June MPOR
- *   - QAR Q2 (Apr–Jun) was not seeded
+ *   - QAR Q2 (AprΓÇôJun) was not seeded
  *   - No AccomplishmentSubmissions (IPCR rating submissions)
  *   - No OpcraAccomplishmentSubmission (office-level OPCR rating)
  *   - No DevelopmentPlans (IDP)
@@ -36,10 +36,10 @@ use Illuminate\Support\Facades\DB;
  * After this seeder runs, Jan-Jun 2026 will have:
  *   - All employees: June ORS entries + approved June MPOR
  *   - QAR Q2 submitted to PMT
- *   - AccomplishmentSubmission per employee → released_by_pmt + final rating
- *   - IPCR per employee → released_by_pmt + final_score
- *   - OpcraAccomplishmentSubmission → released (office rating)
- *   - DevelopmentPlan per employee → submitted_to_ld (IDP fully processed)
+ *   - AccomplishmentSubmission per employee ΓåÆ released_by_pmt + final rating
+ *   - IPCR per employee ΓåÆ released_by_pmt + final_score
+ *   - OpcraAccomplishmentSubmission ΓåÆ released (office rating)
+ *   - DevelopmentPlan per employee ΓåÆ submitted_to_ld (IDP fully processed)
  */
 class SpmsH1CompleteSeeder extends Seeder
 {
@@ -72,7 +72,7 @@ class SpmsH1CompleteSeeder extends Seeder
             ->where('performance_period_id', $period->id)
             ->firstOrFail();
 
-        // ── 1. Fill June ORS + MPOR for Carlos Mendoza ───────────────────────
+        // ΓöÇΓöÇ 1. Fill June ORS + MPOR for Carlos Mendoza ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $carlos = $employees->firstWhere('email', 'employee2@pms.test');
 
         if ($carlos) {
@@ -135,7 +135,7 @@ class SpmsH1CompleteSeeder extends Seeder
             $this->command->info('June ORS + MPOR filled for Carlos Mendoza.');
         }
 
-        // ── 2. QAR Q2 (Apr–Jun) — submitted to PMT ───────────────────────────
+        // ΓöÇΓöÇ 2. QAR Q2 (AprΓÇôJun) ΓÇö submitted to PMT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $q2Key = $period->start_date->year . '-Q2';
 
         $existingQ2 = QarHeader::where('office_id', $hrmo->id)
@@ -227,10 +227,10 @@ class SpmsH1CompleteSeeder extends Seeder
                 'pmt_validated_at' => Carbon::parse('2026-07-10 10:00:00'),
                 'pmt_validated_by' => $pmt->id,
             ]);
-            $this->command->info('QAR Q2 already exists — upgraded to pmt_approved.');
+            $this->command->info('QAR Q2 already exists ΓÇö upgraded to pmt_approved.');
         }
 
-        // ── Also ensure Q1 is pmt_approved ───────────────────────────────────
+        // ΓöÇΓöÇ Also ensure Q1 is pmt_approved ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $q1Key = $period->start_date->year . '-Q1';
         $qarQ1 = QarHeader::where('office_id', $hrmo->id)
             ->where('performance_period_id', $period->id)
@@ -243,11 +243,11 @@ class SpmsH1CompleteSeeder extends Seeder
                 'pmt_validated_at' => Carbon::parse('2026-04-15 10:00:00'),
                 'pmt_validated_by' => $pmt->id,
             ]);
-            $this->command->info('QAR Q1 → pmt_approved.');
+            $this->command->info('QAR Q1 ΓåÆ pmt_approved.');
         }
 
-        // ── 3. AccomplishmentSubmissions → released_by_pmt ───────────────────
-        // Full flow: submitted_to_supervisor → supervisor_approved → dept_head_endorsed → released_by_pmt
+        // ΓöÇΓöÇ 3. AccomplishmentSubmissions ΓåÆ released_by_pmt ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+        // Full flow: submitted_to_supervisor ΓåÆ supervisor_approved ΓåÆ dept_head_endorsed ΓåÆ released_by_pmt
         // Rating scale: >= 5.00 Outstanding, >= 4.00 Very Satisfactory, >= 3.00 Satisfactory,
         //               >= 2.00 Unsatisfactory, < 2.00 Poor
         // IDP eligibility: Unsatisfactory or Poor only (LOW_RATINGS in DevelopmentPlanningController)
@@ -336,7 +336,7 @@ class SpmsH1CompleteSeeder extends Seeder
                 $submission->mpors()->syncWithoutDetaching($empMporIds);
             }
 
-            // ── Update IPCR to released_by_pmt with final score ───────────────
+            // ΓöÇΓöÇ Update IPCR to released_by_pmt with final score ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $ipcr->update([
                 'status'          => Ipcr::STATUS_RELEASED_BY_PMT,
                 'final_score'     => $rating['score'],
@@ -344,9 +344,9 @@ class SpmsH1CompleteSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('AccomplishmentSubmissions → released_by_pmt for all HRMO employees.');
+        $this->command->info('AccomplishmentSubmissions ΓåÆ released_by_pmt for all HRMO employees.');
 
-        // ── 4. OPCR → released + OpcraAccomplishmentSubmission ───────────────
+        // ΓöÇΓöÇ 4. OPCR ΓåÆ released + OpcraAccomplishmentSubmission ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $opcr->update(['status' => 'approved']); // already approved, ensure consistency
 
         $existingOpcra = OpcraAccomplishmentSubmission::where('office_id', $hrmo->id)
@@ -396,9 +396,9 @@ class SpmsH1CompleteSeeder extends Seeder
             ]);
         }
 
-        $this->command->info("OpcraAccomplishmentSubmission → released (office avg: {$avgScore} — {$officeAdjectival}).");
+        $this->command->info("OpcraAccomplishmentSubmission ΓåÆ released (office avg: {$avgScore} ΓÇö {$officeAdjectival}).");
 
-        // ── 5. DevelopmentPlans (IDP) → submitted_to_ld ──────────────────────
+        // ΓöÇΓöÇ 5. DevelopmentPlans (IDP) ΓåÆ submitted_to_ld ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // Only for employees rated Unsatisfactory or Poor (LOW_RATINGS).
         // Outstanding / Very Satisfactory / Satisfactory do NOT get an IDP.
         $lowRatings = ['Unsatisfactory', 'Poor'];
@@ -469,9 +469,9 @@ class SpmsH1CompleteSeeder extends Seeder
             }
         }
 
-        $this->command->info('DevelopmentPlans (IDP) → submitted_to_ld for Unsatisfactory/Poor employees only.');
+        $this->command->info('DevelopmentPlans (IDP) ΓåÆ submitted_to_ld for Unsatisfactory/Poor employees only.');
 
-        // ── 6. CBO — close out pending UWP + OPCR + IPCR for active CBO employees ─
+        // ΓöÇΓöÇ 6. CBO ΓÇö close out pending UWP + OPCR + IPCR for active CBO employees ΓöÇ
         // The pending-check scans ALL active offices and ALL active employees,
         // so CBO's draft UWP, missing OPCR, and unset IPCRs all flag as pending.
         $cbo = Office::where('code', 'CBO')->first();
@@ -494,9 +494,9 @@ class SpmsH1CompleteSeeder extends Seeder
                     'approved_at'    => Carbon::parse('2026-01-10 10:00:00'),
                     'locked_at'      => Carbon::parse('2026-01-10 10:00:00'),
                     'ratee_name'     => $cbo->name,
-                    'period_covered' => 'January – June 2026',
+                    'period_covered' => 'January ΓÇô June 2026',
                 ]);
-                $this->command->info('CBO UWP → approved.');
+                $this->command->info('CBO UWP ΓåÆ approved.');
             }
 
             // Create an approved OPCR for CBO
@@ -507,7 +507,7 @@ class SpmsH1CompleteSeeder extends Seeder
             if ($cboUwp && ! $cboOpcr->uwps()->where('unit_work_plans.id', $cboUwp->id)->exists()) {
                 $cboOpcr->uwps()->attach($cboUwp->id);
             }
-            $this->command->info('CBO OPCR → approved.');
+            $this->command->info('CBO OPCR ΓåÆ approved.');
 
             // Seed committed IPCRs for active CBO employees who don't have one
             foreach ($cboEmployees as $emp) {
@@ -522,7 +522,7 @@ class SpmsH1CompleteSeeder extends Seeder
                     ]
                 );
             }
-            $this->command->info('CBO IPCRs → released_by_pmt for all active CBO employees.');
+            $this->command->info('CBO IPCRs ΓåÆ released_by_pmt for all active CBO employees.');
 
             // Seed released AccomplishmentSubmissions for CBO employees
             foreach ($cboEmployees as $emp) {
@@ -550,7 +550,7 @@ class SpmsH1CompleteSeeder extends Seeder
                     ]
                 );
             }
-            $this->command->info('CBO AccomplishmentSubmissions → released_by_pmt.');
+            $this->command->info('CBO AccomplishmentSubmissions ΓåÆ released_by_pmt.');
 
             // Create the office-level OpcraAccomplishmentSubmission for CBO
             OpcraAccomplishmentSubmission::firstOrCreate(
@@ -569,7 +569,7 @@ class SpmsH1CompleteSeeder extends Seeder
                     'pmt_action_at'           => Carbon::parse('2026-07-15 14:00:00'),
                 ]
             );
-            $this->command->info('CBO OpcraAccomplishmentSubmission → released.');
+            $this->command->info('CBO OpcraAccomplishmentSubmission ΓåÆ released.');
         }
 
         $this->command->info('SpmsH1CompleteSeeder done. Jan-Jun 2026 is now a fully closed historical period.');

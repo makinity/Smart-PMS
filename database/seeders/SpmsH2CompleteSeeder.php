@@ -21,19 +21,19 @@ use Illuminate\Support\Facades\DB;
  * SpmsFullSeederH2 intentionally left:
  *   - December ORS entries missing for ALL employees
  *   - December MPORs missing for ALL employees
- *   - QAR Q4 (Oct–Dec) not seeded
- *   - QAR Q3 (Jul–Sep) only submitted (not yet pmt_approved)
+ *   - QAR Q4 (OctΓÇôDec) not seeded
+ *   - QAR Q3 (JulΓÇôSep) only submitted (not yet pmt_approved)
  *   - November MPORs missing for Carlos Mendoza only
  *
  * After this seeder runs:
  *   - All employees EXCEPT Mark Juntilla (denjikun1004@gmail.com):
- *       → December ORS entries (3 days, rated + monitored)
- *       → December MPOR → approved by supervisor
+ *       ΓåÆ December ORS entries (3 days, rated + monitored)
+ *       ΓåÆ December MPOR ΓåÆ approved by supervisor
  *   - Mark Juntilla: NO December ORS, NO December MPOR (testing account)
  *   - Carlos Mendoza: November MPOR + ORS backfilled (was intentionally excluded)
- *   - QAR Q3 (Jul–Sep) → upgraded to pmt_approved
- *   - QAR Q4 (Oct–Dec) → draft (status=draft, pmt_status=pending)
- *     Links all Oct–Dec MPORs for employees who have them (excludes Mark Juntilla's Dec)
+ *   - QAR Q3 (JulΓÇôSep) ΓåÆ upgraded to pmt_approved
+ *   - QAR Q4 (OctΓÇôDec) ΓåÆ draft (status=draft, pmt_status=pending)
+ *     Links all OctΓÇôDec MPORs for employees who have them (excludes Mark Juntilla's Dec)
  *     Months covered shows 2/3 since Mark Juntilla hasn't submitted December MPOR
  *     Dept-head can review and submit to PMT when ready
  */
@@ -59,13 +59,13 @@ class SpmsH2CompleteSeeder extends Seeder
 
         $empIds = $employees->pluck('id')->toArray();
 
-        // Mark Juntilla — excluded from December seeding
+        // Mark Juntilla ΓÇö excluded from December seeding
         $markEmail = 'denjikun1004@gmail.com';
 
         // Employees who get December data (everyone except Mark)
         $decEmployees = $employees->filter(fn ($e) => $e->email !== $markEmail);
 
-        // ── 1. Backfill November for Carlos Mendoza ───────────────────────────
+        // ΓöÇΓöÇ 1. Backfill November for Carlos Mendoza ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // SpmsFullSeederH2 excluded him from November. Fill it now.
         $carlos = $employees->firstWhere('email', 'employee2@pms.test');
 
@@ -129,7 +129,7 @@ class SpmsH2CompleteSeeder extends Seeder
             $this->command->info('November ORS + MPOR backfilled for Carlos Mendoza.');
         }
 
-        // ── 2. December ORS + MPOR for all employees except Mark Juntilla ─────
+        // ΓöÇΓöÇ 2. December ORS + MPOR for all employees except Mark Juntilla ΓöÇΓöÇΓöÇΓöÇΓöÇ
         foreach ($decEmployees as $emp) {
             $ipcr      = Ipcr::where('employee_id', $emp->id)
                 ->where('performance_period_id', $period->id)
@@ -190,7 +190,7 @@ class SpmsH2CompleteSeeder extends Seeder
 
         $this->command->info("December ORS + MPOR seeded for {$decEmployees->count()} employees (Mark Juntilla excluded).");
 
-        // ── 3. Upgrade QAR Q3 to pmt_approved ────────────────────────────────
+        // ΓöÇΓöÇ 3. Upgrade QAR Q3 to pmt_approved ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $q3Key    = $period->start_date->year . '-Q1';
         $qarQ3    = QarHeader::where('office_id', $hrmo->id)
             ->where('performance_period_id', $period->id)
@@ -206,12 +206,12 @@ class SpmsH2CompleteSeeder extends Seeder
             ]);
             $this->command->info('QAR Q3 upgraded to pmt_approved.');
         } elseif ($qarQ3) {
-            $this->command->info('QAR Q3 already pmt_approved — skipped.');
+            $this->command->info('QAR Q3 already pmt_approved ΓÇö skipped.');
         } else {
-            $this->command->warn('QAR Q3 not found — skipped.');
+            $this->command->warn('QAR Q3 not found ΓÇö skipped.');
         }
 
-        // ── 4. QAR Q4 (Oct–Dec) — submitted to dept-head ─────────────────────
+        // ΓöÇΓöÇ 4. QAR Q4 (OctΓÇôDec) ΓÇö submitted to dept-head ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $q4Key = $period->start_date->year . '-Q2';
 
         $existingQ4 = QarHeader::where('office_id', $hrmo->id)
@@ -220,19 +220,19 @@ class SpmsH2CompleteSeeder extends Seeder
             ->first();
 
         if ($existingQ4) {
-            // Fix existing QAR Q4 — reset to draft so dept-head can review and submit
+            // Fix existing QAR Q4 ΓÇö reset to draft so dept-head can review and submit
             $existingQ4->update([
                 'status'     => 'draft',
                 'pmt_status' => 'pending',
             ]);
             $qarQ4 = $existingQ4;
-            $this->command->info('QAR Q4 already exists — status reset to draft.');
+            $this->command->info('QAR Q4 already exists ΓÇö status reset to draft.');
         } else {
             $qarQ4 = QarHeader::create([
                 'office_id'             => $hrmo->id,
                 'performance_period_id' => $period->id,
                 'quarter_key'           => $q4Key,
-                'status'                => 'draft',   // Draft — Mark Juntilla Dec MPOR missing, dept-head reviews before submit
+                'status'                => 'draft',   // Draft ΓÇö Mark Juntilla Dec MPOR missing, dept-head reviews before submit
                 'generated_at'          => Carbon::parse('2027-01-05 09:00:00'),
                 'generated_by'          => $deptHead->id,
                 'approved_at'           => null,
@@ -240,7 +240,7 @@ class SpmsH2CompleteSeeder extends Seeder
                 'pmt_status'            => 'pending',
             ]);
 
-            // Link all Oct–Dec MPORs that exist (excludes Mark's missing December)
+            // Link all OctΓÇôDec MPORs that exist (excludes Mark's missing December)
             $q4Months = ['2026-10', '2026-11', '2026-12'];
             $q4Mpors  = Mpor::whereIn('employee_id', $empIds)
                 ->whereIn('month', $q4Months)
@@ -258,7 +258,7 @@ class SpmsH2CompleteSeeder extends Seeder
                 );
             }
 
-            // Build QAR rows from Q4 ORS data (Oct 1 – Dec 31, excludes Mark's missing entries)
+            // Build QAR rows from Q4 ORS data (Oct 1 ΓÇô Dec 31, excludes Mark's missing entries)
             $q4OrsEntries = DB::table('ors_entries')
                 ->join('ors_entry_monitorings', 'ors_entries.id', '=', 'ors_entry_monitorings.ors_entry_id')
                 ->join('ipcr_items', 'ors_entries.ipcr_item_id', '=', 'ipcr_items.id')
@@ -303,10 +303,10 @@ class SpmsH2CompleteSeeder extends Seeder
                 ]);
             }
 
-            $this->command->info("QAR Q2 seeded (draft — Mark Juntilla Dec MPOR missing) with {$q4Mpors->count()} MPOR links and {$sort} rows.");
+            $this->command->info("QAR Q2 seeded (draft ΓÇö Mark Juntilla Dec MPOR missing) with {$q4Mpors->count()} MPOR links and {$sort} rows.");
         }
 
         $this->command->info('SpmsH2CompleteSeeder done.');
-        $this->command->info('Mark Juntilla has NO December ORS and NO December MPOR — ready for manual testing.');
+        $this->command->info('Mark Juntilla has NO December ORS and NO December MPOR ΓÇö ready for manual testing.');
     }
 }

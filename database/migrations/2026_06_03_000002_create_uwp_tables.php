@@ -88,7 +88,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('uwp_success_indicator_id');
             $table->string('dimension'); // quality | efficiency | timeliness
-            $table->unsignedTinyInteger('rating'); // 1–5
+            $table->unsignedTinyInteger('rating'); // 1ΓÇô5
             $table->text('standard_text');
             $table->timestamps();
 

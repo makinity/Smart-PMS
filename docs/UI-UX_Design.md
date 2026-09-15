@@ -1,4 +1,4 @@
-# UI/UX Design System — Smart PMS / Learning & Development
+# UI/UX Design System ΓÇö Smart PMS / Learning & Development
 
 > This document defines the complete frontend design system used in Smart PMS built with **Laravel + Inertia.js + React (JSX)**. Use this as the single source of truth to replicate the same look, feel, and component patterns in any sibling system (e.g. Learning & Development portal).
 
@@ -17,7 +17,7 @@
 9. [Icons](#9-icons)
 10. [Responsive Breakpoints](#10-responsive-breakpoints)
 11. [Animation & Transitions](#11-animation--transitions)
-12. [Auth Flow — Laravel Fortify + Spatie RBAC](#12-auth-flow--laravel-fortify--spatie-rbac)
+12. [Auth Flow ΓÇö Laravel Fortify + Spatie RBAC](#12-auth-flow--laravel-fortify--spatie-rbac)
 
 ---
 
@@ -28,7 +28,7 @@
 | Backend | Laravel 11 |
 | Frontend bridge | Inertia.js v2 |
 | Frontend framework | React 18 (JSX, no TypeScript) |
-| CSS approach | **Inline styles only** — no Tailwind, no CSS modules, no external UI library |
+| CSS approach | **Inline styles only** ΓÇö no Tailwind, no CSS modules, no external UI library |
 | Icons | Bootstrap Icons (`bi-*`) via CDN + inline SVGs for custom icons |
 | HTTP client | Axios (for background calls), Inertia `useForm` (for form submissions) |
 | Font | Inter (system fallback stack) |
@@ -43,10 +43,10 @@ The system supports **dark mode** (default) and **light mode**, toggled via `dat
 
 ### CSS Custom Properties
 
-Inject these into `:root` and `:root[data-theme="light"]` — either in `app.css` or inside the `AppLayout` `<style>` block:
+Inject these into `:root` and `:root[data-theme="light"]` ΓÇö either in `app.css` or inside the `AppLayout` `<style>` block:
 
 ```css
-/* ── Dark mode (default) ── */
+/* ΓöÇΓöÇ Dark mode (default) ΓöÇΓöÇ */
 :root[data-theme="dark"], :root {
     --admin-bg-primary:    #0a0f1a;
     --admin-bg-secondary:  #0f1724;
@@ -63,7 +63,7 @@ Inject these into `:root` and `:root[data-theme="light"]` — either in `app.css
     --admin-shadow:        0 18px 40px rgba(0,0,0,0.28);
 }
 
-/* ── Light mode ── */
+/* ΓöÇΓöÇ Light mode ΓöÇΓöÇ */
 :root[data-theme="light"] {
     --admin-bg-primary:    #f0f4ff;
     --admin-bg-secondary:  #e8edf8;
@@ -125,12 +125,12 @@ Import via bunny fonts in auth pages:
 
 | Use | Size | Weight |
 |---|---|---|
-| Page title / card heading | `1rem` – `1.05rem` | `700` |
+| Page title / card heading | `1rem` ΓÇô `1.05rem` | `700` |
 | Section label | `0.95rem` | `700` |
-| Body text | `0.875rem` – `0.9rem` | `400–500` |
-| Small label / meta | `0.78rem` – `0.82rem` | `500–600` |
-| Badge / pill label | `0.65rem` – `0.72rem` | `700` |
-| Uppercase section header | `0.62rem` – `0.68rem` | `700`, `letter-spacing: 0.06–0.09em`, `text-transform: uppercase` |
+| Body text | `0.875rem` ΓÇô `0.9rem` | `400ΓÇô500` |
+| Small label / meta | `0.78rem` ΓÇô `0.82rem` | `500ΓÇô600` |
+| Badge / pill label | `0.65rem` ΓÇô `0.72rem` | `700` |
+| Uppercase section header | `0.62rem` ΓÇô `0.68rem` | `700`, `letter-spacing: 0.06ΓÇô0.09em`, `text-transform: uppercase` |
 
 ---
 
@@ -140,14 +140,14 @@ Import via bunny fonts in auth pages:
 ### Overall Shell
 
 ```
-┌─────────────────────────────────────────────┐
-│  Sidebar (fixed, 280px / 68px collapsed)    │
-│  ┌───────────────────────────────────────┐  │
-│  │  Topbar (sticky, ~44px)               │  │
-│  ├───────────────────────────────────────┤  │
-│  │  <main> Page content                  │  │
-│  └───────────────────────────────────────┘  │
-└─────────────────────────────────────────────┘
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé  Sidebar (fixed, 280px / 68px collapsed)    Γöé
+Γöé  ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ  Γöé
+Γöé  Γöé  Topbar (sticky, ~44px)               Γöé  Γöé
+Γöé  Γö£ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöñ  Γöé
+Γöé  Γöé  <main> Page content                  Γöé  Γöé
+Γöé  ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ  Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
 ```
 
 On mobile (`< 768px`): sidebar becomes a slide-in overlay, main takes full width.
@@ -285,8 +285,8 @@ export default function MyPage() {
 }
 ```
 
-- `title` → shown bold in topbar breadcrumb (current page)
-- `description` → intermediate breadcrumb segments, separated by `/` or `>`
+- `title` ΓåÆ shown bold in topbar breadcrumb (current page)
+- `description` ΓåÆ intermediate breadcrumb segments, separated by `/` or `>`
 
 ---
 
@@ -295,11 +295,11 @@ export default function MyPage() {
 ### Split-screen layout
 
 ```
-┌──────────────────┬────────────────────┐
-│  Hero panel      │  Form panel        │
-│  (slideshow bg)  │  (login card)      │
-│  hidden mobile   │  full width mobile │
-└──────────────────┴────────────────────┘
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé  Hero panel      Γöé  Form panel        Γöé
+Γöé  (slideshow bg)  Γöé  (login card)      Γöé
+Γöé  hidden mobile   Γöé  full width mobile Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
 ```
 
 - Left: full-height hero with photo slideshow, dark overlay, branding, feature bullets
@@ -422,7 +422,7 @@ useEffect(() => {
 - Fixed left, `z-index: 1000`
 - Desktop expanded: `280px` | Collapsed: `68px`
 - Collapse state persisted in `localStorage` key `'sb-collapsed'`
-- Mobile (`< 768px`): overlay slide-in via `transform: translateX(-100%)` → `translateX(0)`
+- Mobile (`< 768px`): overlay slide-in via `transform: translateX(-100%)` ΓåÆ `translateX(0)`
 - Active link detection: `url === href || url.startsWith(href + '/')`
 
 ### Structure
@@ -539,9 +539,9 @@ const roleHeaders = {
 ### Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ [≡ hamburger]  [🏠 Home › Section › Current Page]    [🔔] [👤▾] │
-└─────────────────────────────────────────────────────────────────┘
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé [Γëí hamburger]  [≡ƒÅá Home ΓÇ║ Section ΓÇ║ Current Page]    [≡ƒöö] [≡ƒæñΓû╛] Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
 ```
 
 - Sticky top, `z-index: 900`
@@ -553,7 +553,7 @@ const roleHeaders = {
 ```jsx
 function Breadcrumb({ title, description }) {
     const segments = description
-        ? description.split(/[\/\·>]+/).map(s => s.trim()).filter(Boolean)
+        ? description.split(/[\/\┬╖>]+/).map(s => s.trim()).filter(Boolean)
         : [];
 
     return (
@@ -579,7 +579,7 @@ function Breadcrumb({ title, description }) {
 
 ### Mobile breadcrumb fix
 
-On mobile, hide Home link and past segments — show only the current page title with truncation:
+On mobile, hide Home link and past segments ΓÇö show only the current page title with truncation:
 
 ```css
 @media (max-width: 767px) {
@@ -678,13 +678,13 @@ export const useToast = () => useContext(ToastCtx);
 // toast('Please review.', 'warning');
 ```
 
-Toast type → color map:
+Toast type ΓåÆ color map:
 ```js
 const TOAST_STYLES = {
-    success:  { bg: 'rgba(22,163,74,0.95)',  border: '#16a34a', icon: '✓' },
-    error:    { bg: 'rgba(220,38,38,0.95)',  border: '#dc2626', icon: '✕' },
-    warning:  { bg: 'rgba(202,138,4,0.95)', border: '#ca8a04', icon: '⚠' },
-    info:     { bg: 'rgba(37,99,235,0.95)', border: '#2563eb', icon: 'ℹ' },
+    success:  { bg: 'rgba(22,163,74,0.95)',  border: '#16a34a', icon: 'Γ£ô' },
+    error:    { bg: 'rgba(220,38,38,0.95)',  border: '#dc2626', icon: 'Γ£ò' },
+    warning:  { bg: 'rgba(202,138,4,0.95)', border: '#ca8a04', icon: 'ΓÜá' },
+    info:     { bg: 'rgba(37,99,235,0.95)', border: '#2563eb', icon: 'Γä╣' },
 };
 // Toast entry style: bottom-right fixed, slide up + fade in on mount
 // { opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(12px)', transition: 'opacity 0.2s, transform 0.2s' }
@@ -735,7 +735,7 @@ export default function ReturnRemarksBanner({ remarks, label = 'Returned' }) {
             background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)',
             borderRadius: 10, padding: '0.85rem 1rem', marginBottom: '1rem',
         }}>
-            <span style={{ fontSize: '1rem', marginTop: 2 }}>↩</span>
+            <span style={{ fontSize: '1rem', marginTop: 2 }}>Γå⌐</span>
             <div style={{ flex: 1 }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f87171',
                     textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
@@ -744,7 +744,7 @@ export default function ReturnRemarksBanner({ remarks, label = 'Returned' }) {
             </div>
             <button onClick={() => setDismissed(true)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--admin-text-muted)', fontSize: '1rem' }}>✕</button>
+                    color: 'var(--admin-text-muted)', fontSize: '1rem' }}>Γ£ò</button>
         </div>
     );
 }
@@ -896,7 +896,7 @@ export const onAvatarError = (e) => {
 
 ## 9. Icons
 
-Two icon sources are used — never mix with any third-party icon library:
+Two icon sources are used ΓÇö never mix with any third-party icon library:
 
 ### Bootstrap Icons (primary)
 
@@ -987,15 +987,15 @@ Common patterns:
 | Breakpoint | Width | Behavior |
 |---|---|---|
 | Mobile | `< 768px` | Sidebar overlay, bottom action bars, icon-only buttons, breadcrumb = title only |
-| Tablet | `768px – 1023px` | Sidebar visible, compact layouts, some labels hidden |
-| Desktop | `≥ 1024px` | Full sidebar, full labels, side-by-side panels |
+| Tablet | `768px ΓÇô 1023px` | Sidebar visible, compact layouts, some labels hidden |
+| Desktop | `ΓëÑ 1024px` | Full sidebar, full labels, side-by-side panels |
 
 ### useBreakpoint return values
 
 ```js
 'mobile'  // < 768px
-'tablet'  // 768–1023px
-'desktop' // ≥ 1024px
+'tablet'  // 768ΓÇô1023px
+'desktop' // ΓëÑ 1024px
 ```
 
 ### Mobile-specific patterns
@@ -1022,7 +1022,7 @@ Common patterns:
 </button>
 ```
 
-**Grid → single column on mobile:**
+**Grid ΓåÆ single column on mobile:**
 ```jsx
 <div style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr' : '1fr 1fr', gap: '1rem' }}>
 ```
@@ -1067,25 +1067,25 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 ---
 
-## 12. Auth Flow — Laravel Fortify + Spatie RBAC
+## 12. Auth Flow ΓÇö Laravel Fortify + Spatie RBAC
 
 ### Overview
 
 ```
 New employee created by Admin
-        ↓
+        Γåô
 Account is inactive (no password set)
-        ↓
+        Γåô
 Employee receives email with employee_id
-        ↓
-Goes to /login → clicks "Activate PMS Account"
-        ↓
-Step 1: Enter employee_id + email → POST /send/id
-        ↓
-System verifies HRIS match → sends activation token to email
-        ↓
-Step 2: Enter token + set password + optional photo → POST /activate/complete
-        ↓
+        Γåô
+Goes to /login ΓåÆ clicks "Activate PMS Account"
+        Γåô
+Step 1: Enter employee_id + email ΓåÆ POST /send/id
+        Γåô
+System verifies HRIS match ΓåÆ sends activation token to email
+        Γåô
+Step 2: Enter token + set password + optional photo ΓåÆ POST /activate/complete
+        Γåô
 Account activated, can now log in normally
 ```
 
@@ -1208,18 +1208,18 @@ When building a new system (e.g. Learning & Development) that must match this de
 - [ ] Copy `ConfirmDialog.jsx` (ConfirmProvider + useConfirm)
 - [ ] Copy `useBreakpoint.js`
 - [ ] Copy `defaultAvatar.js`
-- [ ] Use Bootstrap Icons CDN — no other icon library
-- [ ] All styling via inline `style={{}}` — no Tailwind
-- [ ] Auth: Laravel Fortify for login/reset, custom activation flow (send/id → activate/complete)
+- [ ] Use Bootstrap Icons CDN ΓÇö no other icon library
+- [ ] All styling via inline `style={{}}` ΓÇö no Tailwind
+- [ ] Auth: Laravel Fortify for login/reset, custom activation flow (send/id ΓåÆ activate/complete)
 - [ ] Spatie roles with `role:rolename` middleware on route groups
 - [ ] Share `auth.user` + `auth.user.roles` via `HandleInertiaRequests`
-- [ ] Match breakpoints: mobile `<768`, tablet `768–1023`, desktop `≥1024`
+- [ ] Match breakpoints: mobile `<768`, tablet `768ΓÇô1023`, desktop `ΓëÑ1024`
 - [ ] Mobile: sidebar overlay, bottom action bar, icon-only buttons, truncated breadcrumb
 
 
 ## 9. Icons
 
-Two sources only — never use any third-party icon library:
+Two sources only ΓÇö never use any third-party icon library:
 
 ### Bootstrap Icons (primary)
 
@@ -1255,7 +1255,7 @@ Usage: `<i className="bi bi-grid-1x2-fill" />`
 
 ### Inline SVGs (secondary)
 
-Always: `width="13–18"`, `fill="none"`, `stroke="currentColor"`, `strokeWidth="2"`, `strokeLinecap="round"`.
+Always: `width="13ΓÇô18"`, `fill="none"`, `stroke="currentColor"`, `strokeWidth="2"`, `strokeLinecap="round"`.
 
 ```jsx
 // Download
@@ -1292,8 +1292,8 @@ Always: `width="13–18"`, `fill="none"`, `stroke="currentColor"`, `strokeWidth=
 | Name | Width | Key behaviors |
 |---|---|---|
 | Mobile | `< 768px` | Sidebar = overlay, breadcrumb = title only, icon-only buttons, bottom action bar |
-| Tablet | `768–1023px` | Sidebar visible, compact layouts |
-| Desktop | `≥ 1024px` | Full sidebar + labels, side panels |
+| Tablet | `768ΓÇô1023px` | Sidebar visible, compact layouts |
+| Desktop | `ΓëÑ 1024px` | Full sidebar + labels, side panels |
 
 ### useBreakpoint hook
 
@@ -1380,25 +1380,25 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 ---
 
-## 12. Auth Flow — Laravel Fortify + Spatie RBAC
+## 12. Auth Flow ΓÇö Laravel Fortify + Spatie RBAC
 
 ### Account activation flow
 
 ```
 Admin creates employee record (inactive, no password)
-        ↓
-Employee goes to /login → "Activate PMS Account"
-        ↓
-Step 1: employee_id + email → POST /send/id
-        → server verifies against HRIS, emails activation token
-        ↓
+        Γåô
+Employee goes to /login ΓåÆ "Activate PMS Account"
+        Γåô
+Step 1: employee_id + email ΓåÆ POST /send/id
+        ΓåÆ server verifies against HRIS, emails activation token
+        Γåô
 Step 2: token + password + password_confirmation + photo (optional)
-        → POST /activate/complete
-        ↓
-Account activated → redirect to /login
+        ΓåÆ POST /activate/complete
+        Γåô
+Account activated ΓåÆ redirect to /login
 ```
 
-### Single Login.jsx — mode switching (no separate pages)
+### Single Login.jsx ΓÇö mode switching (no separate pages)
 
 ```js
 const [mode, setMode] = useState('login');
@@ -1450,7 +1450,7 @@ return match ($user->getRoleNames()->first()) {
 | `pmt` | `/pmt` |
 | `employee` | `/employee` |
 
-### HandleInertiaRequests — share auth user
+### HandleInertiaRequests ΓÇö share auth user
 
 ```php
 public function share(Request $request): array
@@ -1503,15 +1503,15 @@ When building a sibling system (e.g. Learning & Development) to match this desig
 - [ ] Copy CSS variables block into `app.css` or AppLayout `<style>`
 - [ ] Use `Inter` font (bunny fonts CDN)
 - [ ] Add Bootstrap Icons CDN link in `app.blade.php`
-- [ ] Build `AppLayout.jsx` — Sidebar + Topbar + ToastProvider + ConfirmProvider
-- [ ] Build `Sidebar.jsx` — role links, collapse, mobile overlay, active state
-- [ ] Build `Topbar.jsx` — breadcrumb, user pill, dark mode toggle, hamburger
-- [ ] Copy `Snackbar.jsx` — `ToastProvider` + `useToast()`
-- [ ] Copy `ConfirmDialog.jsx` — `ConfirmProvider` + `useConfirm()`
+- [ ] Build `AppLayout.jsx` ΓÇö Sidebar + Topbar + ToastProvider + ConfirmProvider
+- [ ] Build `Sidebar.jsx` ΓÇö role links, collapse, mobile overlay, active state
+- [ ] Build `Topbar.jsx` ΓÇö breadcrumb, user pill, dark mode toggle, hamburger
+- [ ] Copy `Snackbar.jsx` ΓÇö `ToastProvider` + `useToast()`
+- [ ] Copy `ConfirmDialog.jsx` ΓÇö `ConfirmProvider` + `useConfirm()`
 - [ ] Copy `useBreakpoint.js`
 - [ ] Copy `defaultAvatar.js`
-- [ ] **All styling inline `style={{}}`** — no Tailwind, no CSS modules
-- [ ] **Icons: Bootstrap Icons + inline SVG only** — no Heroicons, no Lucide
+- [ ] **All styling inline `style={{}}`** ΓÇö no Tailwind, no CSS modules
+- [ ] **Icons: Bootstrap Icons + inline SVG only** ΓÇö no Heroicons, no Lucide
 - [ ] Auth: Fortify for login/reset + custom `/send/id` + `/activate/complete`
 - [ ] Spatie RBAC: one role per user, `role:rolename` middleware on route groups
 - [ ] Share `auth.user.roles` via `HandleInertiaRequests`
@@ -1610,10 +1610,10 @@ import NotificationPanel from '@/Components/NotificationPanel';
 }
 ```
 
-### Event → icon mapping
+### Event ΓåÆ icon mapping
 
 ```js
-// Domain (event prefix) → Bootstrap Icon
+// Domain (event prefix) ΓåÆ Bootstrap Icon
 const DOMAIN_ICON = {
     uwp:              'bi bi-file-earmark-text-fill',
     opcr:             'bi bi-clipboard-data-fill',
@@ -1625,7 +1625,7 @@ const DOMAIN_ICON = {
     // Add your own domains here
 };
 
-// Action verb (event suffix) → icon override
+// Action verb (event suffix) ΓåÆ icon override
 const ACTION_ICON = {
     approved:  'bi bi-check-circle-fill',
     returned:  'bi bi-arrow-counterclockwise',
@@ -1638,7 +1638,7 @@ function iconForEvent(event) {
 }
 ```
 
-### Backend — API routes needed
+### Backend ΓÇö API routes needed
 
 ```php
 Route::middleware('auth')->prefix('api/notifications')->group(function () {
@@ -1670,8 +1670,8 @@ useEffect(() => { fetchNotifications(); }, []);
 | Name | Range | Sidebar | Topbar | Content |
 |---|---|---|---|---|
 | **Mobile** | `< 768px` | Overlay (off-screen, hamburger to open) | Hamburger + title only + icon buttons | Full width, 0.75rem padding |
-| **Tablet** | `768–1023px` | Visible, collapsible | Breadcrumb visible, some labels hidden | Offset by sidebar |
-| **Desktop** | `≥ 1024px` | Visible, collapsible (280px / 68px) | Full breadcrumb + labels | Offset by sidebar |
+| **Tablet** | `768ΓÇô1023px` | Visible, collapsible | Breadcrumb visible, some labels hidden | Offset by sidebar |
+| **Desktop** | `ΓëÑ 1024px` | Visible, collapsible (280px / 68px) | Full breadcrumb + labels | Offset by sidebar |
 
 > iPad (768px) falls into the **tablet** breakpoint. iPad Pro landscape (1024px+) falls into **desktop**.
 
@@ -1703,7 +1703,7 @@ useEffect(() => { fetchNotifications(); }, []);
 
 Main content offset:
 ```jsx
-// Dynamic margin — 0 on mobile, sidebar width on tablet/desktop
+// Dynamic margin ΓÇö 0 on mobile, sidebar width on tablet/desktop
 <div className="app-main" style={{ marginLeft: sidebarWidth }}>
 // CSS override for mobile:
 // @media (max-width: 767px) { .app-main { margin-left: 0 !important; } }
@@ -1714,7 +1714,7 @@ Main content offset:
 | Element | Desktop | Tablet | Mobile |
 |---|---|---|---|
 | Hamburger button | Hidden | Hidden | Visible |
-| Breadcrumb | Full path (Home › Section › Page) | Full path | Current page title only (truncated, max 40vw) |
+| Breadcrumb | Full path (Home ΓÇ║ Section ΓÇ║ Page) | Full path | Current page title only (truncated, max 40vw) |
 | User name + role | Visible | Visible | Hidden |
 | User avatar | Visible | Visible | Visible |
 | Notification bell | Visible | Visible | Visible |
@@ -1736,12 +1736,12 @@ Main content offset:
 
 ### Content layout responsiveness
 
-**Standard page grid (2-col → 1-col):**
+**Standard page grid (2-col ΓåÆ 1-col):**
 ```jsx
 <div style={{ display: 'grid', gridTemplateColumns: bp === 'mobile' ? '1fr' : '1fr 1fr', gap: '1rem' }}>
 ```
 
-**Detail page — side panel + main:**
+**Detail page ΓÇö side panel + main:**
 ```jsx
 <div style={{ display: 'flex', flexDirection: bp !== 'desktop' ? 'column' : 'row' }}>
     {bp === 'desktop' && <aside style={{ width: 270 }}>...</aside>}
@@ -1791,10 +1791,10 @@ Modals use `padding: '1rem'` on the overlay so they don't touch screen edges. On
 </div>
 ```
 
-### Table → card list on mobile
+### Table ΓåÆ card list on mobile
 
 Desktop/tablet: `<table>` with full columns.
-Mobile: card list — each row becomes a stacked card:
+Mobile: card list ΓÇö each row becomes a stacked card:
 
 ```jsx
 {bp === 'mobile' ? (
@@ -1815,7 +1815,7 @@ Mobile: card list — each row becomes a stacked card:
 
 ---
 
-## 16. Role Portals — Learning & Development System
+## 16. Role Portals ΓÇö Learning & Development System
 
 The following defines the sidebar navigation and placeholder page structure for each portal in the **Learning & Development** system. All pages are stubs (`Under Development`) until implemented.
 
@@ -1845,12 +1845,12 @@ const adminLinks = [
 ```
 
 **Pages:**
-- `/admin` — Dashboard (stats cards, recent activity)
-- `/admin/users` — User list, create/edit/deactivate
-- `/admin/offices` — Office/department management
-- `/admin/settings` — System settings (app name, logo, etc.)
-- `/admin/logs` — Audit trail
-- `/admin/profile` — Profile settings
+- `/admin` ΓÇö Dashboard (stats cards, recent activity)
+- `/admin/users` ΓÇö User list, create/edit/deactivate
+- `/admin/offices` ΓÇö Office/department management
+- `/admin/settings` ΓÇö System settings (app name, logo, etc.)
+- `/admin/logs` ΓÇö Audit trail
+- `/admin/profile` ΓÇö Profile settings
 
 ---
 
@@ -1869,14 +1869,14 @@ const secretariatLinks = [
 ```
 
 **Pages:**
-- `/secretariat` — Dashboard
-- `/secretariat/training-programs` — List + create training programs
-- `/secretariat/training-programs/{id}` — Program detail / edit
-- `/secretariat/schedules` — Training schedule calendar
-- `/secretariat/nominations` — Manage employee nominations per training
-- `/secretariat/attendance` — Track attendance per training
-- `/secretariat/reports` — Training completion reports
-- `/secretariat/profile` — Profile settings
+- `/secretariat` ΓÇö Dashboard
+- `/secretariat/training-programs` ΓÇö List + create training programs
+- `/secretariat/training-programs/{id}` ΓÇö Program detail / edit
+- `/secretariat/schedules` ΓÇö Training schedule calendar
+- `/secretariat/nominations` ΓÇö Manage employee nominations per training
+- `/secretariat/attendance` ΓÇö Track attendance per training
+- `/secretariat/reports` ΓÇö Training completion reports
+- `/secretariat/profile` ΓÇö Profile settings
 
 ---
 
@@ -1894,13 +1894,13 @@ const hrdcLinks = [
 ```
 
 **Pages:**
-- `/hrdc` — Dashboard
-- `/hrdc/training-plans` — Annual training plan management
-- `/hrdc/training-plans/{id}` — Plan detail / approval workflow
-- `/hrdc/nominations` — Review and approve nominations
-- `/hrdc/evaluations` — Training effectiveness evaluations
-- `/hrdc/reports` — Overall L&D performance reports
-- `/hrdc/profile` — Profile settings
+- `/hrdc` ΓÇö Dashboard
+- `/hrdc/training-plans` ΓÇö Annual training plan management
+- `/hrdc/training-plans/{id}` ΓÇö Plan detail / approval workflow
+- `/hrdc/nominations` ΓÇö Review and approve nominations
+- `/hrdc/evaluations` ΓÇö Training effectiveness evaluations
+- `/hrdc/reports` ΓÇö Overall L&D performance reports
+- `/hrdc/profile` ΓÇö Profile settings
 
 ---
 
@@ -1918,14 +1918,14 @@ const supervisorLinks = [
 ```
 
 **Pages:**
-- `/supervisor` — Dashboard
-- `/supervisor/team` — Team member list + training status
-- `/supervisor/nominations` — Nominate team members for trainings
-- `/supervisor/nominations/{id}` — Nomination detail
-- `/supervisor/trainings` — View upcoming/ongoing trainings for team
-- `/supervisor/idp` — Review team Individual Development Plans
-- `/supervisor/idp/{id}` — IDP detail / endorse
-- `/supervisor/profile` — Profile settings
+- `/supervisor` ΓÇö Dashboard
+- `/supervisor/team` ΓÇö Team member list + training status
+- `/supervisor/nominations` ΓÇö Nominate team members for trainings
+- `/supervisor/nominations/{id}` ΓÇö Nomination detail
+- `/supervisor/trainings` ΓÇö View upcoming/ongoing trainings for team
+- `/supervisor/idp` ΓÇö Review team Individual Development Plans
+- `/supervisor/idp/{id}` ΓÇö IDP detail / endorse
+- `/supervisor/profile` ΓÇö Profile settings
 
 ---
 
@@ -1942,12 +1942,12 @@ const employeeLinks = [
 ```
 
 **Pages:**
-- `/employee` — Dashboard
-- `/employee/my-trainings` — List of enrolled/completed trainings
-- `/employee/my-trainings/{id}` — Training detail + attendance status
-- `/employee/my-idp` — Personal Individual Development Plan
-- `/employee/history` — Training history + certificates
-- `/employee/profile` — Profile settings
+- `/employee` ΓÇö Dashboard
+- `/employee/my-trainings` ΓÇö List of enrolled/completed trainings
+- `/employee/my-trainings/{id}` ΓÇö Training detail + attendance status
+- `/employee/my-idp` ΓÇö Personal Individual Development Plan
+- `/employee/history` ΓÇö Training history + certificates
+- `/employee/profile` ΓÇö Profile settings
 
 ---
 

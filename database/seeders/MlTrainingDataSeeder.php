@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
  * Seeds employee_performance_snapshots with synthetic but realistic data
  * based on actual employees, indicators, and office structure in the system.
  *
- * Generates 3 simulated past periods × 9 employees × 7 indicators = ~189 rows
+ * Generates 3 simulated past periods ├ù 9 employees ├ù 7 indicators = ~189 rows
  * with statistically varied scores to train the Random Forest model.
  */
 class MlTrainingDataSeeder extends Seeder
@@ -39,8 +39,8 @@ class MlTrainingDataSeeder extends Seeder
     ];
 
     /**
-     * Score profiles per position — reflects realistic performance patterns.
-     * [mean, std_dev] — higher seniority = higher mean, lower variance
+     * Score profiles per position ΓÇö reflects realistic performance patterns.
+     * [mean, std_dev] ΓÇö higher seniority = higher mean, lower variance
      */
     private array $scoreProfiles = [
         'HRMO Department Head' => [4.6, 0.2],
@@ -61,7 +61,7 @@ class MlTrainingDataSeeder extends Seeder
 
     public function run(): void
     {
-        // Only seed if table is empty — avoids wiping real data
+        // Only seed if table is empty ΓÇö avoids wiping real data
         if (DB::table('employee_performance_snapshots')->count() > 0) {
             $this->command->info('ML snapshots already exist, skipping seed.');
             return;

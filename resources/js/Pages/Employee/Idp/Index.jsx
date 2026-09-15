@@ -166,9 +166,26 @@ function GoalCard({ index, row, onChange, onRemove, readOnly }) {
                     </Field>
                     <Field label="Expected Date of Completion">
                         {readOnly ? <div style={roBox}>{row.expected_completion || '—'}</div>
-                            : <input type="date" className="idp-ta" value={row.expected_completion}
-                                onChange={set('expected_completion')}
-                                style={{ ...taBase, minHeight: 'unset', height: 38, resize: 'none' }} />}
+                            : <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="date"
+                                    className="idp-ta"
+                                    value={row.expected_completion}
+                                    onChange={set('expected_completion')}
+                                    style={{ ...taBase, minHeight: 'unset', height: 44, resize: 'none', paddingRight: '2.8rem', cursor: 'pointer' }}
+                                />
+                                <span style={{
+                                    position: 'absolute', right: '0.75rem', pointerEvents: 'none',
+                                    color: 'var(--admin-accent)', display: 'flex', alignItems: 'center',
+                                }}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                    </svg>
+                                </span>
+                            </div>}
                     </Field>
                     <Field label="Results">
                         {readOnly ? <div style={roBox}>{row.results || '—'}</div>
@@ -242,7 +259,7 @@ export default function IdpIndex() {
 
     return (
         <AppLayout title="My IDP" description="Individual Development Plan">
-            <style>{`.idp-ta:focus{border-color:var(--admin-accent)!important;box-shadow:0 0 0 3px rgba(59,130,246,0.12)}.idp-ta::placeholder{color:var(--admin-text-muted);opacity:.6}`}</style>
+            <style>{`.idp-ta:focus{border-color:var(--admin-accent)!important;box-shadow:0 0 0 3px rgba(59,130,246,0.12)}.idp-ta::placeholder{color:var(--admin-text-muted);opacity:.6}input[type="date"].idp-ta::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;width:100%;height:100%;cursor:pointer}`}</style>
             <div>
 
                 {/* Page header */}

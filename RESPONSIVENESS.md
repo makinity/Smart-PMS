@@ -1,4 +1,4 @@
-# Smart PMS — Responsiveness Guide
+# Smart PMS ΓÇö Responsiveness Guide
 
 A practical reference for making every screen in this project responsive.
 Derived from patterns established in the ORS Monitoring and Employee ORS modules.
@@ -10,8 +10,8 @@ Derived from patterns established in the ORS Monitoring and Employee ORS modules
 | Name      | Width        | Devices                        |
 |-----------|-------------|-------------------------------|
 | `mobile`  | < 768px      | Phones (portrait & landscape) |
-| `tablet`  | 768–1023px   | iPad Mini, iPad, Android tabs |
-| `desktop` | ≥ 1024px     | Laptops, desktops, iPad Pro   |
+| `tablet`  | 768ΓÇô1023px   | iPad Mini, iPad, Android tabs |
+| `desktop` | ΓëÑ 1024px     | Laptops, desktops, iPad Pro   |
 
 ### The `useBreakpoint` Hook (copy into any page that needs it)
 
@@ -37,7 +37,7 @@ Then branch: `bp === 'desktop'`, `bp === 'tablet'`, `bp === 'mobile'`.
 ## Core Rules
 
 1. **Desktop is the source of truth.** Never change the desktop layout. Only add responsive layers for tablet and mobile.
-2. **Inline styles only.** This project uses inline style objects — no Tailwind classes, no new CSS files.
+2. **Inline styles only.** This project uses inline style objects ΓÇö no Tailwind classes, no new CSS files.
 3. **CSS variables always.** Use `var(--admin-*)` tokens for colors, borders, radii, shadows. Never hardcode colors that exist as variables.
 4. **Sidebar offset.** On tablet/desktop the sidebar is always visible. Any `position: fixed` element (modals, bottom sheets, FABs) must offset its `left` by the sidebar width. Read it from the DOM:
    ```js
@@ -46,26 +46,26 @@ Then branch: `bp === 'desktop'`, `bp === 'tablet'`, `bp === 'mobile'`.
        : 0;
    ```
 5. **No horizontal scroll.** Every layout must be fully usable without horizontal scrolling.
-6. **Touch targets ≥ 44px.** Buttons and tappable rows on mobile must have enough padding.
+6. **Touch targets ΓëÑ 44px.** Buttons and tappable rows on mobile must have enough padding.
 
 ---
 
 ## Layout Patterns by Page Type
 
-### Pattern A — Two-Column Split (Index + Detail side by side)
+### Pattern A ΓÇö Two-Column Split (Index + Detail side by side)
 *Used in: ORS Monitoring*
 
 | Breakpoint | Layout |
 |------------|--------|
 | Desktop    | Fixed left panel (380px) + right detail panel fills remaining width. Both always visible. |
 | Tablet     | Left panel full width. Tapping a row opens detail as a **bottom sheet** (82vh, slides up). |
-| Mobile     | Same as tablet — full width list, bottom sheet for detail. |
+| Mobile     | Same as tablet ΓÇö full width list, bottom sheet for detail. |
 
 **Bottom Sheet rules:**
 - `position: fixed`, `bottom: 0`, `left: {sidebarWidth}`, `right: 0`
 - `border-radius: 20px 20px 0 0`
-- Drag handle: `4×36px` pill centered at top
-- ✕ close button top-right
+- Drag handle: `4├ù36px` pill centered at top
+- Γ£ò close button top-right
 - Scrollable content, action row sticky at bottom
 - Backdrop covers only the content area (same `left` offset)
 - Animate with `@keyframes slideUp { from { transform: translateY(100%) } }`
@@ -73,7 +73,7 @@ Then branch: `bp === 'desktop'`, `bp === 'tablet'`, `bp === 'mobile'`.
 
 ---
 
-### Pattern B — Full-Width Calendar / Grid
+### Pattern B ΓÇö Full-Width Calendar / Grid
 *Used in: Employee ORS*
 
 | Breakpoint | Layout |
@@ -91,28 +91,28 @@ Then branch: `bp === 'desktop'`, `bp === 'tablet'`, `bp === 'mobile'`.
 
 ---
 
-### Pattern C — Index List Page (table or card list)
+### Pattern C ΓÇö Index List Page (table or card list)
 *Used in: UWP Index, OPCR Review Index, Accomplishment Index, etc.*
 
 | Breakpoint | Layout |
 |------------|--------|
 | Desktop    | Full table with all columns, pagination, search/filter toolbar in one row. |
 | Tablet     | Table drops lower-priority columns (keep: name, status, date, actions). Filter toolbar wraps to 2 rows if needed. |
-| Mobile     | Replace table with **card list**. Each card = one row, shows only essential fields. Action buttons become an icon row or a "⋮" overflow menu. Search full-width, filter pills horizontally scrollable. |
+| Mobile     | Replace table with **card list**. Each card = one row, shows only essential fields. Action buttons become an icon row or a "Γï«" overflow menu. Search full-width, filter pills horizontally scrollable. |
 
 **Card list item structure (mobile):**
 ```
-┌─────────────────────────────────────┐
-│ [Avatar/Icon]  Title (bold)         │
-│                Subtitle (muted)     │
-│                                     │
-│ [Status chip]  [Date]  [Actions]    │
-└─────────────────────────────────────┘
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé [Avatar/Icon]  Title (bold)         Γöé
+Γöé                Subtitle (muted)     Γöé
+Γöé                                     Γöé
+Γöé [Status chip]  [Date]  [Actions]    Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
 ```
 
 ---
 
-### Pattern D — Show/Detail Page (read-only or form)
+### Pattern D ΓÇö Show/Detail Page (read-only or form)
 *Used in: UWP Show, OPCR Show, Accomplishment Show, etc.*
 
 | Breakpoint | Layout |
@@ -123,7 +123,7 @@ Then branch: `bp === 'desktop'`, `bp === 'tablet'`, `bp === 'mobile'`.
 
 ---
 
-### Pattern E — Editor / Form Page (multi-section)
+### Pattern E ΓÇö Editor / Form Page (multi-section)
 *Used in: UWP Editor, IPCR Target, etc.*
 
 | Breakpoint | Layout |
@@ -147,7 +147,7 @@ const modalStyle = bp === 'mobile'
 ```js
 gridTemplateColumns: bp === 'mobile' ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)'
 ```
-On mobile: 2×2 grid. On tablet/desktop: 4-in-a-row.
+On mobile: 2├ù2 grid. On tablet/desktop: 4-in-a-row.
 
 ### Data Tables
 ```js
@@ -158,7 +158,7 @@ Always keep: primary identifier, status, primary action.
 Always hide on mobile: secondary dates, IDs, computed fields.
 
 ### Search + Filter Toolbar
-- Desktop: single row — `[Search input] [Filter pills] [Action button]`
+- Desktop: single row ΓÇö `[Search input] [Filter pills] [Action button]`
 - Tablet: search + filters in one row, action button moves to right or FAB
 - Mobile: search full width on top row, filter pills horizontally scrollable below
 
@@ -180,15 +180,15 @@ const modalInner = bp === 'mobile'
 
 ### Navigation Headers / Page Titles
 - Desktop: title + description in topbar (handled by AppLayout)
-- Tablet/Mobile: topbar collapses, shows hamburger — AppLayout already handles this
+- Tablet/Mobile: topbar collapses, shows hamburger ΓÇö AppLayout already handles this
 
 ### Star Ratings
 - All breakpoints: same interactive stars, no change needed
-- On mobile ensure `fontSize: '1.6rem'` (already set) — big enough for touch
+- On mobile ensure `fontSize: '1.6rem'` (already set) ΓÇö big enough for touch
 
 ### Avatar / Profile Photos
-- All sizes: keep the 22–24px round avatar in list cards
-- Detail pages: can go larger (48–64px) on all breakpoints
+- All sizes: keep the 22ΓÇô24px round avatar in list cards
+- Detail pages: can go larger (48ΓÇô64px) on all breakpoints
 
 ---
 
@@ -212,7 +212,7 @@ const cardPad = bp === 'mobile' ? '0.75rem' : '1rem 1.25rem';
 
 - [ ] Desktop layout unchanged
 - [ ] No horizontal scroll on mobile or tablet
-- [ ] All tap targets ≥ 44px on mobile
+- [ ] All tap targets ΓëÑ 44px on mobile
 - [ ] Fixed/absolute elements account for sidebar offset on tablet
 - [ ] Tables replaced or column-reduced on mobile
 - [ ] Action buttons accessible on mobile (FAB or sticky bottom bar)

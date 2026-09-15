@@ -21,19 +21,19 @@ use Illuminate\Support\Facades\DB;
 /**
  * Seeds a complete SPMS process flow for HRMO only.
  *
- * CBO is intentionally left untouched — it serves as the clean
+ * CBO is intentionally left untouched ΓÇö it serves as the clean
  * negative test environment (no UWP, no MPORs, QAR blocked by rules).
  *
  * HRMO flow seeded:
- *  - UWP → approved + locked
- *  - OPCR → approved, linked to UWP
- *  - Indicator assignments → all HRMO employees on all indicators
- *  - IPCRs → committed, one per HRMO employee
- *  - IpcrItems → all indicators per employee
- *  - ORS entries → Jan–May (June intentionally empty for rule testing)
- *  - MPORs → Jan–May approved (June missing for rule testing)
- *  - QAR Q1 (Jan–Mar) → submitted to PMT with MPOR links + rows
- *    QAR Q2 (Apr–Jun) → NOT seeded (June MPOR missing blocks it)
+ *  - UWP ΓåÆ approved + locked
+ *  - OPCR ΓåÆ approved, linked to UWP
+ *  - Indicator assignments ΓåÆ all HRMO employees on all indicators
+ *  - IPCRs ΓåÆ committed, one per HRMO employee
+ *  - IpcrItems ΓåÆ all indicators per employee
+ *  - ORS entries ΓåÆ JanΓÇôMay (June intentionally empty for rule testing)
+ *  - MPORs ΓåÆ JanΓÇôMay approved (June missing for rule testing)
+ *  - QAR Q1 (JanΓÇôMar) ΓåÆ submitted to PMT with MPOR links + rows
+ *    QAR Q2 (AprΓÇôJun) ΓåÆ NOT seeded (June MPOR missing blocks it)
  */
 class SpmsFullSeeder extends Seeder
 {
@@ -51,7 +51,7 @@ class SpmsFullSeeder extends Seeder
             ->where('role', 'employee')
             ->get();
 
-        // ── 1. Progress UWP to approved + locked ─────────────────────────
+        // ΓöÇΓöÇ 1. Progress UWP to approved + locked ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $uwp = UnitWorkPlan::where('office_id', $hrmo->id)
             ->where('performance_period_id', $period->id)
             ->firstOrFail();
@@ -63,12 +63,12 @@ class SpmsFullSeeder extends Seeder
             'approved_at'  => Carbon::parse('2026-01-09 10:00:00'),
             'locked_at'    => Carbon::parse('2026-01-09 10:00:00'),
             'ratee_name'   => $hrmo->name,
-            'period_covered' => 'January – June 2026',
+            'period_covered' => 'January ΓÇô June 2026',
         ]);
 
         $this->command->info('UWP progressed to approved + locked.');
 
-        // ── 2. Create OPCR linked to UWP ─────────────────────────────────────
+        // ΓöÇΓöÇ 2. Create OPCR linked to UWP ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $opcr = Opcr::firstOrCreate(
             ['office_id' => $hrmo->id, 'performance_period_id' => $period->id],
             ['status' => 'approved']
@@ -81,7 +81,7 @@ class SpmsFullSeeder extends Seeder
 
         $this->command->info('OPCR created/linked.');
 
-        // ── 3. Assign all indicators to all HRMO employees ───────────────────
+        // ΓöÇΓöÇ 3. Assign all indicators to all HRMO employees ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $indicators = DB::table('uwp_success_indicators')
             ->join('uwp_mfos', 'uwp_mfos.id', '=', 'uwp_success_indicators.uwp_mfo_id')
             ->join('uwp_functions', 'uwp_functions.id', '=', 'uwp_mfos.uwp_function_id')
@@ -98,9 +98,9 @@ class SpmsFullSeeder extends Seeder
             }
         }
 
-        $this->command->info("Assigned {$indicators->count()} indicators × {$employees->count()} employees.");
+        $this->command->info("Assigned {$indicators->count()} indicators ├ù {$employees->count()} employees.");
 
-        // ── 4. Create committed IPCRs + IpcrItems per employee ───────────────
+        // ΓöÇΓöÇ 4. Create committed IPCRs + IpcrItems per employee ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         foreach ($employees as $emp) {
             $ipcr = Ipcr::updateOrCreate(
                 ['employee_id' => $emp->id, 'performance_period_id' => $period->id],
@@ -134,7 +134,7 @@ class SpmsFullSeeder extends Seeder
 
         $this->command->info('IPCRs + IpcrItems committed for all HRMO employees.');
 
-        // ── 5. ORS entries Jan–May (June empty) ──────────────────────────────
+        // ΓöÇΓöÇ 5. ORS entries JanΓÇôMay (June empty) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // 3 entries per employee per month, spread across the month
         $months = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05'];
         $days   = [5, 12, 20]; // 3 entries per month
@@ -192,9 +192,9 @@ class SpmsFullSeeder extends Seeder
             }
         }
 
-        $this->command->info('ORS entries seeded for Jan–May (June empty).');
+        $this->command->info('ORS entries seeded for JanΓÇôMay (June empty).');
 
-        // ── 6. MPORs Jan–May (approved, June missing) ────────────────────────
+        // ΓöÇΓöÇ 6. MPORs JanΓÇôMay (approved, June missing) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         Mpor::whereIn('employee_id', $empIds)
             ->whereIn('month', array_merge($months, ['2026-06']))
             ->delete();
@@ -216,9 +216,9 @@ class SpmsFullSeeder extends Seeder
             }
         }
 
-        $this->command->info('MPORs seeded Jan–May (June intentionally missing).');
+        $this->command->info('MPORs seeded JanΓÇôMay (June intentionally missing).');
 
-        // ── June MPORs — all HRMO employees except Carlos Mendoza ────────────
+        // ΓöÇΓöÇ June MPORs ΓÇö all HRMO employees except Carlos Mendoza ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // Carlos Mendoza is left out intentionally for rule testing
         $juneEmployees = $employees->filter(fn($e) => $e->email !== 'employee2@pms.test');
 
@@ -275,7 +275,7 @@ class SpmsFullSeeder extends Seeder
 
         $this->command->info('June MPORs seeded for all HRMO employees except Carlos Mendoza (employee2@pms.test).');
 
-        // ── 7. QAR Q1 (Jan–Mar) — submitted to PMT ───────────────────────────
+        // ΓöÇΓöÇ 7. QAR Q1 (JanΓÇôMar) ΓÇö submitted to PMT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // Q2 intentionally not seeded (June MPOR missing blocks it)
         $q1Key = $period->start_date->year . '-Q1';
 
@@ -297,7 +297,7 @@ class SpmsFullSeeder extends Seeder
             'pmt_status'             => 'pending',
         ]);
 
-        // Link all Jan–Mar MPORs to this QAR
+        // Link all JanΓÇôMar MPORs to this QAR
         $q1Months = ['2026-01', '2026-02', '2026-03'];
         $q1Mpors  = Mpor::whereIn('employee_id', $empIds)
             ->whereIn('month', $q1Months)
@@ -313,7 +313,7 @@ class SpmsFullSeeder extends Seeder
             ]);
         }
 
-        // Build QAR rows from actual Q1 ORS data — group by ipcr_item
+        // Build QAR rows from actual Q1 ORS data ΓÇö group by ipcr_item
         $q1OrsEntries = DB::table('ors_entries')
             ->join('ors_entry_monitorings', 'ors_entries.id', '=', 'ors_entry_monitorings.ors_entry_id')
             ->join('ipcr_items', 'ors_entries.ipcr_item_id', '=', 'ipcr_items.id')
@@ -351,7 +351,7 @@ class SpmsFullSeeder extends Seeder
         }
 
         $this->command->info("QAR Q1 seeded (submitted) with {$q1Mpors->count()} MPOR links and {$sort} rows.");
-        $this->command->info('QAR Q2 intentionally NOT seeded — June MPOR missing blocks it.');
+        $this->command->info('QAR Q2 intentionally NOT seeded ΓÇö June MPOR missing blocks it.');
         $this->command->info('SpmsFullSeeder complete. CBO left untouched for negative rule testing.');
     }
 }

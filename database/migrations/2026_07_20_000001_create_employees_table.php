@@ -22,7 +22,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // ── 1. Create employees table ────────────────────────────────────────
+        // ΓöÇΓöÇ 1. Create employees table ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // ── 2. Copy data from users → employees ──────────────────────────────
+        // ΓöÇΓöÇ 2. Copy data from users ΓåÆ employees ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $users = DB::table('users')->get();
         $hasHmsId = Schema::hasColumn('users', 'hms_employee_id');
 
@@ -65,7 +65,7 @@ return new class extends Migration
             ]);
         }
 
-        // ── 3. Drop employee columns from users ──────────────────────────────
+        // ΓöÇΓöÇ 3. Drop employee columns from users ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // Check if users.office_id has a FK constraint before trying to drop it
         $officeFk = collect(DB::select(
             "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
@@ -95,7 +95,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        // ── 1. Re-add columns to users ───────────────────────────────────────
+        // ΓöÇΓöÇ 1. Re-add columns to users ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         Schema::table('users', function (Blueprint $table) {
             $table->string('employee_id')->nullable()->unique()->after('name');
             $table->unsignedBigInteger('hms_employee_id')->nullable()->unique()->after('employee_id');
@@ -109,7 +109,7 @@ return new class extends Migration
             $table->string('lnd_reference_id')->nullable()->after('training_locked');
         });
 
-        // ── 2. Copy data back from employees → users ─────────────────────────
+        // ΓöÇΓöÇ 2. Copy data back from employees ΓåÆ users ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         $employees = DB::table('employees')->get();
 
         foreach ($employees as $emp) {
@@ -127,7 +127,7 @@ return new class extends Migration
             ]);
         }
 
-        // ── 3. Drop employees table ───────────────────────────────────────────
+        // ΓöÇΓöÇ 3. Drop employees table ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         Schema::dropIfExists('employees');
     }
 };

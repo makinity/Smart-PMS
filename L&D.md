@@ -1,12 +1,12 @@
-# PMS → L&D Integration Contract
+# PMS ΓåÆ L&D Integration Contract
 
 > **Last updated:** August 29, 2026
-> **Status:** Integration documented — code alignment needed (see Known Issues)
+> **Status:** Integration documented ΓÇö code alignment needed (see Known Issues)
 > **Prepared by:** smart-pms coding agent
 
 ---
 
-## ⚠️ Known Issue — Recurring Break on L&D Reconnect (Documented Aug 29, 2026)
+## ΓÜá∩╕Å Known Issue ΓÇö Recurring Break on L&D Reconnect (Documented Aug 29, 2026)
 
 ### What breaks and why
 
@@ -15,15 +15,15 @@ Every time the L&D system restarts or reconnects to PMS via the HRMO Hub, **two 
 1. The Hub `hrmo_hub_connections` row for `ld` gets a new `base_url` (new ngrok URL) and a new token via the handshake.
 2. The `.env` value `LND_BASE_URL` is **not updated automatically**.
 
-`LndHandoffService` reads from `.env` first, Hub second (fallback). So after an L&D reconnect, the service keeps sending to the **old `.env` URL** — which either points to an old ngrok tunnel (dead) or `127.0.0.1:8000` (local, not reachable from PMS). L&D never receives the payload.
+`LndHandoffService` reads from `.env` first, Hub second (fallback). So after an L&D reconnect, the service keeps sending to the **old `.env` URL** ΓÇö which either points to an old ngrok tunnel (dead) or `127.0.0.1:8000` (local, not reachable from PMS). L&D never receives the payload.
 
 ### Symptoms
-- PMT submits IDP to L&D — PMS shows "Submitted to L&D" / `lnd_sync_status = sent` or even `acknowledged`
+- PMT submits IDP to L&D ΓÇö PMS shows "Submitted to L&D" / `lnd_sync_status = sent` or even `acknowledged`
 - L&D database has no record of the employee
 - No error in PMS because the old URL either times out silently or returns a stale 200
 
 ### Confirmed occurrence: Aug 29, 2026
-- L&D reconnected at 23:00 and again at 23:28 (two reconnects in one day — likely ngrok tunnel cycling)
+- L&D reconnected at 23:00 and again at 23:28 (two reconnects in one day ΓÇö likely ngrok tunnel cycling)
 - `.env` `LND_BASE_URL` was still `http://127.0.0.1:8000`
 - Hub `base_url` was `https://subtotal-subdivide-chatter.ngrok-free.dev/`
 - All three IDPs (Carlos, Ramon, Liza) were submitted to the wrong URL
@@ -31,10 +31,10 @@ Every time the L&D system restarts or reconnects to PMS via the HRMO Hub, **two 
 
 ### Permanent fix needed (not yet implemented)
 
-**Option A (recommended):** Remove `.env` as the source of truth for `LndHandoffService`. Always read exclusively from `hrmo_hub_connections` where `pillar = 'ld'` and `status = 'connected'`. The Hub is already the authoritative source — `.env` should only be a fallback for local dev with no Hub connection.
+**Option A (recommended):** Remove `.env` as the source of truth for `LndHandoffService`. Always read exclusively from `hrmo_hub_connections` where `pillar = 'ld'` and `status = 'connected'`. The Hub is already the authoritative source ΓÇö `.env` should only be a fallback for local dev with no Hub connection.
 
 ```php
-// LndHandoffService::sendDevelopmentPlan() — change this:
+// LndHandoffService::sendDevelopmentPlan() ΓÇö change this:
 $baseUrl = trim((string) ($hubConnection?->base_url ?: config('services.lnd.base_url', '')));
 $token   = trim((string) ($hubConnection?->token   ?: config('services.lnd.token', '')));
 
@@ -42,9 +42,9 @@ $token   = trim((string) ($hubConnection?->token   ?: config('services.lnd.token
 $baseUrl = trim((string) ($hubConnection?->base_url ?? config('services.lnd.base_url', '')));
 $token   = trim((string) ($hubConnection?->token   ?? config('services.lnd.token', '')));
 ```
-Note: `?:` skips empty strings, `??` only skips null. Since `base_url` in Hub is never empty when connected, both work the same here. The real fix is ensuring the Hub row is always authoritative — which it already is as long as `.env` fallback is not set to a stale value.
+Note: `?:` skips empty strings, `??` only skips null. Since `base_url` in Hub is never empty when connected, both work the same here. The real fix is ensuring the Hub row is always authoritative ΓÇö which it already is as long as `.env` fallback is not set to a stale value.
 
-**Option B:** When L&D reconnects (Hub `connectionAccepted` fires), automatically sync `LND_BASE_URL` and `LND_API_TOKEN` in `.env`. Fragile — avoid.
+**Option B:** When L&D reconnects (Hub `connectionAccepted` fires), automatically sync `LND_BASE_URL` and `LND_API_TOKEN` in `.env`. Fragile ΓÇö avoid.
 
 **Option C (workaround until A is done):** After every L&D reconnect, manually update `LND_BASE_URL` in `.env` to match the new Hub `base_url` and run `php artisan config:clear`.
 
@@ -55,7 +55,7 @@ php artisan tinker
 > \App\Models\HrmoHubConnection::where('pillar','ld')->first()->base_url
 > config('services.lnd.base_url')
 
-# 2. If they differ — update .env LND_BASE_URL to match Hub base_url
+# 2. If they differ ΓÇö update .env LND_BASE_URL to match Hub base_url
 # 3. php artisan config:clear
 # 4. Revert affected plans via the Revert button on /pmt/idp/{id}
 #    or run the revert script if the UI isn't loading
@@ -74,9 +74,9 @@ This document is the **complete API contract** between the two systems. It refle
 
 ---
 
-## Database Architecture (smart-pms — Verified August 22, 2026)
+## Database Architecture (smart-pms ΓÇö Verified August 22, 2026)
 
-> ⚠️ This section is critical context for any AI agent implementing or modifying PMS-side integration code.
+> ΓÜá∩╕Å This section is critical context for any AI agent implementing or modifying PMS-side integration code.
 > All column lists below are verified against the **live database** via `Schema::getColumnListing()`.
 
 ### Actual Live Column Layout
@@ -86,45 +86,45 @@ This document is the **complete API contract** between the two systems. It refle
 id, name, role, email, email_verified_at, password,
 two_factor_secret, two_factor_recovery_codes, two_factor_confirmed_at,
 remember_token, created_at, updated_at,
-office_id,   ← re-added by 2026_07_28 migration (also exists on employees)
-position     ← re-added by 2026_07_28 migration (also exists on employees)
+office_id,   ΓåÉ re-added by 2026_07_28 migration (also exists on employees)
+position     ΓåÉ re-added by 2026_07_28 migration (also exists on employees)
 ```
 
 **Not on users:** `training_locked`, `lnd_reference_id`, `employee_id`, `is_active`, `is_disabled`, `activated_at`, `profile_photo_path`
 
 #### `employees` table (live)
 ```
-id, user_id (FK→users, unique),
+id, user_id (FKΓåÆusers, unique),
 first_name, middle_name, last_name,
 employee_id, hms_employee_id,
-office_id,         ← also on users (duplicate — employees is authoritative)
-position,          ← also on users (duplicate — employees is authoritative)
+office_id,         ΓåÉ also on users (duplicate ΓÇö employees is authoritative)
+position,          ΓåÉ also on users (duplicate ΓÇö employees is authoritative)
 is_active, is_disabled, activated_at, profile_photo_path,
-training_locked,   ← ★ L&D lock flag — ONLY on employees
-lnd_reference_id,  ← ★ L&D reference ID — ONLY on employees
+training_locked,   ΓåÉ Γÿà L&D lock flag ΓÇö ONLY on employees
+lnd_reference_id,  ΓåÉ Γÿà L&D reference ID ΓÇö ONLY on employees
 created_at, updated_at
 ```
 
 ### Why `office_id` and `position` Exist on Both Tables
 
-Migration `2026_07_20_000001` moved those columns from `users` → `employees`. But migration `2026_07_28_151206` re-added `office_id` and `position` back to `users` (with `if (!Schema::hasColumn(...))` guards so it's safe). Both tables have these columns.
+Migration `2026_07_20_000001` moved those columns from `users` ΓåÆ `employees`. But migration `2026_07_28_151206` re-added `office_id` and `position` back to `users` (with `if (!Schema::hasColumn(...))` guards so it's safe). Both tables have these columns.
 
 The `User` model accessors for `office_id` and `position` read from `employees` (the authoritative source). The columns on `users` are a redundancy from the re-add migration. When writing `office_id` or `position`, write to `employees`.
 
 ### Accessor Bridge
 
-The `User` model has read-only accessor methods that delegate to `employees` so legacy code like `$user->training_locked`, `$user->office_id`, `$user->position` etc. continues to work. **These accessors are read-only** — calling `$user->update(['training_locked' => false])` will silently fail because `training_locked` is not in `users.$fillable` and has no column on `users`.
+The `User` model has read-only accessor methods that delegate to `employees` so legacy code like `$user->training_locked`, `$user->office_id`, `$user->position` etc. continues to work. **These accessors are read-only** ΓÇö calling `$user->update(['training_locked' => false])` will silently fail because `training_locked` is not in `users.$fillable` and has no column on `users`.
 
 ### Rule for Agents: How to Read vs Write Employee Fields
 
 | Field | Read | Write |
 |---|---|---|
-| `training_locked` | `$user->training_locked` (accessor → employees) | `$user->employee->update(['training_locked' => false])` |
-| `lnd_reference_id` | `$user->lnd_reference_id` (accessor → employees) | `$user->employee->update(['lnd_reference_id' => '...'])` |
-| `office_id` | `$user->office_id` (accessor → employees) | `$user->employee->update(['office_id' => ...])` |
-| `position` | `$user->position` (accessor → employees) | `$user->employee->update(['position' => '...'])` |
-| `is_active` | `$user->is_active` (accessor → employees) | `$user->employee->update(['is_active' => true])` |
-| `office name` | `$user->office->name` (accessor → employees → offices) | — |
+| `training_locked` | `$user->training_locked` (accessor ΓåÆ employees) | `$user->employee->update(['training_locked' => false])` |
+| `lnd_reference_id` | `$user->lnd_reference_id` (accessor ΓåÆ employees) | `$user->employee->update(['lnd_reference_id' => '...'])` |
+| `office_id` | `$user->office_id` (accessor ΓåÆ employees) | `$user->employee->update(['office_id' => ...])` |
+| `position` | `$user->position` (accessor ΓåÆ employees) | `$user->employee->update(['position' => '...'])` |
+| `is_active` | `$user->is_active` (accessor ΓåÆ employees) | `$user->employee->update(['is_active' => true])` |
+| `office name` | `$user->office->name` (accessor ΓåÆ employees ΓåÆ offices) | ΓÇö |
 | `full name` | `$user->employee->full_name` (computed on Employee) | set `first_name`, `middle_name`, `last_name` on employees |
 
 The `DevelopmentPlan` model's `employee` relationship points to `User`. To reach the `Employee` record from a plan:
@@ -139,7 +139,7 @@ The `LndHandoffService::buildPayload()` already loads:
 ```php
 'employee.employee.office'
 ```
-This is correct — `plan->employee` = User, `plan->employee->employee` = Employee record, `plan->employee->employee->office` = Office.
+This is correct ΓÇö `plan->employee` = User, `plan->employee->employee` = Employee record, `plan->employee->employee->office` = Office.
 
 ---
 
@@ -147,28 +147,28 @@ This is correct — `plan->employee` = User, `plan->employee->employee` = Employ
 
 ```
 PMT clicks "Submit to L&D" in smart-pms
-        │
-        ▼
+        Γöé
+        Γû╝
 DevelopmentPlanningController::submitToLd()
-  → LndHandoffService::sendDevelopmentPlan()
-  → POSTs full employee payload → L&D API
-        │
-        ▼
+  ΓåÆ LndHandoffService::sendDevelopmentPlan()
+  ΓåÆ POSTs full employee payload ΓåÆ L&D API
+        Γöé
+        Γû╝
 L&D stores the record, returns lnd_reference_id
-        │
-        ▼
+        Γöé
+        Γû╝
 PMS stores lnd_reference_id on development_plans.lnd_reference_id
 PMS must also write to employees.training_locked = true
 PMS must also write to employees.lnd_reference_id = lnd_reference_id
 Employee is redirected to L&D website when they try to log into PMS
-        │
-        ▼
+        Γöé
+        Γû╝
 Employee completes training in L&D system
-        │
-        ▼
-L&D POSTs callback → PMS /api/lnd-callback/complete-training
-        │
-        ▼
+        Γöé
+        Γû╝
+L&D POSTs callback ΓåÆ PMS /api/lnd-callback/complete-training
+        Γöé
+        Γû╝
 PMS unlocks: employees.training_locked = false
 PMS clears:  employees.lnd_reference_id = null (optional)
 PMS marks:   development_plans.status = 'completed'
@@ -177,18 +177,18 @@ Employee can log into PMS again
 
 ---
 
-## Known Issues — Code Needs Fixing (Not Yet Done)
+## Known Issues ΓÇö Code Needs Fixing (Not Yet Done)
 
-These are documented here so the implementing agent knows what to fix. **Do not fix the database — only fix the PHP code.**
+These are documented here so the implementing agent knows what to fix. **Do not fix the database ΓÇö only fix the PHP code.**
 
-### Issue 1 — `LndCallbackController` writes to `users` instead of `employees` (CRITICAL)
+### Issue 1 ΓÇö `LndCallbackController` writes to `users` instead of `employees` (CRITICAL)
 
 **File:** `app/Http/Controllers/Api/LndCallbackController.php`
 
 **Current broken code:**
 ```php
 $employee->update(['training_locked' => false]);
-// $employee is a User model — users table no longer has training_locked column
+// $employee is a User model ΓÇö users table no longer has training_locked column
 ```
 
 **Correct fix:**
@@ -207,7 +207,7 @@ $employee->employee?->update([
 
 ---
 
-### Issue 2 — `DevelopmentPlanningController::submitToLd()` does NOT lock the employee (CRITICAL)
+### Issue 2 ΓÇö `DevelopmentPlanningController::submitToLd()` does NOT lock the employee (CRITICAL)
 
 **File:** `app/Http/Controllers/Pmt/DevelopmentPlanningController.php`
 
@@ -230,7 +230,7 @@ This ensures `RedirectIfTrainingLocked` middleware correctly redirects the emplo
 
 ---
 
-### Issue 3 — `LndHandoffService::buildPayload()` employee.email chain
+### Issue 3 ΓÇö `LndHandoffService::buildPayload()` employee.email chain
 
 **File:** `app/Services/LndHandoffService.php`
 
@@ -239,11 +239,11 @@ This ensures `RedirectIfTrainingLocked` middleware correctly redirects the emplo
 'email' => (string) ($developmentPlan->employee?->email ?? '--'),
 ```
 
-`$developmentPlan->employee` returns a `User`. `$user->email` is a direct column on `users` — this is **correct and works as-is**. No fix needed here.
+`$developmentPlan->employee` returns a `User`. `$user->email` is a direct column on `users` ΓÇö this is **correct and works as-is**. No fix needed here.
 
 ---
 
-## Part 1: smart-pms → L&D (Intake Endpoint)
+## Part 1: smart-pms ΓåÆ L&D (Intake Endpoint)
 
 ### Endpoint L&D must build
 
@@ -254,7 +254,7 @@ Content-Type: application/json
 Accept: application/json
 ```
 
-- `LND_API_TOKEN` — a static Bearer token that L&D defines and shares with the PMS team
+- `LND_API_TOKEN` ΓÇö a static Bearer token that L&D defines and shares with the PMS team
 - PMS stores this token in its `.env` as `LND_API_TOKEN`
 - PMS stores the L&D base URL in its `.env` as `LND_BASE_URL`
 
@@ -360,16 +360,16 @@ Accept: application/json
 
 ### Field Reference
 
-#### `employee` block — field sources (PMS side)
+#### `employee` block ΓÇö field sources (PMS side)
 
 | Field | Source in PMS |
 |---|---|
-| `id` | `development_plans.employee_id` → `users.id` |
+| `id` | `development_plans.employee_id` ΓåÆ `users.id` |
 | `name` | `users.name` |
 | `email` | `users.email` |
 | `position` | `employees.position` (via `$user->position` accessor) |
 | `office_id` | `employees.office_id` (via `$user->office_id` accessor) |
-| `office_name` | `employees.office_id` → `offices.name` (via `$user->employee->office->name`) |
+| `office_name` | `employees.office_id` ΓåÆ `offices.name` (via `$user->employee->office->name`) |
 
 #### `performance` block
 
@@ -385,7 +385,7 @@ Accept: application/json
 
 ### Required Response from L&D
 
-**Success — HTTP 201 Created:**
+**Success ΓÇö HTTP 201 Created:**
 ```json
 {
   "status": "acknowledged",
@@ -401,10 +401,10 @@ Accept: application/json
 | `development_plans` | `lnd_sync_status` | `not_sent` | `acknowledged` or `sent` |
 | `development_plans` | `lnd_reference_id` | `null` | value from L&D response |
 | `development_plans` | `submitted_to_ld_at` | `null` | current timestamp |
-| `employees` | `training_locked` | `false` | `true` ← **must write to employees table** |
-| `employees` | `lnd_reference_id` | `null` | value from L&D response ← **must write to employees table** |
+| `employees` | `training_locked` | `false` | `true` ΓåÉ **must write to employees table** |
+| `employees` | `lnd_reference_id` | `null` | value from L&D response ΓåÉ **must write to employees table** |
 
-> ⚠️ `development_plans.lnd_reference_id` and `employees.lnd_reference_id` are separate columns.
+> ΓÜá∩╕Å `development_plans.lnd_reference_id` and `employees.lnd_reference_id` are separate columns.
 > Both should be set. The one on `employees` is what `RedirectIfTrainingLocked` middleware reads
 > to build the redirect URL.
 
@@ -415,8 +415,8 @@ Accept: application/json
 When a training-locked employee tries to log into smart-pms, `RedirectIfTrainingLocked` middleware fires.
 
 **Middleware reads from:**
-- `$user->employee->training_locked` — determines if redirect applies
-- `$user->employee->lnd_reference_id` — used as the `plan` parameter in the redirect URL
+- `$user->employee->training_locked` ΓÇö determines if redirect applies
+- `$user->employee->lnd_reference_id` ΓÇö used as the `plan` parameter in the redirect URL
 
 **Redirect URL format:**
 ```
@@ -433,9 +433,9 @@ If `employees.lnd_reference_id` is null (because Issue 2 above wasn't fixed), th
 
 ---
 
-## Part 3: L&D → PMS (Training Completion Callback)
+## Part 3: L&D ΓåÆ PMS (Training Completion Callback)
 
-### Endpoint (PMS side — already built)
+### Endpoint (PMS side ΓÇö already built)
 
 ```
 POST /api/lnd-callback/complete-training
@@ -467,7 +467,7 @@ Content-Type: application/json
 **Current broken code in `LndCallbackController::completeTraining()`:**
 ```php
 $employee->update(['training_locked' => false]);
-// WRONG — $employee is User; training_locked is on employees table
+// WRONG ΓÇö $employee is User; training_locked is on employees table
 ```
 
 **Correct code:**
@@ -486,7 +486,7 @@ $employee->employee?->update([
 | `development_plans` | `lnd_completed_at` | `null` | timestamp from callback |
 | `development_plans` | `lnd_completion_remarks` | `null` | trainer_remarks |
 | `development_plans` | `lnd_courses_completed` | `null` | courses_completed array |
-| `employees` | `training_locked` | `true` | `false` ← **write to employees table** |
+| `employees` | `training_locked` | `true` | `false` ΓåÉ **write to employees table** |
 | `employees` | `lnd_reference_id` | set | `null` (optional cleanup) |
 
 ---
@@ -499,16 +499,16 @@ $employee->employee?->update([
 | `app/Http/Controllers/Api/LndCallbackController.php` | `completeTraining()` | Change `$employee->update(['training_locked' => false])` to `$employee->employee?->update([...])` |
 
 **Files that are already correct and do not need changes:**
-- `app/Services/LndHandoffService.php` — payload building is correct
-- `app/Http/Middleware/RedirectIfTrainingLocked.php` — already reads from `$user->employee?->training_locked`
-- `app/Http/Middleware/VerifyLndCallbackToken.php` — correct
-- `app/Models/HrmoHubConnection.php` — correct
-- `routes/api.php` — correct
-- `config/services.php` — correct
+- `app/Services/LndHandoffService.php` ΓÇö payload building is correct
+- `app/Http/Middleware/RedirectIfTrainingLocked.php` ΓÇö already reads from `$user->employee?->training_locked`
+- `app/Http/Middleware/VerifyLndCallbackToken.php` ΓÇö correct
+- `app/Models/HrmoHubConnection.php` ΓÇö correct
+- `routes/api.php` ΓÇö correct
+- `config/services.php` ΓÇö correct
 
 ---
 
-## Part 5: Database Tables (PMS Side — Verified Live Schema)
+## Part 5: Database Tables (PMS Side ΓÇö Verified Live Schema)
 
 > Verified via `Schema::getColumnListing()` on August 22, 2026.
 
@@ -525,48 +525,48 @@ two_factor_recovery_codes TEXT nullable
 two_factor_confirmed_at TIMESTAMP nullable
 remember_token   VARCHAR nullable
 created_at, updated_at
-office_id        BIGINT nullable FK→offices  ← re-added by 2026_07_28 migration
-position         VARCHAR nullable            ← re-added by 2026_07_28 migration
+office_id        BIGINT nullable FKΓåÆoffices  ΓåÉ re-added by 2026_07_28 migration
+position         VARCHAR nullable            ΓåÉ re-added by 2026_07_28 migration
 ```
 
 **Important:** `training_locked`, `lnd_reference_id`, `employee_id`, `is_active`, `is_disabled`,
 `activated_at`, `profile_photo_path` are **NOT** on `users`. They are only on `employees`.
 
-### `employees` (all employee-level fields — authoritative for profile data)
+### `employees` (all employee-level fields ΓÇö authoritative for profile data)
 ```sql
 id
-user_id            BIGINT UNIQUE FK→users.id
+user_id            BIGINT UNIQUE FKΓåÆusers.id
 first_name         VARCHAR nullable
 middle_name        VARCHAR nullable
 last_name          VARCHAR nullable
 employee_id        VARCHAR nullable unique
 hms_employee_id    BIGINT nullable unique
-office_id          BIGINT nullable FK→offices.id   ← authoritative
-position           VARCHAR nullable                ← authoritative
+office_id          BIGINT nullable FKΓåÆoffices.id   ΓåÉ authoritative
+position           VARCHAR nullable                ΓåÉ authoritative
 is_active          BOOLEAN default false
 is_disabled        BOOLEAN default false
 activated_at       TIMESTAMP nullable
 profile_photo_path VARCHAR nullable
-training_locked    BOOLEAN default false   ← ★ L&D lock — ONLY on employees
-lnd_reference_id   VARCHAR nullable        ← ★ L&D reference — ONLY on employees
+training_locked    BOOLEAN default false   ΓåÉ Γÿà L&D lock ΓÇö ONLY on employees
+lnd_reference_id   VARCHAR nullable        ΓåÉ Γÿà L&D reference ΓÇö ONLY on employees
 created_at, updated_at
 ```
 
 ### `development_plans`
 ```sql
 id
-ipcr_id                   BIGINT FK→ipcrs
-employee_id               BIGINT FK→users.id
+ipcr_id                   BIGINT FKΓåÆipcrs
+employee_id               BIGINT FKΓåÆusers.id
 office_id                 BIGINT nullable
-performance_period_id     BIGINT nullable FK→performance_periods
+performance_period_id     BIGINT nullable FKΓåÆperformance_periods
 source_score              DECIMAL(5,2) nullable
 source_rating             VARCHAR nullable
 status                    VARCHAR default 'draft'
 pmt_remarks               TEXT nullable
-supervisor_id             BIGINT nullable FK→users.id
+supervisor_id             BIGINT nullable FKΓåÆusers.id
 supervisor_remarks        TEXT nullable
 supervisor_action_at      TIMESTAMP nullable
-dept_head_id              BIGINT nullable FK→users.id
+dept_head_id              BIGINT nullable FKΓåÆusers.id
 dept_head_remarks         TEXT nullable
 dept_head_action_at       TIMESTAMP nullable
 idp_rows                  JSON nullable
@@ -574,15 +574,15 @@ prepared_by_name          VARCHAR nullable
 recommended_by_name       VARCHAR nullable
 approved_by_name          VARCHAR nullable
 lnd_sync_status           VARCHAR default 'not_sent'
-lnd_reference_id          VARCHAR nullable     ← copy of L&D reference (for plan lookup)
+lnd_reference_id          VARCHAR nullable     ΓåÉ copy of L&D reference (for plan lookup)
 lnd_synced_at             TIMESTAMP nullable
 lnd_last_error            TEXT nullable
 submitted_to_ld_at        TIMESTAMP nullable
 lnd_completed_at          TIMESTAMP nullable
 lnd_completion_remarks    TEXT nullable
 lnd_courses_completed     JSON nullable
-created_by                BIGINT nullable FK→users.id
-updated_by                BIGINT nullable FK→users.id
+created_by                BIGINT nullable FKΓåÆusers.id
+updated_by                BIGINT nullable FKΓåÆusers.id
 created_at, updated_at
 ```
 
@@ -617,8 +617,8 @@ PMS_CALLBACK_TOKEN={token}                       # PMS generates, shares with L&
 ## Part 7: What Each Side Still Needs to Fix
 
 ### smart-pms must fix:
-- [ ] `DevelopmentPlanningController::submitToLd()` — after plan update, write `training_locked = true` and `lnd_reference_id` to `$plan->employee->employee` (the Employee model, not User)
-- [ ] `LndCallbackController::completeTraining()` — change `$employee->update(['training_locked' => false])` to `$employee->employee?->update(['training_locked' => false, 'lnd_reference_id' => null])`
+- [ ] `DevelopmentPlanningController::submitToLd()` ΓÇö after plan update, write `training_locked = true` and `lnd_reference_id` to `$plan->employee->employee` (the Employee model, not User)
+- [ ] `LndCallbackController::completeTraining()` ΓÇö change `$employee->update(['training_locked' => false])` to `$employee->employee?->update(['training_locked' => false, 'lnd_reference_id' => null])`
 
 ### L&D (CapstoneFinalSystem) must fix:
 - [ ] See `L&D.md` in CapstoneFinalSystem for L&D-side issues
@@ -637,8 +637,8 @@ PMS_CALLBACK_TOKEN={token}                       # PMS generates, shares with L&
 ## Part 8: Shared Secrets (Current Values Set)
 
 Tokens are already configured in both `.env` files. For local cross-machine testing:
-- Use ngrok to expose L&D's local server → put the ngrok URL in PMS's `LND_BASE_URL`
-- Use ngrok or Herd's local URL for PMS → put it in L&D's `PMS_BASE_URL`
+- Use ngrok to expose L&D's local server ΓåÆ put the ngrok URL in PMS's `LND_BASE_URL`
+- Use ngrok or Herd's local URL for PMS ΓåÆ put it in L&D's `PMS_BASE_URL`
 - `PMS_BASE_URL=http://smart-pms.test` in L&D's `.env` only works if both systems run on the same machine
 
 ---

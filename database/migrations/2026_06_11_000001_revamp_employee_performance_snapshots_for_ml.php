@@ -10,27 +10,27 @@ return new class extends Migration
     {
         Schema::table('employee_performance_snapshots', function (Blueprint $table) {
 
-            // ── Employee context (richer features for RF) ─────────────────────
+            // ΓöÇΓöÇ Employee context (richer features for RF) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->string('position')->nullable()->after('ipcr_id');         // seniority/role
             $table->string('office_name')->nullable()->after('position');      // human-readable, for history display
 
-            // ── Previous period outcome (trend feature) ───────────────────────
+            // ΓöÇΓöÇ Previous period outcome (trend feature) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->decimal('previous_final_score', 5, 2)->nullable()->after('office_size');
             $table->string('previous_adjectival_rating')->nullable()->after('previous_final_score');
 
-            // ── Workload at time of assignment ────────────────────────────────
+            // ΓöÇΓöÇ Workload at time of assignment ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->unsignedInteger('current_workload_count')->nullable()->after('employee_count_assigned');
             // ^ how many indicators already assigned to this employee this period
 
-            // ── Calibration signal ────────────────────────────────────────────
+            // ΓöÇΓöÇ Calibration signal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->boolean('was_flagged_for_calibration')->default(false)->after('current_workload_count');
 
-            // ── ML label (derived from final_score, computed on insert) ───────
-            // achievable = score >= 4.0 | at_risk = 3.0–3.99 | unrealistic = < 3.0
+            // ΓöÇΓöÇ ML label (derived from final_score, computed on insert) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+            // achievable = score >= 4.0 | at_risk = 3.0ΓÇô3.99 | unrealistic = < 3.0
             $table->string('feasibility_label')->nullable()->after('adjectival_rating');
             // ^ "achievable" | "at_risk" | "unrealistic"
 
-            // ── UWP linkage (connects snapshot to the specific indicator) ─────
+            // ΓöÇΓöÇ UWP linkage (connects snapshot to the specific indicator) ΓöÇΓöÇΓöÇΓöÇΓöÇ
             $table->foreignId('uwp_success_indicator_id')
                   ->nullable()
                   ->after('ipcr_id')

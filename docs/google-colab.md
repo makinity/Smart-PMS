@@ -251,26 +251,26 @@ importance_df.head(20)
 all_predictions = pipeline.predict(X)
 all_probabilities = pipeline.predict_proba(X)
 
-# Per-employee x per-indicator � feeds ml_kpi_predictions table + AssignModal
+# Per-employee x per-indicator ∩┐╜ feeds ml_kpi_predictions table + AssignModal
 prediction_df = pd.DataFrame({
     "employee_id":               df["employee_id"],
     "uwp_success_indicator_id":  df["uwp_success_indicator_id"],
     "performance_period_id":     df["performance_period_id"],
 
-    # Objective 6.3 � Achievable / At Risk / Unrealistic
+    # Objective 6.3 ∩┐╜ Achievable / At Risk / Unrealistic
     "feasibility_label":         all_predictions,
 
-    # Objective 6.4 � Probability percentage
+    # Objective 6.4 ∩┐╜ Probability percentage
     "feasibility_probability":   all_probabilities.max(axis=1).round(4),
 
-    # Objective 6.4 � Risk level (maps to AssignModal risk field)
+    # Objective 6.4 ∩┐╜ Risk level (maps to AssignModal risk field)
     "risk_level": pd.Series(all_predictions).map({
         "achievable":  "Low",
         "at_risk":     "Medium",
         "unrealistic": "High"
     }).values,
 
-    # Objective 6.5 � Fit score 0-100 (maps to AssignModal fitScore / successProb)
+    # Objective 6.5 ∩┐╜ Fit score 0-100 (maps to AssignModal fitScore / successProb)
     "fit_score": (all_probabilities.max(axis=1) * 100).round(1),
 
     # Fit label for UI (maps to AssignModal fitLabel)
