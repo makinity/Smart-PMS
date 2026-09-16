@@ -198,6 +198,7 @@ export default function Index() {
     const [editor, setEditor] = useState(null);
     const [saving, setSaving] = useState(false);
     const [headWarning, setHeadWarning] = useState(null);
+    const [deactivateConfirm, setDeactivateConfirm] = useState(null); // office to deactivate
     const firstRender = useRef(true);
     const debounceRef = useRef(null);
 
@@ -262,7 +263,17 @@ export default function Index() {
     }
 
     function toggleStatus(office) {
-        router.post(`${BASE}/${office.id}/toggle-status`, {}, { preserveScroll: true, preserveState: true });
+        if (office.is_active) {
+            setDeactivateConfirm(office);
+        } else {
+            router.post(`${BASE}/${office.id}/toggle-status`, {}, { preserveScroll: true, preserveState: true });
+        }
+    }
+
+    function confirmDeactivate() {
+        if (!deactivateConfirm) return;
+        router.post(`${BASE}/${deactivateConfirm.id}/toggle-status`, {}, { preserveScroll: true, preserveState: true });
+        setDeactivateConfirm(null);
     }
 
     const gridCols = bp === 'tablet' ? 'repeat(2, 1fr)' : '1fr';
@@ -396,6 +407,42 @@ export default function Index() {
                 onSubmit={submitEditor}
                 saving={saving}
             />
+
+            {/* Deactivate Confirmation Modal */}
+            {deactivateConfirm && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', padding: '1rem' }}
+                    onClick={(e) => { if (e.target === e.currentTarget) setDeactivateConfirm(null); }}>
+                    <div style={{ width: '100%', maxWidth: 420, borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-strong)', background: 'var(--admin-card)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                        {/* Header */}
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--admin-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', flexShrink: 0 }}>
+                                <i className="bi bi-building-x" style={{ fontSize: '1.1rem' }} />
+                            </div>
+                            <div>
+                                <p style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#ef4444', marginBottom: '0.2rem' }}>Confirm Action</p>
+                                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--admin-text-primary)' }}>Deactivate Office</h3>
+                            </div>
+                        </div>
+                        {/* Body */}
+                        <div style={{ padding: '1.25rem 1.5rem' }}>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--admin-text-secondary)', lineHeight: 1.6, marginBottom: '1rem' }}>
+                                Are you sure you want to deactivate <strong>{deactivateConfirm.name}</strong>?
+                            </p>
+                            <div style={{ padding: '0.75rem 1rem', borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', fontSize: '0.82rem', color: '#f87171', lineHeight: 1.5 }}>
+                                <i className="bi bi-exclamation-triangle-fill" style={{ marginRight: 6 }} />
+                                This office will be marked as inactive. You can reactivate it at any time.
+                            </div>
+                        </div>
+                        {/* Footer */}
+                        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <button onClick={() => setDeactivateConfirm(null)} style={actionSecondary}>Cancel</button>
+                            <button onClick={confirmDeactivate} style={{ ...actionPrimary, background: '#ef4444' }}>
+                                <i className="bi bi-building-x" /> Deactivate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Head Assignment Warning Modal */}
             {headWarning && (

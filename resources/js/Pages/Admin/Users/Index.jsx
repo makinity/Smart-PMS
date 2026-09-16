@@ -310,7 +310,10 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
                         <label style={fieldWrap}>
                             <span style={fieldLabel}>Role</span>
                             <select value={value.role || ''} onChange={(e) => onChange('role', e.target.value)} style={inputStyle}>
-                                {roles.map((role) => {
+                                {roles.filter((role) => {
+                                    const key = role.key ?? role.id ?? role.name ?? role;
+                                    return key !== 'admin';
+                                }).map((role) => {
                                     const key = role.key ?? role.id ?? role.name ?? role;
                                     return <option key={key} value={key}>{role.label ?? role.name ?? role}</option>;
                                 })}
@@ -319,13 +322,23 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
 
                         <label style={fieldWrap}>
                             <span style={fieldLabel}>Office</span>
-                            <select value={value.office_id || ''} onChange={(e) => onChange('office_id', e.target.value)} style={inputStyle}>
+                            <select
+                                value={value.office_id || ''}
+                                onChange={(e) => onChange('office_id', e.target.value)}
+                                style={{ ...inputStyle, opacity: (value.role === 'admin' || value.role === 'pmt') ? 0.5 : 1, cursor: (value.role === 'admin' || value.role === 'pmt') ? 'not-allowed' : 'default' }}
+                                disabled={value.role === 'admin' || value.role === 'pmt'}
+                            >
                                 <option value="">No office assigned</option>
                                 {offices.map((office) => {
                                     const key = office.id ?? office.value;
                                     return <option key={key} value={key}>{office.name ?? office.label ?? office.title}</option>;
                                 })}
                             </select>
+                            {(value.role === 'admin' || value.role === 'pmt') && (
+                                <span style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)', marginTop: '0.25rem' }}>
+                                    {value.role === 'admin' ? 'Admins are' : 'PMT members are'} not assigned to an office.
+                                </span>
+                            )}
                         </label>
                     </div>
 
@@ -534,12 +547,17 @@ export default function Index({
     }, []);
 
     function openCreate() {
+        const defaultRole = roleOptions.find(r => {
+            const k = r.key ?? r.id ?? r.name ?? r;
+            return k !== 'admin';
+        });
+        const defaultRoleKey = defaultRole?.key ?? defaultRole?.name ?? defaultRole ?? 'employee';
         setEditor({
             id: null,
             employee_id: '',
             name: '',
             email: '',
-            role: roleOptions[0]?.key ?? roleOptions[0]?.name ?? 'user',
+            role: defaultRoleKey,
             office_id: '',
             position: '',
             is_active: true,
@@ -565,7 +583,11 @@ export default function Index({
     }
 
     function updateEditor(field, value) {
-        setEditor((current) => ({ ...current, [field]: value }));
+        if (field === 'role' && (value === 'admin' || value === 'pmt')) {
+            setEditor((current) => ({ ...current, role: value, office_id: '' }));
+        } else {
+            setEditor((current) => ({ ...current, [field]: value }));
+        }
     }
 
     function closeEditor() {
