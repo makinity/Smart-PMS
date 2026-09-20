@@ -1,4 +1,4 @@
-﻿FROM php:8.2-apache
+﻿FROM php:8.4-apache
 
 # 1. Install system dependencies & Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,7 +34,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # 6. Install PHP & Node Dependencies & Build Frontend
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-* \
     && npm install \
     && npm run build
 
