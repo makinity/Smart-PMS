@@ -1,4 +1,4 @@
-﻿FROM php:8.4-apache
+FROM php:8.4-apache
 
 # 1. Install system dependencies & Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,8 +23,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # 3. Configure Apache DocumentRoot to Laravel public/
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
     && a2enmod rewrite
 
 # 4. Set Working Directory
@@ -40,9 +40,9 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-pl
 
 # 7. Set Permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod +x /var/www/html/docker/entrypoint.sh
 
-# 8. Entrypoint command for Apache + dynamic Render 
 EXPOSE 80
 
-CMD [sh, -c, sed -i "s/80//g" /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf && php artisan config:clear || true && php artisan storage:link || true && exec apache2-foreground]
+ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
