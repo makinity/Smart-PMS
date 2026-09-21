@@ -190,15 +190,21 @@ function CalibrateModal({ opcraId, submission, ipcrMeta, onClose }) {
     const [remarks, setRemarks]   = useState(submission?.pmt_remarks ?? '');
     const [saving, setSaving]     = useState(false);
 
+    const numRating = parseFloat(rating);
+    const isInvalid = rating !== '' && (isNaN(numRating) || numRating < 1.0 || numRating > 5.0);
+    const isValid = rating !== '' && !isNaN(numRating) && numRating >= 1.0 && numRating <= 5.0;
+
     function onRatingChange(v) {
         setRating(v);
         const n = parseFloat(v);
-        if (!isNaN(n)) setAdj(adjLabel(n));
+        if (!isNaN(n) && n >= 1.0 && n <= 5.0) {
+            setAdj(adjLabel(n));
+        }
     }
-    const rColor = adj === 'Outstanding' ? '#3b82f6' : adj === 'Very Satisfactory' ? '#10b981' : adj === 'Satisfactory' ? '#f59e0b' : adj === 'Unsatisfactory' ? '#eab308' : '#ef4444';
+    const rColor = isInvalid ? '#ef4444' : adj === 'Outstanding' ? '#3b82f6' : adj === 'Very Satisfactory' ? '#10b981' : adj === 'Satisfactory' ? '#f59e0b' : adj === 'Unsatisfactory' ? '#eab308' : '#ef4444';
 
     function submit() {
-        if (!remarks.trim() || !adj || !rating) return;
+        if (!remarks.trim() || !adj || !isValid) return;
         setSaving(true);
         router.post(`/pmt/opcr-accomplishment/${opcraId}/employee/${submission.id}/calibrate`, {
             final_rating: parseFloat(rating),
@@ -231,17 +237,47 @@ function CalibrateModal({ opcraId, submission, ipcrMeta, onClose }) {
                             <div style={{ fontSize: '0.72rem', color: 'var(--admin-text-muted)' }}>{adjLabel(computedScore)}</div>
                         </div>
                         <i className="bi bi-arrow-right" style={{ color: 'var(--admin-text-muted)', fontSize: '1.2rem' }} />
-                        <div style={{ flex: 1, padding: '0.75rem', borderRadius: 10, background: adj ? `${rColor}10` : 'var(--admin-bg-secondary)', border: `1px solid ${adj ? `${rColor}40` : 'var(--admin-border)'}`, minWidth: 130 }}>
-                            <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', color: adj ? rColor : 'var(--admin-text-muted)', marginBottom: 6 }}>Calibrated</div>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: adj ? rColor : 'var(--admin-text-muted)' }}>{rating || '—'}</div>
-                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: adj ? rColor : 'var(--admin-text-muted)' }}>{adj || '—'}</div>
+                        <div style={{ flex: 1, padding: '0.75rem', borderRadius: 10, background: isInvalid ? 'rgba(239,68,68,0.08)' : adj ? `${rColor}10` : 'var(--admin-bg-secondary)', border: `1px solid ${isInvalid ? 'rgba(239,68,68,0.35)' : adj ? `${rColor}40` : 'var(--admin-border)'}`, minWidth: 130 }}>
+                            <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', color: isInvalid ? '#ef4444' : adj ? rColor : 'var(--admin-text-muted)', marginBottom: 6 }}>Calibrated</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: isInvalid ? '#ef4444' : adj ? rColor : 'var(--admin-text-muted)' }}>{rating || '—'}</div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: isInvalid ? '#ef4444' : adj ? rColor : 'var(--admin-text-muted)' }}>
+                                {isInvalid ? (numRating > 5 ? 'Invalid (Max 5.00)' : numRating < 1 ? 'Invalid (Min 1.00)' : 'Invalid Score') : (adj || '—')}
+                            </div>
                         </div>
                     </div>
                     {/* Rating input */}
                     <div>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)', marginBottom: '0.4rem' }}>Final Rating (1.00–5.00) <span style={{ color: '#ef4444' }}>*</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-text-muted)' }}>
+                                Final Rating (1.00–5.00) <span style={{ color: '#ef4444' }}>*</span>
+                            </div>
+                            {isInvalid && (
+                                <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239,68,68,0.12)', padding: '2px 7px', borderRadius: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <i className="bi bi-exclamation-triangle-fill" style={{ fontSize: '0.65rem' }} />
+                                    {numRating > 5 ? 'Invalid: Score > 5.00' : numRating < 1 ? 'Invalid: Score < 1.00' : 'Invalid'}
+                                </span>
+                            )}
+                        </div>
                         <input type="number" min="1" max="5" step="0.01" value={rating} onChange={e => onRatingChange(e.target.value)}
-                            style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem 0.9rem', background: 'var(--admin-bg-secondary)', border: '1px solid var(--admin-border)', borderRadius: 8, color: 'var(--admin-text-primary)', fontSize: '0.95rem', fontWeight: 700, outline: 'none', fontFamily: 'inherit' }} />
+                            style={{
+                                width: '100%',
+                                boxSizing: 'border-box',
+                                padding: '0.6rem 0.9rem',
+                                background: 'var(--admin-bg-secondary)',
+                                border: isInvalid ? '1.5px solid #ef4444' : '1px solid var(--admin-border)',
+                                borderRadius: 8,
+                                color: isInvalid ? '#ef4444' : 'var(--admin-text-primary)',
+                                fontSize: '0.95rem',
+                                fontWeight: 700,
+                                outline: 'none',
+                                fontFamily: 'inherit',
+                                boxShadow: isInvalid ? '0 0 0 2px rgba(239,68,68,0.15)' : 'none',
+                            }} />
+                        {isInvalid && (
+                            <div style={{ fontSize: '0.72rem', color: '#ef4444', marginTop: '0.35rem', fontWeight: 500 }}>
+                                {numRating > 5 ? 'Rating cannot exceed 5.00 (highest possible score).' : 'Rating must be at least 1.00.'}
+                            </div>
+                        )}
                     </div>
                     {/* Adjectival pills */}
                     <div>
@@ -262,8 +298,8 @@ function CalibrateModal({ opcraId, submission, ipcrMeta, onClose }) {
                 </div>
                 <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--admin-border)', display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                     <button onClick={onClose} style={{ padding: '0.5rem 1.1rem', borderRadius: 8, border: '1px solid var(--admin-border-strong)', background: 'transparent', color: 'var(--admin-text-primary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>Cancel</button>
-                    <button onClick={submit} disabled={!remarks.trim() || !adj || !rating || saving}
-                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: (!remarks.trim() || !adj || !rating) ? 'var(--admin-bg-secondary)' : '#a78bfa', color: (!remarks.trim() || !adj || !rating) ? 'var(--admin-text-muted)' : '#fff', cursor: (!remarks.trim() || !adj || !rating || saving) ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button onClick={submit} disabled={!remarks.trim() || !adj || !isValid || saving}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', background: (!remarks.trim() || !adj || !isValid) ? 'var(--admin-bg-secondary)' : '#a78bfa', color: (!remarks.trim() || !adj || !isValid) ? 'var(--admin-text-muted)' : '#fff', cursor: (!remarks.trim() || !adj || !isValid || saving) ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 700, opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <i className="bi bi-sliders" />{saving ? 'Saving…' : 'Save Calibration'}
                     </button>
                 </div>
