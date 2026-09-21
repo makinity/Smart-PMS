@@ -19,18 +19,22 @@ class UserManagementTest extends TestCase
         Role::findOrCreate('admin', 'web');
         Role::findOrCreate('user', 'web');
 
-        $user = User::forceCreate(array_merge([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
+        $user = User::forceCreate([
+            'name'     => $overrides['name'] ?? 'Admin User',
+            'email'    => $overrides['email'] ?? 'admin@example.com',
             'password' => Hash::make('password'),
-            'employee_id' => 'EMP-ADMIN-0001',
-            'role' => 'admin',
-            'is_active' => true,
-            'is_disabled' => false,
-        ], $overrides));
+            'role'     => $overrides['role'] ?? 'admin',
+        ]);
+
+        \App\Models\Employee::create([
+            'user_id'     => $user->id,
+            'pms_id'      => $overrides['pms_id'] ?? $overrides['employee_id'] ?? 'ADM-00001',
+            'is_active'   => $overrides['is_active'] ?? true,
+            'is_disabled' => $overrides['is_disabled'] ?? false,
+        ]);
 
         if (method_exists($user, 'assignRole')) {
-            $user->assignRole('admin');
+            $user->assignRole($user->role);
         }
 
         return $user;
@@ -44,14 +48,15 @@ class UserManagementTest extends TestCase
         Mail::fake();
 
         $payload = [
-            'employee_id' => 'EMP-2026-00012',
-            'name' => 'Maria Santos',
-            'email' => 'maria.santos@gmail.com',
-            'role' => 'user',
-            'office_id' => null,
-            'position' => 'Administrative Aide',
-            'is_active' => true,
-            'is_disabled' => false,
+            'pms_id'           => 'EMP-2026-00012',
+            'name'             => 'Maria Santos',
+            'email'            => 'maria.santos@gmail.com',
+            'role'             => 'user',
+            'office_id'        => null,
+            'position'         => 'Administrative Aide',
+            'is_active'        => true,
+            'is_disabled'      => false,
+            'send_pms_id'      => true,
             'send_employee_id' => true,
         ];
 
@@ -60,9 +65,12 @@ class UserManagementTest extends TestCase
         $response->assertRedirect();
 
         $this->assertDatabaseHas('users', [
-            'employee_id' => 'EMP-2026-00012',
             'email' => 'maria.santos@gmail.com',
-            'role' => 'user',
+            'role'  => 'user',
+        ]);
+
+        $this->assertDatabaseHas('employees', [
+            'pms_id' => 'EMP-2026-00012',
         ]);
 
         Mail::assertSent(PmsEmployeeIdIssuedMail::class, function (PmsEmployeeIdIssuedMail $mail) {
@@ -74,12 +82,16 @@ class UserManagementTest extends TestCase
     {
         $admin = $this->makeAdminUser();
         $user = User::forceCreate([
-            'name' => 'Juan Dela Cruz',
-            'email' => 'juan.dela.cruz@gmail.com',
+            'name'     => 'Juan Dela Cruz',
+            'email'    => 'juan.dela.cruz@gmail.com',
             'password' => Hash::make('password'),
-            'employee_id' => 'EMP-2026-00013',
-            'role' => 'user',
-            'is_active' => false,
+            'role'     => 'user',
+        ]);
+
+        \App\Models\Employee::create([
+            'user_id'     => $user->id,
+            'pms_id'      => 'EMP-2026-00013',
+            'is_active'   => false,
             'is_disabled' => false,
         ]);
 
@@ -104,9 +116,9 @@ class UserManagementTest extends TestCase
         $response = $this->patch("/administrator/users/{$admin->id}/deactivate");
 
         $response->assertSessionHasErrors();
-        $this->assertDatabaseHas('users', [
-            'id' => $admin->id,
-            'is_active' => 1,
+        $this->assertDatabaseHas('employees', [
+            'user_id'     => $admin->id,
+            'is_active'   => 1,
             'is_disabled' => 0,
         ]);
     }
@@ -115,33 +127,37 @@ class UserManagementTest extends TestCase
     {
         $admin = $this->makeAdminUser();
         $user = User::forceCreate([
-            'name' => 'Jose Cruz',
-            'email' => 'jose.cruz@gmail.com',
+            'name'     => 'Jose Cruz',
+            'email'    => 'jose.cruz@gmail.com',
             'password' => Hash::make('password'),
-            'employee_id' => 'EMP-2026-00014',
-            'role' => 'user',
-            'is_active' => true,
+            'role'     => 'user',
+        ]);
+
+        \App\Models\Employee::create([
+            'user_id'     => $user->id,
+            'pms_id'      => 'EMP-2026-00014',
+            'is_active'   => true,
             'is_disabled' => false,
         ]);
 
         $this->actingAs($admin);
 
         $response = $this->patch("/administrator/users/{$user->id}", [
-            'employee_id' => $user->employee_id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => 'admin',
-            'office_id' => null,
-            'position' => null,
-            'is_active' => true,
-            'is_disabled' => false,
+            'pms_id'           => 'EMP-2026-00014',
+            'name'             => $user->name,
+            'email'            => $user->email,
+            'role'             => 'admin',
+            'office_id'        => null,
+            'position'         => null,
+            'is_active'        => true,
+            'is_disabled'      => false,
             'send_employee_id' => false,
         ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->id,
+            'id'   => $user->id,
             'role' => 'admin',
         ]);
     }

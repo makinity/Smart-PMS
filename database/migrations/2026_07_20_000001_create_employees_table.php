@@ -67,19 +67,20 @@ return new class extends Migration
 
         // ΓöÇΓöÇ 3. Drop employee columns from users ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // Check if users.office_id has a FK constraint before trying to drop it
-        $officeFk = collect(DB::select(
-            "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
-             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
-             AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME LIKE '%office%'"
-        ))->pluck('CONSTRAINT_NAME')->first();
-
-        if ($officeFk) {
-            Schema::table('users', function (Blueprint $table) use ($officeFk) {
-                $table->dropForeign($officeFk);
-            });
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('DROP INDEX IF EXISTS users_employee_id_unique');
+            DB::statement('DROP INDEX IF EXISTS users_hms_employee_id_unique');
         }
 
         Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'office_id')) {
+                try {
+                    $table->dropForeign(['office_id']);
+                } catch (\Throwable $e) {
+                    // ignore if FK doesn't exist
+                }
+            }
+
             // Only drop columns that actually exist
             $toDrop = collect([
                 'employee_id', 'hms_employee_id', 'office_id', 'position',

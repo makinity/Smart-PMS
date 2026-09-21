@@ -25,7 +25,7 @@ class UsersController extends Controller
                     $q->where('name', 'like', "%{$term}%")
                         ->orWhere('email', 'like', "%{$term}%")
                         ->orWhereHas('employee', function ($eq) use ($term) {
-                            $eq->where('employee_id', 'like', "%{$term}%")
+                            $eq->where('pms_id', 'like', "%{$term}%")
                                 ->orWhere('position', 'like', "%{$term}%")
                                 ->orWhereHas('office', function ($oq) use ($term) {
                                     $oq->where('name', 'like', "%{$term}%")
@@ -52,7 +52,8 @@ class UsersController extends Controller
             ->withQueryString()
             ->through(fn (User $user) => [
                 'id'           => $user->id,
-                'employee_id'  => $user->employee?->employee_id,
+                'pms_id'       => $user->employee?->pms_id,
+                'employee_id'  => $user->employee?->pms_id,
                 'name'         => $user->name,
                 'first_name'   => $user->employee?->first_name,
                 'middle_name'  => $user->employee?->middle_name,
@@ -109,8 +110,8 @@ class UsersController extends Controller
         $data = $this->validatePayload($request);
         $user = $service->create($data, $request->user());
 
-        if ($request->boolean('send_employee_id')) {
-            $service->sendEmployeeId($user, $request->user());
+        if ($request->boolean('send_pms_id') || $request->boolean('send_employee_id')) {
+            $service->sendPmsId($user, $request->user());
         }
 
         return back()->with('success', 'User created successfully.');
@@ -121,8 +122,8 @@ class UsersController extends Controller
         $data = $this->validatePayload($request, $user);
         $service->update($user, $data, $request->user());
 
-        if ($request->boolean('send_employee_id')) {
-            $service->sendEmployeeId($user, $request->user());
+        if ($request->boolean('send_pms_id') || $request->boolean('send_employee_id')) {
+            $service->sendPmsId($user, $request->user());
         }
 
         return back()->with('success', 'User updated successfully.');
@@ -130,7 +131,7 @@ class UsersController extends Controller
 
     public function sendCode(Request $request, User $user, AdminUserManagementService $service)
     {
-        $service->sendEmployeeId($user, $request->user());
+        $service->sendPmsId($user, $request->user());
         return back();
     }
 
@@ -162,15 +163,21 @@ class UsersController extends Controller
     {
         $roles = Role::query()->where('guard_name', 'web')->pluck('name')->all();
 
-        // employee_id uniqueness now validated against employees table
+        // pms_id uniqueness validated against employees table
         $employeeId = $user?->employee?->id;
 
         return $request->validate([
-            'employee_id' => [
-                'required',
+            'pms_id' => [
+                'nullable',
                 'string',
                 'max:50',
-                Rule::unique('employees', 'employee_id')->ignore($employeeId),
+                Rule::unique('employees', 'pms_id')->ignore($employeeId),
+            ],
+            'employee_id' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('employees', 'pms_id')->ignore($employeeId),
             ],
             'name'             => ['required', 'string', 'max:255'],
             'first_name'       => ['nullable', 'string', 'max:100'],

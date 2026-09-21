@@ -386,16 +386,16 @@ export default function Login() {
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '0.1rem' }}>
                                                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                                             </svg>
-                                            <span>Multiple accounts found with that name. Please enter your Employee ID to continue.</span>
+                                            <span>Multiple accounts found with that name. Please enter your PMS ID to continue.</span>
                                         </div>
-                                        <Field label="Employee ID" icon={icons.id} error={errors.employee_id !== 'needs_disambiguation' ? errors.employee_id : undefined}>
+                                        <Field label="PMS ID" icon={icons.id} error={errors.employee_id !== 'needs_disambiguation' ? errors.employee_id : undefined}>
                                             <input
                                                 type="text"
                                                 value={data.employee_id}
                                                 onChange={e => setData('employee_id', e.target.value)}
                                                 autoFocus
                                                 autoComplete="off"
-                                                placeholder="e.g. EMP-0006"
+                                                placeholder="e.g. EMP-10523 or ADM-10523"
                                                 style={inputStyle(!!errors.employee_id && errors.employee_id !== 'needs_disambiguation')}
                                             />
                                         </Field>
@@ -416,9 +416,9 @@ export default function Login() {
                             </>}
 
                             {mode === 'activate-verify' && <>
-                                <Field label="Employee ID" icon={icons.id} error={errors.employee_id}>
+                                <Field label="PMS ID" icon={icons.id} error={errors.employee_id}>
                                     <input type="text" value={data.employee_id} onChange={e => setData('employee_id', e.target.value)}
-                                        autoFocus autoComplete="off" placeholder="EMP-ABC-1234" style={inputStyle(!!errors.employee_id)} />
+                                        autoFocus autoComplete="off" placeholder="e.g. EMP-10523 or ADM-10523" style={inputStyle(!!errors.employee_id)} />
                                 </Field>
                                 <Field label="Email address" icon={icons.email} error={errors.email}>
                                     <input type="email" value={data.email} onChange={e => setData('email', e.target.value)}

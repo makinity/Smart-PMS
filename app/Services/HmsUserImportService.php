@@ -25,18 +25,18 @@ class HmsUserImportService
         foreach ($records as $record) {
             $summary['total_processed']++;
 
-            $employeeId = trim((string) ($record['employee_id'] ?? ''));
-            $name       = trim((string) ($record['name'] ?? ''));
-            $email      = trim((string) ($record['email'] ?? ''));
-            $role       = trim((string) ($record['role'] ?? '')) ?: 'employee';
+            $pmsId = trim((string) ($record['pms_id'] ?? $record['employee_id'] ?? ''));
+            $name  = trim((string) ($record['name'] ?? ''));
+            $email = trim((string) ($record['email'] ?? ''));
+            $role  = trim((string) ($record['role'] ?? '')) ?: 'employee';
 
             try {
-                if ($employeeId === '' || $name === '' || $email === '') {
-                    throw new \InvalidArgumentException('employee_id, name, and email are required.');
+                if ($pmsId === '' || $name === '' || $email === '') {
+                    throw new \InvalidArgumentException('PMS ID (or employee_id), name, and email are required.');
                 }
 
-                // Try to find existing user by employee_id (via employees table) or by email
-                $employee = Employee::where('employee_id', $employeeId)->first();
+                // Try to find existing user by pms_id (via employees table) or by email
+                $employee = Employee::where('pms_id', $pmsId)->first();
                 $user     = $employee?->user ?? User::where('email', $email)->first();
 
                 if ($user) {
@@ -48,7 +48,7 @@ class HmsUserImportService
                     $emp = $user->employee ?? Employee::make(['user_id' => $user->id]);
                     $emp->fill([
                         'user_id'     => $user->id,
-                        'employee_id' => $employeeId,
+                        'pms_id'      => $pmsId,
                         'is_active'   => false,
                         'activated_at'=> null,
                     ]);
@@ -67,7 +67,7 @@ class HmsUserImportService
                     // Create employee record
                     Employee::create([
                         'user_id'     => $user->id,
-                        'employee_id' => $employeeId,
+                        'pms_id'      => $pmsId,
                         'is_active'   => false,
                         'activated_at'=> null,
                     ]);
@@ -75,11 +75,12 @@ class HmsUserImportService
                     $summary['total_created']++;
                 }
 
-                Mail::to($email)->send(new PmsEmployeeIdIssuedMail($name, $employeeId, $email));
+                Mail::to($email)->send(new PmsEmployeeIdIssuedMail($name, $pmsId, $email));
                 $summary['total_emailed']++;
             } catch (Throwable $exception) {
                 $summary['failures'][] = [
-                    'employee_id' => $employeeId !== '' ? $employeeId : null,
+                    'pms_id'      => $pmsId !== '' ? $pmsId : null,
+                    'employee_id' => $pmsId !== '' ? $pmsId : null,
                     'email'       => $email !== '' ? $email : null,
                     'message'     => $exception->getMessage(),
                 ];

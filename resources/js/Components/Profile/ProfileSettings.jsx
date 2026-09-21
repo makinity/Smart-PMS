@@ -254,7 +254,7 @@ export default function ProfileSettings({ description }) {
                     </div>
 
                     <div style={{ display: 'grid', gap: '0.75rem' }}>
-                        <ReadOnlyItem labelText="Employee ID" value={user.employee_id} />
+                        <ReadOnlyItem labelText="PMS ID" value={user.pms_id || user.employee_id} />
                         <ReadOnlyItem labelText="Email" value={user.email} />
                         <ReadOnlyItem labelText="Office" value={officeName} />
                         <ReadOnlyItem labelText="Position" value={user.position} />
@@ -264,7 +264,7 @@ export default function ProfileSettings({ description }) {
                 <section style={panel}>
                     <div style={sectionTitle}>Account notes</div>
                     <div style={sectionDesc}>
-                        Your employee ID is used for account activation and identity checks. Keep your email current so you can receive system notifications and reset links.
+                        Your PMS ID is used for account activation and identity checks. Keep your email current so you can receive system notifications and reset links.
                     </div>
                     <div style={{
                         marginTop: '1rem',
@@ -378,7 +378,7 @@ export default function ProfileSettings({ description }) {
                                     gap: '0.75rem',
                                     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                                 }}>
-                                    <ReadOnlyItem labelText="Employee ID" value={user.employee_id} />
+                                    <ReadOnlyItem labelText="PMS ID" value={user.pms_id || user.employee_id} />
                                     <ReadOnlyItem labelText="Role" value={roleLabel} />
                                     <ReadOnlyItem labelText="Office" value={officeName} />
                                     <ReadOnlyItem labelText="Position" value={user.position} />

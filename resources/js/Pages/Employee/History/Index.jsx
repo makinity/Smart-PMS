@@ -114,8 +114,8 @@ export default function Index() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                                 <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--admin-text-primary)' }}>{employee.name}</span>
-                                {employee.employee_id && (
-                                    <Badge label={employee.employee_id} color="var(--admin-text-muted)" bg="var(--admin-bg-secondary)" />
+                                {(employee.pms_id || employee.employee_id) && (
+                                    <Badge label={employee.pms_id || employee.employee_id} color="var(--admin-text-muted)" bg="var(--admin-bg-secondary)" />
                                 )}
                             </div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--admin-text-muted)', marginTop: 2 }}>{employee.position}</div>

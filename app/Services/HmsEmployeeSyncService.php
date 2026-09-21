@@ -156,7 +156,7 @@ class HmsEmployeeSyncService
 
         Employee::create([
             'user_id'         => $user->id,
-            'employee_id'     => $this->generateNextEmployeeId(),
+            'pms_id'          => $this->generateNextPmsId(),
             'hms_employee_id' => $hmsEmployeeId,
             'first_name'      => $firstName,
             'middle_name'     => $middleName,
@@ -168,11 +168,11 @@ class HmsEmployeeSyncService
         ]);
 
         if ($email !== '') {
-            $generatedEmployeeId = Employee::where('user_id', $user->id)->value('employee_id');
+            $generatedPmsId = Employee::where('user_id', $user->id)->value('pms_id');
             try {
                 Mail::to($email)->queue(new PmsEmployeeIdIssuedMail(
                     name: $name,
-                    employeeId: (string) $generatedEmployeeId,
+                    employeeId: (string) $generatedPmsId,
                     email: $email,
                 ));
             } catch (\Throwable $e) {
@@ -183,23 +183,14 @@ class HmsEmployeeSyncService
         $summary['created']++;
     }
 
-    private function generateNextEmployeeId(): string
+    private function generateNextPmsId(): string
     {
-        $year   = now()->format('Y');
-        $prefix = 'EMP-' . $year . '-';
+        $prefix = 'EMP-';
+        do {
+            $num = str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
+            $candidate = $prefix . $num;
+        } while (Employee::where('pms_id', $candidate)->exists());
 
-        $maxSequence = Employee::query()
-            ->where('employee_id', 'like', $prefix . '%')
-            ->pluck('employee_id')
-            ->map(function ($employeeId) use ($prefix) {
-                if (! is_string($employeeId) || ! str_starts_with($employeeId, $prefix)) {
-                    return 0;
-                }
-                $suffix = substr($employeeId, strlen($prefix));
-                return ctype_digit($suffix) ? (int) $suffix : 0;
-            })
-            ->max() ?? 0;
-
-        return $prefix . str_pad((string) ($maxSequence + 1), 5, '0', STR_PAD_LEFT);
+        return $candidate;
     }
 }

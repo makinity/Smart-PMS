@@ -13,7 +13,7 @@ class Employee extends Model
     use HasFactory, RecordsActivity;
 
     protected array $activitylogAttributes = [
-        'employee_id',
+        'pms_id',
         'first_name',
         'last_name',
         'middle_name',
@@ -28,7 +28,7 @@ class Employee extends Model
 
     protected $fillable = [
         'user_id',
-        'employee_id',
+        'pms_id',
         'hms_employee_id',
         'first_name',
         'middle_name',
@@ -104,5 +104,18 @@ class Employee extends Model
         return $this->profile_photo_path
             ? Storage::url($this->profile_photo_path)
             : Storage::url('profiles/default.jpeg');
+    }
+
+    /**
+     * Backward-compatible alias for pms_id
+     */
+    public function getEmployeeIdAttribute(): ?string
+    {
+        return $this->pms_id;
+    }
+
+    public function setEmployeeIdAttribute(?string $value): void
+    {
+        $this->attributes['pms_id'] = $value;
     }
 }

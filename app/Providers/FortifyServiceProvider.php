@@ -26,29 +26,34 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn () => inertia('Auth/Login'));
 
         Fortify::authenticateUsing(function (Request $request) {
-            $name       = Str::lower(trim((string) $request->input('name')));
-            $employeeId = trim((string) $request->input('employee_id'));
+            $name  = Str::lower(trim((string) $request->input('name')));
+            $pmsId = trim((string) ($request->input('pms_id') ?? $request->input('employee_id')));
 
             $users = User::query()
                 ->whereRaw('LOWER(TRIM(name)) = ?', [$name])
                 ->get();
 
             if ($users->count() > 1) {
-                // Duplicate names found — require Employee ID to disambiguate.
-                if ($employeeId === '') {
+                // Duplicate names found — require PMS ID to disambiguate.
+                if ($pmsId === '') {
                     throw ValidationException::withMessages([
+                        'pms_id'      => 'needs_disambiguation',
                         'employee_id' => 'needs_disambiguation',
                     ]);
                 }
 
                 // Filter down to the user whose employee record matches the given ID.
-                $user = $users->first(function (User $u) use ($employeeId) {
-                    return $u->employee && strtolower(trim($u->employee->employee_id ?? '')) === strtolower($employeeId);
+                $user = $users->first(function (User $u) use ($pmsId) {
+                    return $u->employee && (
+                        strtolower(trim($u->employee->pms_id ?? '')) === strtolower($pmsId) ||
+                        strtolower(trim($u->employee->employee_id ?? '')) === strtolower($pmsId)
+                    );
                 });
 
                 if (! $user) {
                     throw ValidationException::withMessages([
-                        'employee_id' => 'The Employee ID does not match any account with that name.',
+                        'pms_id'      => 'The PMS ID does not match any account with that name.',
+                        'employee_id' => 'The PMS ID does not match any account with that name.',
                     ]);
                 }
             } else {

@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Clear uploaded files so storage stays in sync with a fresh DB
         $clearDirs = [
             'accomplishment_submissions',
             'ors_evidences',
@@ -27,7 +26,7 @@ class DatabaseSeeder extends Seeder
                 if ($file->isFile()) unlink($file->getPathname());
             }
         }
-        // Clear profiles/ but keep default.jpeg
+
         $profilesPath = storage_path('app/public/profiles');
         if (is_dir($profilesPath)) {
             foreach (glob("{$profilesPath}/*") as $file) {
@@ -43,20 +42,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             UwpSampleSeeder::class,
             SpmsFullSeeder::class,
-            SpmsH1CompleteSeeder::class,   // closes out Jan-Jun 2026 as full history
+            SpmsH1CompleteSeeder::class,
             UwpSampleSeederH2::class,
             SpmsFullSeederH2::class,
-            SpmsH2CompleteSeeder::class,   // fills Dec ORS/MPOR + Q4 QAR (Mark Juntilla excluded)
-            // OrsSampleSeeder::class, // replaced by SpmsFullSeeder
-            // MlTrainingDataSeeder::class,
+            SpmsH2CompleteSeeder::class,
         ]);
-
-        // After all seeders run, trigger ML model training
-        // try {
-        //     Http::post(env('FASTAPI_URL') . '/train');
-        // } catch (\Exception $e) {
-        //     $this->command->warn('ML training skipped: FastAPI not running.');
-        // }
 
     }
 }

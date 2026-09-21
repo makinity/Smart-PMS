@@ -248,6 +248,19 @@ function ActionMenu({ user, open, onClose, onEdit, onSendCode, onToggleActive, o
     );
 }
 
+function generatePmsIdForRole(role) {
+    const prefixMap = {
+        'admin': 'ADM',
+        'pmt': 'PMT',
+        'dept-head': 'DPT',
+        'supervisor': 'SPV',
+        'employee': 'EMP',
+    };
+    const prefix = prefixMap[String(role || '').toLowerCase()] || 'EMP';
+    const randomNum = Math.floor(10000 + Math.random() * 90000);
+    return `${prefix}-${randomNum}`;
+}
+
 function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onChange, onSubmit, saving }) {
     useEffect(() => {
         if (!open) return undefined;
@@ -289,8 +302,55 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
                     )}
 
                     <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                        {/* PMS ID Field with Generate Button */}
+                        <div style={fieldWrap}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                                <span style={fieldLabel}>PMS ID</span>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newId = generatePmsIdForRole(value.role);
+                                        onChange('pms_id', newId);
+                                        onChange('employee_id', newId);
+                                    }}
+                                    title="Generate random 5-digit PMS ID based on role"
+                                    style={{
+                                        background: 'rgba(59,130,246,0.12)',
+                                        color: 'var(--admin-accent)',
+                                        border: '1px solid rgba(59,130,246,0.3)',
+                                        borderRadius: 6,
+                                        padding: '0.2rem 0.55rem',
+                                        fontSize: '0.72rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.35rem',
+                                        transition: 'all 0.15s ease',
+                                    }}
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                        <path d="M3 3v5h5" />
+                                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                                        <path d="M16 16h5v5" />
+                                    </svg>
+                                    Generate ID
+                                </button>
+                            </div>
+                            <input
+                                value={value.pms_id !== undefined ? value.pms_id : (value.employee_id || '')}
+                                onChange={(e) => {
+                                    onChange('pms_id', e.target.value);
+                                    onChange('employee_id', e.target.value);
+                                }}
+                                type="text"
+                                placeholder={value.role === 'admin' ? 'ADM-10523' : value.role === 'dept-head' ? 'DPT-10523' : value.role === 'supervisor' ? 'SPV-10523' : value.role === 'pmt' ? 'PMT-10523' : 'EMP-10523'}
+                                style={inputStyle}
+                            />
+                        </div>
+
                         {[
-                            { label: 'Employee ID', field: 'employee_id', placeholder: 'EMP-2026-00001' },
                             { label: 'Full Name',   field: 'name',        placeholder: 'Juan Dela Cruz' },
                             { label: 'Email',       field: 'email',       placeholder: 'name@gmail.com', type: 'email' },
                             { label: 'Position',    field: 'position',    placeholder: 'Administrative Officer' },
@@ -298,7 +358,7 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
                             <label key={field} style={fieldWrap}>
                                 <span style={fieldLabel}>{label}</span>
                                 <input
-                                    value={value[field] || ''}
+                                    value={value[field] !== undefined ? value[field] : ''}
                                     onChange={(e) => onChange(field, e.target.value)}
                                     type={type}
                                     placeholder={placeholder}
@@ -309,7 +369,20 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
 
                         <label style={fieldWrap}>
                             <span style={fieldLabel}>Role</span>
-                            <select value={value.role || ''} onChange={(e) => onChange('role', e.target.value)} style={inputStyle}>
+                            <select
+                                value={value.role || ''}
+                                onChange={(e) => {
+                                    const newRole = e.target.value;
+                                    onChange('role', newRole);
+                                    const currentId = value.pms_id || value.employee_id || '';
+                                    if (!currentId || /^(ADM|PMT|DPT|SPV|EMP)-\d{5}$/i.test(currentId)) {
+                                        const newId = generatePmsIdForRole(newRole);
+                                        onChange('pms_id', newId);
+                                        onChange('employee_id', newId);
+                                    }
+                                }}
+                                style={inputStyle}
+                            >
                                 {roles.filter((role) => {
                                     const key = role.key ?? role.id ?? role.name ?? role;
                                     return key !== 'admin';
@@ -343,9 +416,9 @@ function UserFormModal({ open, mode, roles, offices, value, safety, onClose, onC
                     </div>
 
                     <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                        <Toggle label="Active"           checked={Boolean(value.is_active)}         onChange={(v) => onChange('is_active', v)}         disabled={Boolean(isProtected)} />
-                        <Toggle label="Disabled"         checked={Boolean(value.is_disabled)}       onChange={(v) => onChange('is_disabled', v)}       disabled={Boolean(isProtected)} />
-                        <Toggle label="Send Employee ID" checked={Boolean(value.send_employee_id)}  onChange={(v) => onChange('send_employee_id', v)} />
+                        <Toggle label="Active"      checked={Boolean(value.is_active)}    onChange={(v) => onChange('is_active', v)}    disabled={Boolean(isProtected)} />
+                        <Toggle label="Disabled"    checked={Boolean(value.is_disabled)}  onChange={(v) => onChange('is_disabled', v)}  disabled={Boolean(isProtected)} />
+                        <Toggle label="Send PMS ID" checked={Boolean(value.send_pms_id ?? value.send_employee_id)} onChange={(v) => { onChange('send_pms_id', v); onChange('send_employee_id', v); }} />
                     </div>
 
                     <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--admin-border)', paddingTop: '1rem' }}>
@@ -433,7 +506,7 @@ function UserTable({ users, activeMenuId, onMenu, onEdit, onSendCode, onToggleAc
                                                 style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, objectFit: 'cover' }} />
                                             <div>
                                                 <div style={{ fontWeight: 600, color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}>{user.name || 'Unnamed'}</div>
-                                                <div style={{ marginTop: '0.15rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.employee_id || 'No ID'}</div>
+                                                <div style={{ marginTop: '0.15rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.pms_id || user.employee_id || 'No ID'}</div>
                                                 <div style={{ marginTop: '0.1rem', fontSize: '0.78rem', color: 'var(--admin-text-muted)' }}>{user.email || 'No email'}</div>
                                             </div>
                                         </div>
@@ -552,9 +625,11 @@ export default function Index({
             return k !== 'admin';
         });
         const defaultRoleKey = defaultRole?.key ?? defaultRole?.name ?? defaultRole ?? 'employee';
+        const initialPmsId = generatePmsIdForRole(defaultRoleKey);
         setEditor({
             id: null,
-            employee_id: '',
+            pms_id: initialPmsId,
+            employee_id: initialPmsId,
             name: '',
             email: '',
             role: defaultRoleKey,
@@ -562,6 +637,7 @@ export default function Index({
             position: '',
             is_active: true,
             is_disabled: false,
+            send_pms_id: true,
             send_employee_id: true,
         });
     }
@@ -569,7 +645,8 @@ export default function Index({
     function openEdit(user) {
         setEditor({
             id: user.id,
-            employee_id: user.employee_id || '',
+            pms_id: user.pms_id || user.employee_id || '',
+            employee_id: user.pms_id || user.employee_id || '',
             name: user.name || '',
             email: user.email || '',
             role: user.role || user.roles?.[0] || 'user',
@@ -577,14 +654,27 @@ export default function Index({
             position: user.position || '',
             is_active: Boolean(user.is_active),
             is_disabled: Boolean(user.is_disabled),
+            send_pms_id: false,
             send_employee_id: false,
         });
         setActiveMenuId(null);
     }
 
     function updateEditor(field, value) {
-        if (field === 'role' && (value === 'admin' || value === 'pmt')) {
-            setEditor((current) => ({ ...current, role: value, office_id: '' }));
+        if (field === 'role') {
+            const isRestricted = value === 'admin' || value === 'pmt';
+            setEditor((current) => {
+                const next = { ...current, role: value, office_id: isRestricted ? '' : current.office_id };
+                if (!current.id) {
+                    const currentId = current.pms_id || current.employee_id || '';
+                    if (!currentId || /^(ADM|PMT|DPT|SPV|EMP)-\d{5}$/i.test(currentId)) {
+                        const newId = generatePmsIdForRole(value);
+                        next.pms_id = newId;
+                        next.employee_id = newId;
+                    }
+                }
+                return next;
+            });
         } else {
             setEditor((current) => ({ ...current, [field]: value }));
         }
@@ -601,7 +691,8 @@ export default function Index({
         setSaving(true);
 
         const payload = {
-            employee_id: editor.employee_id,
+            pms_id: editor.pms_id || editor.employee_id || null,
+            employee_id: editor.pms_id || editor.employee_id || null,
             name: editor.name,
             email: editor.email,
             role: editor.role,
@@ -609,7 +700,8 @@ export default function Index({
             position: editor.position || null,
             is_active: editor.is_active,
             is_disabled: editor.is_disabled,
-            send_employee_id: editor.send_employee_id,
+            send_pms_id: editor.send_pms_id ?? editor.send_employee_id,
+            send_employee_id: editor.send_pms_id ?? editor.send_employee_id,
         };
 
         const config = {
@@ -643,8 +735,8 @@ export default function Index({
         setSendingId(user.id);
         router.post(`/administrator/users/${user.id}/send-code`, {}, {
             preserveScroll: true,
-            onSuccess: () => toast(`Employee ID sent to ${user.email}.`, 'success'),
-            onError: (errors) => toast(firstErrorMessage(errors) || 'Failed to send employee ID.', 'error'),
+            onSuccess: () => toast(`PMS ID sent to ${user.email}.`, 'success'),
+            onError: (errors) => toast(firstErrorMessage(errors) || 'Failed to send PMS ID.', 'error'),
             onFinish: () => setSendingId(null),
         });
     }
@@ -715,7 +807,7 @@ export default function Index({
                                     </div>
                                 </div>
                                 <p style={{ ...statCaption, marginTop: '0.75rem', maxWidth: 760 }}>
-                                    Manage user accounts, issue employee IDs, assign roles, and control access.
+                                    Manage user accounts, issue PMS IDs, assign roles, and control access.
                                 </p>
                             </div>
 
@@ -764,7 +856,7 @@ export default function Index({
                                 <input
                                     value={query.search}
                                     onChange={(e) => setQuery(q => ({ ...q, search: e.target.value }))}
-                                    placeholder="Name, email, employee ID"
+                                    placeholder="Name, email, PMS ID"
                                     style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: 'var(--admin-text-primary)', fontSize: '0.875rem' }}
                                 />
                             </div>

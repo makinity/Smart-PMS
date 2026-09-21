@@ -37,7 +37,13 @@ class BulkSubmitToLdTest extends TestCase
             'is_active' => true,
         ]);
 
-        $employee = User::factory()->create(['office_id' => $office->id]);
+        $employee = User::factory()->create();
+        \App\Models\Employee::create([
+            'user_id' => $employee->id,
+            'office_id' => $office->id,
+            'pms_id' => 'EMP-'.rand(10000, 99999),
+            'is_active' => true,
+        ]);
         $employee->assignRole('employee');
 
         $opcr = \App\Models\Opcr::create([

@@ -28,6 +28,24 @@ class AdminUserManagementService
             ->all();
     }
 
+    public function generateUniquePmsId(string $role): string
+    {
+        $prefix = match ($role) {
+            'admin'      => 'ADM-',
+            'pmt'        => 'PMT-',
+            'dept-head'  => 'DPT-',
+            'supervisor' => 'SPV-',
+            default      => 'EMP-',
+        };
+
+        do {
+            $num = str_pad((string) random_int(10000, 99999), 5, '0', STR_PAD_LEFT);
+            $candidate = $prefix . $num;
+        } while (Employee::where('pms_id', $candidate)->exists());
+
+        return $candidate;
+    }
+
     public function create(array $data, User $actor): User
     {
         return DB::transaction(function () use ($data) {
@@ -39,19 +57,25 @@ class AdminUserManagementService
                 'role'     => $data['role'],
             ]);
 
-            // ── 2. Create employee record (employees table) ───────────────────
+            // ── 2. Determine PMS ID ──────────────────────────────────────────
+            $pmsId = trim((string) ($data['pms_id'] ?? $data['employee_id'] ?? ''));
+            if ($pmsId === '') {
+                $pmsId = $this->generateUniquePmsId($data['role']);
+            }
+
+            // ── 3. Create employee record (employees table) ───────────────────
             $isActive = (bool) ($data['is_active'] ?? false);
             Employee::create([
-                'user_id'     => $user->id,
-                'employee_id' => trim((string) $data['employee_id']),
-                'first_name'  => trim((string) ($data['first_name'] ?? '')) ?: null,
-                'middle_name' => trim((string) ($data['middle_name'] ?? '')) ?: null,
-                'last_name'   => trim((string) ($data['last_name'] ?? '')) ?: null,
-                'office_id'   => ! empty($data['office_id']) ? $data['office_id'] : null,
-                'position'    => trim((string) ($data['position'] ?? '')) ?: null,
-                'is_active'   => $isActive,
-                'activated_at'=> $isActive ? now() : null,
-                'is_disabled' => (bool) ($data['is_disabled'] ?? false),
+                'user_id'      => $user->id,
+                'pms_id'       => $pmsId,
+                'first_name'   => trim((string) ($data['first_name'] ?? '')) ?: null,
+                'middle_name'  => trim((string) ($data['middle_name'] ?? '')) ?: null,
+                'last_name'    => trim((string) ($data['last_name'] ?? '')) ?: null,
+                'office_id'    => ! empty($data['office_id']) ? $data['office_id'] : null,
+                'position'     => trim((string) ($data['position'] ?? '')) ?: null,
+                'is_active'    => $isActive,
+                'activated_at' => $isActive ? now() : null,
+                'is_disabled'  => (bool) ($data['is_disabled'] ?? false),
             ]);
 
             $this->syncRole($user, $data['role']);
@@ -84,9 +108,22 @@ class AdminUserManagementService
             ]);
             $user->save();
 
+            // ── Handle PMS ID on role change / manual edit ─────────────────────
+            $pmsIdInput = array_key_exists('pms_id', $data)
+                ? trim((string) $data['pms_id'])
+                : (array_key_exists('employee_id', $data) ? trim((string) $data['employee_id']) : null);
+
+            $resolvedPmsId = $employee->pms_id;
+            if ($pmsIdInput !== null && $pmsIdInput !== '') {
+                $resolvedPmsId = $pmsIdInput;
+            } elseif ($nextRole !== $user->getOriginal('role')) {
+                // If role changed and PMS ID wasn't explicitly overridden, regenerate with new role prefix
+                $resolvedPmsId = $this->generateUniquePmsId($nextRole);
+            }
+
             // ── Update employees table (HR fields) ────────────────────────────
             $employee->fill([
-                'employee_id' => trim((string) ($data['employee_id'] ?? $employee->employee_id)),
+                'pms_id'      => $resolvedPmsId,
                 'first_name'  => array_key_exists('first_name', $data)
                     ? (trim((string) $data['first_name']) ?: null)
                     : $employee->first_name,
@@ -137,29 +174,35 @@ class AdminUserManagementService
         return $this->setDisabled($user, true, $actor);
     }
 
-    public function sendEmployeeId(User $user, User $actor): void
+    public function sendPmsId(User $user, User $actor): void
     {
         $email = $this->normalizeEmail($user->email);
         if ($email === '') {
             throw ValidationException::withMessages([
-                'email' => 'The user must have an email address before the employee ID can be sent.',
+                'email' => 'The user must have an email address before the PMS ID can be sent.',
             ]);
         }
 
-        $employeeId = (string) ($user->employee?->employee_id ?? '');
+        $pmsId = (string) ($user->employee?->pms_id ?? '');
 
         Mail::to($email)->send(new PmsEmployeeIdIssuedMail(
             name: $user->name,
-            employeeId: $employeeId,
+            employeeId: $pmsId,
             email: $email,
         ));
 
         activity('User')
             ->performedOn($user)
             ->causedBy($actor)
-            ->withProperties(['email' => $email, 'employee_id' => $employeeId])
-            ->event('sent_employee_id')
-            ->log('Sent employee ID');
+            ->withProperties(['email' => $email, 'pms_id' => $pmsId])
+            ->event('sent_pms_id')
+            ->log('Sent PMS ID');
+    }
+
+    // Backward-compatible alias
+    public function sendEmployeeId(User $user, User $actor): void
+    {
+        $this->sendPmsId($user, $actor);
     }
 
     public function syncFromHris(string $baseUrl, string $token, User $actor): array

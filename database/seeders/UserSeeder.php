@@ -61,10 +61,18 @@ class UserSeeder extends Seeder
             $user->syncRoles($data['role']);
 
             // ΓöÇΓöÇ 2. Create / update the Employee (HR fields) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+            $prefix = match ($data['role']) {
+                'admin'      => 'ADM-',
+                'pmt'        => 'PMT-',
+                'dept-head'  => 'DPT-',
+                'supervisor' => 'SPV-',
+                default      => 'EMP-',
+            };
+
             Employee::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'employee_id'        => 'EMP-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
+                    'pms_id'             => $prefix . str_pad($i + 1, 5, '0', STR_PAD_LEFT),
                     'first_name'         => $data['first_name'] ?? null,
                     'middle_name'        => $data['middle_name'] ?? null,
                     'last_name'          => $data['last_name'] ?? null,

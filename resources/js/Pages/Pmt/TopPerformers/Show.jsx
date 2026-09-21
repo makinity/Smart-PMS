@@ -119,8 +119,8 @@ export default function Show() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--admin-text-primary)' }}>{employee.name}</span>
-                                {employee.employee_id && (
-                                    <Badge label={employee.employee_id} color="var(--admin-text-muted)" bg="var(--admin-bg-secondary)" />
+                                {(employee.pms_id || employee.employee_id) && (
+                                    <Badge label={employee.pms_id || employee.employee_id} color="var(--admin-text-muted)" bg="var(--admin-bg-secondary)" />
                                 )}
                                 {employee.is_disabled
                                     ? <Badge label="Disabled" color="#ef4444" bg="rgba(239,68,68,0.12)" />
@@ -190,7 +190,7 @@ export default function Show() {
                                 textTransform: 'uppercase', letterSpacing: '0.06em' }}>Employee Details</div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: '0.6rem 1.5rem' }}>
                                 {[
-                                    { label: 'Employee ID', value: employee.employee_id || '—' },
+                                    { label: 'PMS ID', value: employee.pms_id || employee.employee_id || '—' },
                                     { label: 'Email', value: employee.email },
                                     { label: 'Role', value: employee.role || '—' },
                                     { label: 'Office', value: employee.office?.name || '—' },

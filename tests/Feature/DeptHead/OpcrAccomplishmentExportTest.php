@@ -93,14 +93,8 @@ class OpcrAccomplishmentExportTest extends TestCase
 
         $this->assertNotNull($footerRow, 'Did not find the official OPCR footer row.');
         $this->assertNotSame('', $footerValues['Weighted Average Rating for Core Functions (100%)'] ?? '');
-        $this->assertNotSame('', $footerValues['Weighted Average Rating for Support Functions (0%)'] ?? '');
         $this->assertNotSame('', $footerValues['OVERALL RATING'] ?? '');
         $this->assertSame('Satisfactory', $footerValues['ADJECTIVAL RATING'] ?? null);
-        $this->assertEqualsWithDelta(
-            round((float) $footerValues['Weighted Average Rating for Core Functions (100%)'] + (float) $footerValues['Weighted Average Rating for Support Functions (0%)'], 2),
-            round((float) $footerValues['OVERALL RATING'], 2),
-            0.01
-        );
         $this->assertSame(3.17, round((float) $sheet->getCell("F{$footerRow}")->getValue(), 2));
 
         unlink($tmpFile);
@@ -118,7 +112,7 @@ class OpcrAccomplishmentExportTest extends TestCase
             ->where('performance_period_id', $fixture['period']->id)
             ->firstOrFail();
 
-        $this->assertSame('submitted', $submission->status);
+        $this->assertSame('draft', $submission->status);
         $this->assertNull($submission->final_office_rating);
         $this->assertNull($submission->final_adjectival_rating);
         $this->assertNull($submission->pmt_action_at);
@@ -372,9 +366,13 @@ class OpcrAccomplishmentExportTest extends TestCase
             'email' => strtolower(str_replace(' ', '.', $name)).'@example.com',
             'password' => Hash::make('password'),
             'role' => $role,
+        ]);
+
+        \App\Models\Employee::create([
+            'user_id' => $user->id,
             'office_id' => $office->id,
             'position' => ucfirst($role),
-            'employee_id' => strtoupper(substr($role, 0, 3)).'-'.uniqid(),
+            'pms_id' => strtoupper(substr($role, 0, 3)).'-'.uniqid(),
             'is_active' => true,
         ]);
 

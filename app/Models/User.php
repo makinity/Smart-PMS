@@ -66,9 +66,14 @@ class User extends Authenticatable
     // Controllers / services are being updated progressively to use
     // $user->employee->... directly; these will be removed when that is done.
 
+    public function getPmsIdAttribute(): ?string
+    {
+        return $this->employee?->pms_id;
+    }
+
     public function getEmployeeIdAttribute(): ?string
     {
-        return $this->employee?->employee_id;
+        return $this->pms_id;
     }
 
     public function getHmsEmployeeIdAttribute(): ?int

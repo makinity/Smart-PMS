@@ -81,7 +81,11 @@ class ProfileSettingsTest extends TestCase
             'email' => $role.'@example.com',
             'password' => Hash::make('password'),
             'role' => $role,
-            'employee_id' => 'EMP-TEST-'.strtoupper(str_replace('-', '', $role)),
+        ]);
+
+        \App\Models\Employee::create([
+            'user_id' => $user->id,
+            'pms_id' => 'EMP-TEST-'.strtoupper(str_replace('-', '', $role)),
             'is_active' => true,
             'is_disabled' => false,
         ]);

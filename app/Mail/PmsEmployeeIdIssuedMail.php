@@ -21,7 +21,7 @@ class PmsEmployeeIdIssuedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your PMS Employee ID',
+            subject: 'Your Smart-PMS ID',
         );
     }
 
@@ -32,6 +32,7 @@ class PmsEmployeeIdIssuedMail extends Mailable
             with: [
                 'name' => $this->name,
                 'employeeId' => $this->employeeId,
+                'pmsId' => $this->employeeId,
                 'email' => $this->email,
             ],
         );
