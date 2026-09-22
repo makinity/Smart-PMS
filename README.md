@@ -1,59 +1,194 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/images/pms-logo.png" width="120" height="120" alt="Smart-PMS Logo" style="border-radius: 50%; box-shadow: 0 10px 25px rgba(0,0,0,0.15);" />
 </p>
 
-## About Laravel
+<h1 align="center">Smart-PMS</h1>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <strong>Official Strategic Performance Management System (SPMS)</strong><br>
+  <em>Provincial Government of Davao del Sur</em>
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
+  <a href="https://laravel.com"><img src="https://img.shields.io/badge/Laravel-12.x-FF2D20.svg?style=flat-square&logo=laravel" alt="Laravel 12"></a>
+  <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18.x-61DAFB.svg?style=flat-square&logo=react" alt="React 18"></a>
+  <a href="https://inertiajs.com"><img src="https://img.shields.io/badge/Inertia.js-2.x-9553E9.svg?style=flat-square&logo=inertia" alt="Inertia.js"></a>
+  <a href="https://www.php.net"><img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg?style=flat-square&logo=php" alt="PHP 8.2+"></a>
+</p>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📌 Overview
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**Smart-PMS** is an enterprise-grade web application designed and built for the **Provincial Government of Davao del Sur**. Built in full compliance with the **Civil Service Commission (CSC) Strategic Performance Management System (SPMS)** guidelines, it modernizes and automates the entire public sector performance evaluation lifecycle—from organizational targets down to individual daily task monitoring and career development planning.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🌟 Key Features
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🔄 End-to-End SPMS 4-Stage Lifecycle
 
-### Premium Partners
+```mermaid
+flowchart LR
+    S1[Stage 1: Planning & Commitment<br>UWP • OPCR • IPCR] --> S2[Stage 2: Monitoring & Coaching<br>ORS • MPOR • SMPOR]
+    S2 --> S3[Stage 3: Review & Evaluation<br>QAR • Rating Calibration]
+    S3 --> S4[Stage 4: Rewarding & Development<br>IDP • Top Performers • L&D]
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. **Stage 1: Performance Planning & Commitment**
+   - **Unit Work Plan (UWP):** Departments structure Core, Strategic, and Support functions with Major Final Outputs (MFOs), Success Indicators, budgets, and Quality/Efficiency/Timeliness (QET) standards.
+   - **Office Performance Commitment & Review (OPCR):** Department heads consolidate UWPs into official organizational commitments.
+   - **Individual Performance Commitment & Review (IPCR):** Employees cascade and commit to office indicators and measurable semester targets.
 
-## Contributing
+2. **Stage 2: Performance Monitoring & Coaching**
+   - **Output Rating Sheet (ORS / Annex G):** Granular tracking for individual tasks with live recording timers, evidence attachments, supervisor reviews, and automated scoring.
+   - **Monthly Performance Output Report (MPOR):** Automatic roll-up of daily ORS achievements into monthly summaries.
+   - **Summary Monthly Performance Output Report (SMPOR):** Consolidated semester-wide matrix across all monthly deliverables.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **Stage 3: Performance Review & Evaluation**
+   - **Quarterly Accomplishment Report (QAR):** Comprehensive evaluation with adjectival ratings (*Outstanding*, *Very Satisfactory*, *Satisfactory*, *Unsatisfactory*, *Poor*).
+   - **Weighted Formula Calibration:** CSC-compliant rating algorithms ($Q \times 0.3 + E \times 0.3 + T \times 0.4$).
+   - **PMT Review & Approval Workflow:** Formal multi-step review, calibration, approval, or return-with-remarks.
 
-## Code of Conduct
+4. **Stage 4: Rewarding & Development Planning**
+   - **Individual Development Plan (IDP / Annex H):** Post-evaluation gap analysis, targeted interventions, and supervisor commitments.
+   - **Top Performing Employees Recognition:** Data-driven ranking and commendation matrix for outstanding civil servants.
+   - **L&D / HRMO Integration:** Direct payload exports for institutional human resource development interventions.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+### 💼 Smart Platform Capabilities
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- 📊 **Programmatic CSC Excel Workbooks:** Export pixel-perfect, government-standard Excel spreadsheets (OPCR, IPCR, UWP, ORS Annex G, MPOR, SMPOR, QAR, IDP Annex H) powered by PhpSpreadsheet.
+- 🆔 **Automated PMS-ID Generation:** Role-based smart identifier system (`ADM-`, `PMT-`, `DPT-`, `SPV-`, `EMP-`) with email onboarding and self-activation links.
+- 🤖 **Machine Learning KPI Predictions:** Built-in ML regression forecasting model assessing employee milestone trends and accomplishment trajectories.
+- 🔒 **Enterprise Security & Compliance:** Laravel Fortify authentication, Two-Factor Authentication (2FA), Passkey / WebAuthn support, and Role-Based Access Control (RBAC).
+- 📜 **Full Audit Logging:** Detailed event and activity logging via Spatie Activitylog across all rating updates, role adjustments, and document approvals.
+- 🌓 **Modern Responsive Interface:** React 18 + Inertia.js with dark/light mode, real-time feedback, and accessible navigation.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 👥 User Roles & Access Matrix
+
+| Role | Badge | Key Responsibilities & Capabilities |
+| :--- | :---: | :--- |
+| **System Administrator** | `admin` | User management, PMS-ID generation, office registry, system settings, activity logs, role delegation. |
+| **Performance Management Team** | `pmt` | SPMS calibration, OPCR & IPCR final approvals, top performer rankings, L&D submission tracking. |
+| **Department Head** | `dept-head` | OPCR formulation, department-wide UWP consolidation, quarterly performance reviews, rating validation. |
+| **Supervisor** | `supervisor` | UWP creation, indicator cascading, ORS task verification, live rating/coaching, IDP review. |
+| **Employee** | `employee` | IPCR target commitments, ORS task timer & evidence logging, accomplishment viewing, IDP formulation. |
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Framework:** [Laravel 12.x](https://laravel.com/) (PHP 8.2+)
+- **Database:** MySQL / [TiDB Cloud](https://www.pingcap.com/tidb-cloud/) (Distributed SQL)
+- **Authentication:** Laravel Fortify, Two-Factor Auth (2FA), Passkeys (WebAuthn)
+- **Permissions:** [Spatie Laravel-Permission](https://spatie.be/docs/laravel-permission/)
+- **Audit Logs:** [Spatie Laravel-Activitylog](https://spatie.be/docs/laravel-activitylog/)
+- **Spreadsheet Generation:** [PhpSpreadsheet](https://phpspreadsheet.readthedocs.io/)
+
+### Frontend
+- **SPA Bridge:** [Inertia.js v2](https://inertiajs.com/)
+- **Library:** [React 18](https://react.dev/)
+- **Bundler:** [Vite 6](https://vitejs.dev/)
+- **Icons:** [Bootstrap Icons](https://icons.getbootstrap.com/)
+- **Styling:** Custom CSS Design System (Theme-aware Light/Dark mode, Glassmorphism, Responsive CSS Tokens)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **PHP** $\ge$ 8.2 with `intl`, `pdo_mysql`, `gd`, `zip`, `bcmath` extensions
+- **Composer** $\ge$ 2.x
+- **Node.js** $\ge$ 18.x & **NPM**
+- **MySQL** $\ge$ 8.0 or **TiDB Cloud** instance
+
+---
+
+### Installation Steps
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/makinity/Smart-PMS.git
+   cd smart-pms
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Configure Environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Update your `.env` with your database credentials, mail settings, and application URL.*
+
+4. **Run Migrations & Seed Database**
+   ```bash
+   # For local development with full demo data:
+   php artisan migrate:fresh --seed
+
+   # For production initialization (Admin & core roles only):
+   php artisan migrate --force
+   php artisan db:seed --class=ProductionSeeder --force
+   ```
+
+5. **Symlink Storage & Build Assets**
+   ```bash
+   php artisan storage:link
+   npm run build
+   ```
+
+6. **Start Local Development Server**
+   ```bash
+   # Terminal 1: Vite Dev Server
+   npm run dev
+
+   # Terminal 2: Laravel Server
+   php artisan serve --port=8080
+   ```
+   Access the system at `http://localhost:8080`.
+
+---
+
+## 🧪 Testing
+
+Run the automated test suite with PHPUnit / Pest:
+
+```bash
+# Run all feature and unit tests
+php artisan test
+
+# Run a specific test suite
+php artisan test --filter=OrsExcelExportTest
+php artisan test --filter=UserManagementTest
+```
+
+---
+
+## 📖 Administrator Documentation
+
+For detailed step-by-step instructions on bootstrapping a new instance, provisioning department heads, registering employees, and setting up initial performance periods, please refer to:
+
+👉 **[SETUP.md](SETUP.md)** — *Smart-PMS System Administrator Setup Guide*
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  Developed for the <strong>Provincial Government of Davao del Sur</strong><br>
+  <em>Modernizing Governance through Smart Performance Management</em>
+</p>
