@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /login
+Allow: /images/
+Allow: /build/
+
+# Restrict crawlers from indexing private authenticated app dashboards
+Disallow: /administrator/
+Disallow: /admin/
+Disallow: /pmt/
+Disallow: /dept-head/
+Disallow: /supervisor/
+Disallow: /employee/
+Disallow: /stage-one/
+Disallow: /stage-two/
+Disallow: /dashboard
+
+Sitemap: /sitemap.xml
