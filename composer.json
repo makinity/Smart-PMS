@@ -17,6 +17,8 @@
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "3.0",
         "phpoffice/phpspreadsheet": "^5.7",
+        "resend/resend-laravel": "^1.5",
+        "resend/resend-php": "*",
         "spatie/laravel-activitylog": "^5.0",
         "spatie/laravel-permission": "^8.0",
         "tightenco/ziggy": "^2.6"
