@@ -90,14 +90,14 @@ export default function Login() {
     const [fetching, setFetching] = useState(false);
     const isLoading = processing || fetching;
 
-    // Show the Employee ID field whenever the server signals duplicate names,
-    // or when there's an actual employee_id mismatch error after submitting one.
+    // Show the PMS ID field whenever the server signals duplicate names,
+    // or when there's an actual PMS ID mismatch error after submitting one.
     // Once shown, keep it visible until the user changes their name or switches mode.
     const [showEmpId, setShowEmpId] = useState(false);
 
     useEffect(() => {
-        if (errors.employee_id) setShowEmpId(true);
-    }, [errors.employee_id]);
+        if (errors.employee_id || errors.pms_id) setShowEmpId(true);
+    }, [errors.employee_id, errors.pms_id]);
 
     function submit(e) {
         e.preventDefault();
@@ -388,15 +388,18 @@ export default function Login() {
                                             </svg>
                                             <span>Multiple accounts found with that name. Please enter your PMS ID to continue.</span>
                                         </div>
-                                        <Field label="PMS ID" icon={icons.id} error={errors.employee_id !== 'needs_disambiguation' ? errors.employee_id : undefined}>
+                                        <Field label="PMS ID" icon={icons.id} error={
+                                            (errors.pms_id && errors.pms_id !== 'needs_disambiguation') ? errors.pms_id
+                                            : (errors.employee_id && errors.employee_id !== 'needs_disambiguation' ? errors.employee_id : undefined)
+                                        }>
                                             <input
                                                 type="text"
                                                 value={data.employee_id}
                                                 onChange={e => setData('employee_id', e.target.value)}
                                                 autoFocus
                                                 autoComplete="off"
-                                                placeholder="e.g. EMP-10523 or ADM-10523"
-                                                style={inputStyle(!!errors.employee_id && errors.employee_id !== 'needs_disambiguation')}
+                                                placeholder="e.g. EMP-10523, PMT-15538, ADM-00001"
+                                                style={inputStyle((!!errors.pms_id && errors.pms_id !== 'needs_disambiguation') || (!!errors.employee_id && errors.employee_id !== 'needs_disambiguation'))}
                                             />
                                         </Field>
                                     </div>
