@@ -99,11 +99,13 @@ class Employee extends Model
         return $this->user?->name ?? '';
     }
 
-    public function getProfilePhotoUrlAttribute(): string
+    public function getProfilePhotoUrlAttribute(): ?string
     {
-        return $this->profile_photo_path
-            ? Storage::url($this->profile_photo_path)
-            : Storage::url('profiles/default.jpeg');
+        if (! $this->profile_photo_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->profile_photo_path);
     }
 
     /**

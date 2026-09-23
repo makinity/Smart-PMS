@@ -56,6 +56,14 @@ Route::get('/logout', function () {
 Route::post('/send/id', [\App\Http\Controllers\Auth\ActivationController::class, 'verify'])->middleware('throttle:activation-verify');
 Route::post('/activate/complete', [\App\Http\Controllers\Auth\ActivationController::class, 'complete']);
 
+// Public storage route (ensures uploaded profile photos & evidence files serve reliably on cloud hosts)
+Route::get('/storage/{path}', function (string $path) {
+    if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+})->where('path', '.*')->name('storage.file');
+
 // Admin
 Route::prefix('administrator')->middleware(['auth', 'role:admin'])->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');

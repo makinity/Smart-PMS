@@ -129,10 +129,9 @@ class User extends Authenticatable
         return $this->employee?->office;
     }
 
-    public function getProfilePhotoUrlAttribute(): string
+    public function getProfilePhotoUrlAttribute(): ?string
     {
-        return $this->employee?->profile_photo_url
-            ?? \Illuminate\Support\Facades\Storage::url('profiles/default.jpeg');
+        return $this->employee?->profile_photo_url;
     }
 
     public function getInitialsAttribute(): string
