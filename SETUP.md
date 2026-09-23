@@ -11,7 +11,7 @@ Upon initial database migration and seeding, the Master Administrator account is
 | Parameter | Initial Value |
 | :--- | :--- |
 | **Login URL** | `https://your-domain.com/login` *(or `http://localhost:8080/login` in local setup)* |
-| **Email Address** | `markjuntillava@gmail.com` *(or as defined in `ProductionSeeder.php`)* |
+| **Email Address** | `smartpms.davaodelsur@gmail.com` *(or as defined in `ProductionSeeder.php`)* |
 | **Initial Password** | `password` |
 | **Assigned Role** | `System Administrator (admin)` |
 

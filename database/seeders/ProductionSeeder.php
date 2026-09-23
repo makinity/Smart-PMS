@@ -18,7 +18,7 @@ class ProductionSeeder extends Seeder
         }
 
         $user = User::updateOrCreate(
-            ['email' => 'markjuntillava@gmail.com'],
+            ['email' => 'smartpms.davaodelsur@gmail.com'],
             [
                 'name'              => 'System Administrator',
                 'role'              => 'admin',
@@ -33,9 +33,9 @@ class ProductionSeeder extends Seeder
             ['user_id' => $user->id],
             [
                 'pms_id'             => 'ADM-00001',
-                'first_name'         => 'Mark Vencent',
-                'middle_name'        => 'Liones',
-                'last_name'          => 'Juntilla',
+                'first_name'         => 'System',
+                'middle_name'        => null,
+                'last_name'          => 'Administrator',
                 'office_id'          => null,
                 'position'           => 'System Administrator',
                 'is_active'          => true,
