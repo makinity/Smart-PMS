@@ -298,10 +298,11 @@ class OrsController extends Controller
 
         // Store evidence files
         if ($request->hasFile('evidence')) {
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
             foreach ($request->file('evidence') as $file) {
                 $slug = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
                 $filename = $slug . '-' . time() . '-' . Str::random(6) . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs("ors_evidences/{$user->id}/{$orsEntry->id}", $filename, 'public');
+                $path = $file->storeAs("ors_evidences/{$user->id}/{$orsEntry->id}", $filename, $disk);
 
                 OrsEntryEvidence::create([
                     'ors_entry_id' => $orsEntry->id,

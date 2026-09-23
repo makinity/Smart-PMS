@@ -105,7 +105,9 @@ class Employee extends Model
             return null;
         }
 
-        return Storage::disk('public')->url($this->profile_photo_path);
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+
+        return Storage::disk($disk)->url($this->profile_photo_path);
     }
 
     /**

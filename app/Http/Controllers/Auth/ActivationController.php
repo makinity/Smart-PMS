@@ -108,7 +108,8 @@ class ActivationController extends Controller
 
         // Store profile photo on the employee record
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            $path = $request->file('profile_photo')->store('profile-photos', $disk);
             $employee->profile_photo_path = $path;
         }
 

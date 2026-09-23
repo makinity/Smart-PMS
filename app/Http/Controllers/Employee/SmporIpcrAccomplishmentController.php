@@ -203,8 +203,9 @@ class SmporIpcrAccomplishmentController extends Controller
 
         // Handle file uploads
         $attachments = [];
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
         foreach ($request->file('supporting_files', []) as $file) {
-            $path = $file->store("accomplishment_submissions/period_{$period->id}/employee_{$user->id}", 'public');
+            $path = $file->store("accomplishment_submissions/period_{$period->id}/employee_{$user->id}", $disk);
             $attachments[] = [
                 'original_name' => $file->getClientOriginalName(),
                 'path' => $path,

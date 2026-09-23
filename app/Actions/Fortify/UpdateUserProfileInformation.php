@@ -50,13 +50,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         if ($photo instanceof \Illuminate\Http\UploadedFile) {
             $employee = $user->employee ?? Employee::create(['user_id' => $user->id]);
 
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
             $oldPath = $employee->profile_photo_path;
-            $path    = $photo->store('profile-photos', 'public');
+            $path    = $photo->store('profile-photos', $disk);
 
             $employee->forceFill(['profile_photo_path' => $path])->save();
 
             if ($oldPath && $oldPath !== $path) {
-                Storage::disk('public')->delete($oldPath);
+                Storage::disk($disk)->delete($oldPath);
             }
         }
     }
