@@ -172,7 +172,7 @@ export default function Login() {
         : 'Forgot Password';
 
     const subtitle = mode === 'login' ? 'Enter your credentials to continue'
-        : mode === 'activate-verify' ? 'Verify your employee ID and email to receive an activation token'
+        : mode === 'activate-verify' ? 'Verify your PMS ID and email to receive an activation token'
         : mode === 'activate-complete' ? 'Set your password and optional profile photo'
         : 'Enter your email address to receive a reset link';
 

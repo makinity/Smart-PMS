@@ -19,24 +19,29 @@ class ActivationController extends Controller
 {
     public function verify(Request $request): JsonResponse
     {
+        $idKey = $request->has('pms_id') ? 'pms_id' : 'employee_id';
+
         $request->validate([
-            'employee_id' => ['required', 'regex:/^EMP-[A-Z0-9-]{3,50}$/'],
-            'email'       => ['required', 'email'],
+            $idKey  => ['required', 'regex:/^(ADM|PMT|DPT|SPV|EMP|HRM)-[A-Z0-9-]{3,50}$/i'],
+            'email' => ['required', 'email'],
+        ], [
+            "{$idKey}.regex" => 'The PMS ID format is invalid (e.g. EMP-10523, PMT-15538, ADM-00001).',
+            "{$idKey}.required" => 'The PMS ID field is required.',
         ]);
 
-        $employeeId = Str::lower(trim($request->string('employee_id')->toString()));
-        $email      = Str::lower(trim($request->string('email')->toString()));
+        $pmsId = Str::upper(trim((string) $request->input($idKey)));
+        $email = Str::lower(trim((string) $request->input('email')));
 
-        // Look up via employees table, match on email via users
+        // Look up via employees table by pms_id, match on email via users
         $user = User::query()
-            ->whereHas('employee', fn ($q) => $q->whereRaw('LOWER(TRIM(employee_id)) = ?', [$employeeId]))
+            ->whereHas('employee', fn ($q) => $q->whereRaw('UPPER(TRIM(pms_id)) = ?', [$pmsId]))
             ->whereRaw('LOWER(TRIM(email)) = ?', [$email])
             ->with('employee')
             ->first();
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'employee_id' => 'No matching account was found.',
+                $idKey => 'No matching account was found with this PMS ID and email.',
             ]);
         }
 
